@@ -26,7 +26,8 @@ Four skills, one MCP server, bundled as a single installable plugin:
 The skills compose into one lifecycle: **simulation** finds failures before
 release, **monitoring** catches them in production, **scenario-from-traces**
 converts either kind of failure into a durable test set, and **evaluation**
-runs that set on every change.
+runs that set on every change. More skills are planned — see
+[ROADMAP.md](ROADMAP.md).
 
 ## Repository structure
 
@@ -48,29 +49,29 @@ okareo-tools/
 │           │                         self-contained Agent Skill.
 │           ├── okareo-agent-simulation/
 │           │   ├── SKILL.md          Instructions + YAML frontmatter.
-│           │   └── references/       Extra docs, loaded only when needed
-│           │       └── persona-design.md
+│           │   └── references/       Extra docs, loaded only when needed.
 │           ├── okareo-evaluation/
-│           │   ├── SKILL.md
-│           │   └── references/checks.md
 │           ├── okareo-monitoring/
-│           │   ├── SKILL.md
-│           │   └── references/alert-design.md
 │           └── okareo-scenario-from-traces/
-│               ├── SKILL.md
-│               └── references/trace-mapping.md
+│
+├── skill-template/                   Copy-to-author scaffold for a new
+│                                     skill. Lives outside skills/ so it is
+│                                     never packaged.
 │
 ├── scripts/
 │   ├── build.sh                      Packages each skill into a .skill file.
 │   ├── release.sh                    Builds, then publishes to all 3 surfaces.
-│   └── install.sh                    Consumer-side installer.
+│   ├── install.sh                    Consumer-side installer.
+│   └── validate_skills.py            Checks every skill before packaging.
 │
 ├── .github/
 │   └── workflows/
-│       └── release.yml               CI: build + publish when a v* tag is pushed.
+│       └── release.yml               CI: validate + build + publish on a v* tag.
 │
 ├── dist/                             Build output (.skill files). Gitignored.
 ├── skill-ids.json                    Claude API skill ids, managed by release.sh.
+├── CONTRIBUTING.md                   How to author a skill.
+├── ROADMAP.md                        Shipping and planned skills.
 ├── CLAUDE.md.snippet                 Drop-in dependency hint for consuming repos.
 ├── LICENSE
 ├── .gitignore
@@ -107,8 +108,10 @@ The plugin bundles the MCP server and all four skills as one unit:
 /plugin install okareo@okareo
 ```
 
-Set `OKAREO_API_KEY` in your environment before starting Claude Code.
-Update later with `/plugin marketplace update okareo`.
+The plugin connects to the hosted Okareo MCP server
+(`https://tools.okareo.com/mcp`). The first Okareo tool call opens a browser
+for a one-time sign-in — no API key needs to be set. Update later with
+`/plugin marketplace update okareo`.
 
 ### Claude API
 
@@ -120,9 +123,9 @@ available to all workspace members:
 ```
 
 Attach the skills to a request via the `container` parameter, and pass the
-Okareo MCP server as an `mcp_servers` entry — API skills run sandboxed with
-no network access, so they orchestrate the MCP tools rather than calling
-Okareo directly.
+Okareo MCP server as an `mcp_servers` entry. API requests are headless, so
+authenticate the MCP server with a `Bearer ${OKAREO_API_KEY}` header rather
+than the interactive browser sign-in.
 
 ### claude.ai
 
@@ -130,16 +133,28 @@ Per-user, through the web UI: download the `.skill` files from
 https://tools.okareo.com, then add them under Settings → Capabilities →
 Skills, and add the Okareo MCP server under Settings → Connectors.
 
+## Developing skills
+
+To add or change a skill, see [CONTRIBUTING.md](CONTRIBUTING.md). In short:
+
+```bash
+cp -r skill-template plugins/okareo/skills/<skill-name>   # scaffold
+# ...edit SKILL.md...
+python3 scripts/validate_skills.py                        # check the contract
+./scripts/build.sh                                        # package to dist/
+```
+
+`validate_skills.py` enforces the **tool-name contract**: every MCP tool a
+skill references must be a real Okareo MCP tool (the canonical list is
+`KNOWN_TOOLS` in that script). `build.sh` and CI run the validator first and
+refuse to package a skill that fails it.
+
 ## Creating the GitHub repository
 
 One-time setup, using the GitHub CLI (`gh`):
 
 ```bash
-# from the okareo-tools/ directory
-git init -b main
-git add .
-git commit -m "Initial Okareo tools package"
-
+# from the okareo-tools/ directory (already a git repo on branch main)
 gh repo create okareo-ai/okareo-tools --public --source=. --push
 ```
 
@@ -168,10 +183,10 @@ git add skill-ids.json && git commit -m "release: vX.Y.Z" || true
 git push origin main --tags
 ```
 
-Pushing the tag also triggers `release.yml`, which rebuilds the packages,
-publishes them to the Claude API, and creates a GitHub Release with the
-`.skill` files attached. `release.sh` and the CI workflow do the same job —
-run the script locally for a hands-on release, or just push a tag.
+Pushing the tag also triggers `release.yml`, which validates and rebuilds
+the packages, publishes them to the Claude API, and creates a GitHub Release
+with the `.skill` files attached. `release.sh` and the CI workflow do the
+same job — run the script locally for a hands-on release, or just push a tag.
 
 ## Versioning
 
@@ -184,12 +199,3 @@ run the script locally for a hands-on release, or just push a tag.
 - `skill-ids.json` maps each skill name to its Claude API skill id. The first
   release of a skill creates the skill and records its id here; later
   releases add versions to that id. Commit it whenever it changes.
-
-## Before your first release: align the MCP tool names
-
-Each `SKILL.md` references Okareo MCP tools by name (`okareo_run_evaluation`,
-`okareo_run_simulation`, `okareo_create_monitor`, `okareo_query_datapoints`,
-and so on). These are illustrative placeholders. Replace them with the real
-tool names your MCP server exposes, and keep the tool table in each
-`SKILL.md` in sync with `.mcp.json` — they are a contract between the skills
-and the server.
