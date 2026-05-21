@@ -40,14 +40,17 @@ a needed tool is unavailable, say so and stop.
   server actually exposes. Rename on both sides in the same release.
 -->
 
-| Step                | MCP tool                  | Purpose                                   |
-| ------------------- | ------------------------- | ----------------------------------------- |
-| Pull production data| `okareo_query_datapoints` | Retrieve logged production traces         |
-| Find existing sets  | `okareo_list_scenarios`   | Check for a scenario set to extend        |
-| Create / extend set | `okareo_create_scenario`  | Persist the new scenario rows             |
+| Step                 | MCP tool                       | Purpose                                    |
+| -------------------- | ------------------------------ | ------------------------------------------ |
+| Pull production data | `query_analytics`              | Retrieve logged production traffic         |
+| Read a transcript    | `get_conversation_transcript`  | Inspect an individual logged conversation  |
+| Find existing sets   | `list_scenarios`               | Check for a scenario set to extend         |
+| Create a set         | `save_scenario`                | Persist new scenario rows as a set         |
+| Extend a set         | `create_scenario_version`      | Append rows as a new version of a set      |
 
-If the raw material is a file or pasted text the user provides, you do not
-need `okareo_query_datapoints` — work from what they gave you.
+Failing rows from a prior evaluation come from `get_test_run_results`. If the
+raw material is a file or pasted text the user provides, you do not need
+`query_analytics` — work from what they gave you.
 
 ## The build loop
 
@@ -58,8 +61,9 @@ selection before mapping, and mapping before persisting anything.
 
 Identify the source and pull it in:
 
-- **Okareo monitoring** — use `okareo_query_datapoints`, filtered to the
-  time window, model, or error condition the user names.
+- **Okareo monitoring** — use `query_analytics`, filtered to the
+  time window, model, or error condition the user names, and
+  `get_conversation_transcript` to read individual conversations.
 - **External logs, error tracker, or tickets** — work from the file or text
   the user provides.
 - **A prior evaluation** — the failing rows are already near-scenario shape;
@@ -116,13 +120,13 @@ from chat, RAG, and agent trace shapes specifically.
 
 ### 5. Create or extend the scenario set
 
-Call `okareo_list_scenarios` first. Prefer **extending one coherent set**
+Call `list_scenarios` first. Prefer **extending one coherent set**
 for a given system over scattering many near-duplicate sets — evaluations
 are only comparable when they run against a stable set.
 
-Persist the rows with `okareo_create_scenario` (new set) or by appending to
-an existing one. Keep the returned scenario ID — the evaluation step needs
-it.
+Persist a new set with `save_scenario`, or append to an existing one with
+`create_scenario_version`. Keep the returned scenario ID — the evaluation
+step needs it.
 
 ### 6. Hand off to evaluation
 

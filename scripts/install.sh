@@ -10,8 +10,8 @@
 #   ./scripts/install.sh          Show this help
 #
 # The Claude API path needs:  ant CLI + ANTHROPIC_API_KEY
-# Set OKAREO_API_KEY in your environment either way — the skills drive the
-# Okareo MCP server, which needs it.
+# The hosted Okareo MCP server signs in via the browser on first use;
+# OKAREO_API_KEY is only needed for headless/CI (Claude API) usage.
 
 set -euo pipefail
 
@@ -27,8 +27,8 @@ Install the Okareo skills into Claude.
   ./scripts/install.sh api      Upload skills to your Claude API workspace
   ./scripts/install.sh claude   Instructions for claude.ai
 
-Set OKAREO_API_KEY in your environment so the Okareo MCP server can
-authenticate once the skills are installed.
+The hosted Okareo MCP server authenticates via a browser sign-in on first
+use. OKAREO_API_KEY is only needed for the headless Claude API path below.
 EOF
 }
 
@@ -42,8 +42,8 @@ and install the okareo plugin — the MCP server and all skills together:
   /plugin marketplace add ${REPO_SLUG}
   /plugin install okareo@okareo
 
-Then set OKAREO_API_KEY in your shell environment before starting Claude
-Code, so the bundled MCP server can authenticate.
+The plugin connects to the hosted Okareo MCP server. The first Okareo tool
+call opens a browser for a one-time sign-in — no API key required.
 
 To update later:  /plugin marketplace update okareo
 EOF

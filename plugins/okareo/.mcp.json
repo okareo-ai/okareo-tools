@@ -1,11 +1,7 @@
 {
   "mcpServers": {
     "okareo": {
-      "command": "npx",
-      "args": ["-y", "@okareo/mcp-server@latest"],
-      "env": {
-        "OKAREO_API_KEY": "${OKAREO_API_KEY}"
-      }
+      "url": "https://tools.okareo.com/mcp"
     }
   }
 }

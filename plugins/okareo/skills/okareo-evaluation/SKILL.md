@@ -39,14 +39,18 @@ unavailable, say so and stop rather than guessing.
   same release.
 -->
 
-| Step              | MCP tool                  | Purpose                                    |
-| ----------------- | ------------------------- | ------------------------------------------ |
-| List existing     | `okareo_list_scenarios`   | Find scenario sets already in the project  |
-| Build a test set  | `okareo_create_scenario`  | Upload inputs + expected results           |
-| Register a target | `okareo_register_model`   | Point Okareo at the model/endpoint to test |
-| Run               | `okareo_run_evaluation`   | Execute checks against the target          |
-| Read results      | `okareo_get_evaluation`   | Pull scores, pass rates, and per-row detail|
-| Inspect a check   | `okareo_list_checks`      | See available checks and their definitions |
+| Step              | MCP tool                      | Purpose                                     |
+| ----------------- | ----------------------------- | ------------------------------------------- |
+| List existing     | `list_scenarios`              | Find scenario sets already in the project   |
+| Build a test set  | `save_scenario`               | Upload inputs + expected results            |
+| Register a target | `register_generation_model`   | Point Okareo at the model/endpoint to test  |
+| Run               | `run_test`                    | Execute checks against the target           |
+| Read results      | `get_test_run_results`        | Pull scores, pass rates, and per-row detail |
+| Inspect a check   | `list_checks`                 | See available checks and their definitions  |
+
+Discover available models with `list_available_llms`; inspect or author
+checks with `get_check`, `create_or_update_check`, `generate_check`, and
+`get_templates`; pull a single conversation with `get_conversation_transcript`.
 
 ## The evaluation loop
 
@@ -75,19 +79,19 @@ you genuinely cannot infer from the conversation or repo:
 A scenario set is the test data: input rows, each optionally paired with an
 expected result. Quality of the eval is capped by quality of this set.
 
-- Call `okareo_list_scenarios` first — reuse an existing set when one fits
+- Call `list_scenarios` first — reuse an existing set when one fits
   rather than creating a near-duplicate.
 - When building a new set, cover the **boring middle, the edges, and the
   adversarial cases**. A set that only contains easy inputs will report a
   high score that means nothing.
 - Aim for enough rows that a single flaky output cannot swing the headline
   number — a few dozen is a reasonable floor for most tasks.
-- Create it with `okareo_create_scenario` and keep the returned scenario ID.
+- Create it with `save_scenario` and keep the returned scenario ID.
 
 ### 3. Choose checks
 
 Checks are the assertions Okareo evaluates each row against. Call
-`okareo_list_checks` to see what is available, then select deliberately.
+`list_checks` to see what is available, then select deliberately.
 See [references/checks.md](references/checks.md) for how to pick checks per
 system type and how to write a custom check when the built-ins do not fit.
 
@@ -97,13 +101,13 @@ each correspond to a real failure the user cares about.
 
 ### 4. Register the target and run
 
-- Register what is under test with `okareo_register_model`.
+- Register what is under test with `register_generation_model`.
 - For a regression check, make sure a baseline evaluation exists first —
   either a prior run or a run of the previous version — so the comparison
   has something to stand on.
-- Start the run with `okareo_run_evaluation`. Runs can take time; if the
+- Start the run with `run_test`. Runs can take time; if the
   tool reports the run is still in progress, wait and poll
-  `okareo_get_evaluation` rather than assuming failure.
+  `get_test_run_results` rather than assuming failure.
 
 ### 5. Interpret, do not just report
 
@@ -145,8 +149,8 @@ Result: <pass rate / score> — <clears the bar? regression? y/n>
 
 ## Guardrails
 
-- Never invent scores, pass rates, or row counts. Every number comes from an
-  `okareo_get_evaluation` result.
+- Never invent scores, pass rates, or row counts. Every number comes from a
+  `get_test_run_results` result.
 - If the scenario set is too small or too easy to support a conclusion, say
   so plainly instead of reporting a misleadingly clean result.
 - If a tool errors or a run does not complete, report exactly what happened

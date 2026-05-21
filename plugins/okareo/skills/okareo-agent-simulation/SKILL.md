@@ -41,12 +41,19 @@ transcripts — if a needed tool is unavailable, say so and stop.
   Rename on both sides in the same release.
 -->
 
-| Step                 | MCP tool                   | Purpose                                 |
-| -------------------- | -------------------------- | --------------------------------------- |
-| Register the agent   | `okareo_register_model`    | Point Okareo at the agent under test    |
-| Define the simulation| `okareo_create_simulation` | Set personas, goals, stopping conditions|
-| Run                  | `okareo_run_simulation`    | Execute simulated multi-turn runs       |
-| Read transcripts     | `okareo_get_simulation`    | Pull transcripts, outcomes, check results|
+| Step                  | MCP tool                       | Purpose                                        |
+| --------------------- | ------------------------------ | ---------------------------------------------- |
+| Register the agent    | `create_or_update_target`      | Point Okareo at the agent under test           |
+| Design the persona    | `create_or_update_driver`      | Define the simulated user — persona and goal   |
+| Define the test cases | `save_scenario`                | Scenario rows — per-conversation goals/seeds   |
+| Run                   | `run_simulation`               | Execute simulated multi-turn runs              |
+| Read outcomes         | `get_test_run_results`         | Pull success rates and check results           |
+| Read transcripts      | `get_conversation_transcript`  | Inspect an individual conversation             |
+
+Okareo has no single "create simulation" tool — a simulation is a *target*
+(the agent), a *driver* (the simulated user persona), and a *scenario*
+(per-conversation goals) run together. Discover existing pieces with
+`list_targets`, `list_drivers`, `list_driver_voices`, and `list_simulations`.
 
 ## The simulation loop
 
@@ -85,11 +92,12 @@ a stuck agent produces an endless transcript. Always set one.
 
 ### 4. Register the agent and run
 
-- Register the agent with `okareo_register_model`.
-- Create the simulation with `okareo_create_simulation` (personas, goals,
-  stopping conditions, the checks that define failure).
-- Start it with `okareo_run_simulation`. Simulations run many conversations
-  and take time; poll `okareo_get_simulation` rather than assuming failure.
+- Register the agent under test with `create_or_update_target`.
+- Define the simulated user — persona, goal, and behavior — with
+  `create_or_update_driver`, and the per-conversation goals/seeds with
+  `save_scenario`. The checks that define failure are attached at run time.
+- Start it with `run_simulation`. Simulations run many conversations
+  and take time; poll `get_test_run_results` rather than assuming failure.
 
 ### 5. Analyze transcripts, do not just count
 
@@ -128,7 +136,7 @@ Lock failing transcripts into a scenario set via okareo-scenario-from-traces.
 ## Guardrails
 
 - Never fabricate simulation transcripts or outcomes — every result comes
-  from an `okareo_get_simulation` call.
+  from a `get_test_run_results` or `get_conversation_transcript` call.
 - Always set a max-turn cap so a stuck agent cannot produce runaway runs.
 - Distinguish agent failures from unrealistic persona behavior before
   reporting a failure rate.

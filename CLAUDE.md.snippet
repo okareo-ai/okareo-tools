@@ -18,7 +18,9 @@ One-time setup:
 /plugin install okareo@okareo
 ```
 
-Set `OKAREO_API_KEY` in your environment before starting Claude Code.
+The plugin connects to the hosted Okareo MCP server; the first Okareo tool
+call opens a browser for a one-time sign-in. No API key needs to be set for
+the normal install — `OKAREO_API_KEY` is only required for headless/CI use.
 
 The plugin provides four skills — `okareo-agent-simulation`,
 `okareo-evaluation`, `okareo-monitoring`, and `okareo-scenario-from-traces`.

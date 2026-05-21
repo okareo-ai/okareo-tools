@@ -17,14 +17,15 @@ description: >-
 This skill puts continuous checks on live traffic so quality regressions are
 caught in production rather than discovered by users.
 
-It is the production counterpart to `okareo-agent-simulation`. When a
-monitor flags a real problem, hand off to `okareo-scenario-from-traces` to
-turn the flagged datapoints into a regression test.
+It is the production counterpart to `okareo-agent-simulation`. When
+monitoring flags a real problem, hand off to `okareo-scenario-from-traces`
+to turn the flagged conversations into a regression test.
 
 ## When this skill applies
 
-Use it when the subject is *live* traffic — configuring monitors, reading
-monitoring results, investigating drift, or tuning alerts. If the user wants
+Use it when the subject is *live* traffic — putting checks on a production
+stream, reading the resulting metrics, investigating drift, or tuning the
+thresholds that decide what counts as a regression. If the user wants
 a one-time judgement on a fixed test set, that is evaluation — use
 `okareo-evaluation`.
 
@@ -39,11 +40,22 @@ metrics — if a needed tool is unavailable, say so and stop.
   Rename on both sides in the same release.
 -->
 
-| Step               | MCP tool                    | Purpose                                |
-| ------------------ | --------------------------- | -------------------------------------- |
-| Inspect live data  | `okareo_list_datapoints`    | Sample logged production traffic       |
-| Configure a monitor| `okareo_create_monitor`     | Attach checks + thresholds to a stream |
-| Read results       | `okareo_get_monitor_results`| Pull metrics, trends, and triggered alerts|
+| Step                 | MCP tool                       | Purpose                                          |
+| -------------------- | ------------------------------ | ------------------------------------------------ |
+| Ingest live traffic  | `ingest_conversations`         | Bring production conversations into Okareo       |
+| Define the signals   | `create_or_update_check`       | The quality checks evaluated on that traffic     |
+| Query metrics        | `query_analytics`              | Read metric values and trends over the traffic   |
+| Build a watch view   | `save_dashboard`               | A persistent dashboard of the signals watched    |
+| Read a conversation  | `get_conversation_transcript`  | Inspect an individual flagged conversation       |
+
+Okareo has no single "monitor" object. Monitoring is **checks evaluated on
+ingested production traffic, surfaced through a dashboard and read with
+analytics queries**. Discover existing pieces with `list_checks`,
+`generate_check`, `get_check`, `list_dashboards`, and `get_dashboard`. For
+voice traffic, wire the stream in with `connect_voice_integration` /
+`get_voice_webhook_url`. Continuous paging is configured in the Okareo
+product UI — through these tools, "checking for a regression" means
+re-running `query_analytics` and applying the threshold judgement below.
 
 ## The monitoring loop
 
@@ -65,17 +77,20 @@ Establish three things:
 
 ### 2. Establish a baseline
 
-A monitor needs a sense of "normal" before it can flag "abnormal". Sample
-recent traffic with `okareo_list_datapoints` and establish baseline values
-for each signal. Alerting without a baseline produces either constant false
-alarms or silence.
+Monitoring needs a sense of "normal" before it can flag "abnormal". With
+recent traffic already ingested via `ingest_conversations`, query it with
+`query_analytics` and establish baseline values for each signal. Reading a
+metric without a baseline produces either constant false alarms or silence.
 
-### 3. Configure checks and thresholds
+### 3. Define checks and thresholds
 
-Create the monitor with `okareo_create_monitor`, attaching the checks for
-your chosen signals. See [references/alert-design.md](references/alert-design.md)
-for how to set thresholds that catch real regressions without drowning the
-team in false positives.
+Define the quality signals as checks with `create_or_update_check` (reuse
+existing ones found via `list_checks`), and assemble them into a dashboard
+with `save_dashboard` so the watched signals live in one place. See
+[references/alert-design.md](references/alert-design.md) for how to set
+thresholds that catch real regressions without drowning the team in false
+positives — the thresholds are judgement you apply when reading
+`query_analytics` results, not a field on a tool call.
 
 ### 4. Interpret results, do not just watch the number
 
@@ -85,8 +100,9 @@ team in false positives.
   because the model got worse, or because the kind of requests changed.
 - Look at **trend, not just the latest point** — a slow drift over a week is
   as important as a sudden drop, and easier to miss.
-- For a triggered alert, pull the **datapoints behind it** and characterize
-  what is actually failing.
+- When a signal crosses its threshold, pull the **conversations behind it**
+  with `get_conversation_transcript` and characterize what is actually
+  failing.
 
 ### 5. Triage and hand off
 
@@ -119,7 +135,7 @@ Status: <all normal / N signals flagged>
 ## Guardrails
 
 - Never fabricate monitoring metrics or alert history — every figure comes
-  from an `okareo_get_monitor_results` call.
+  from a `query_analytics` (or `get_dashboard`) call.
 - Always interpret a moved metric against a baseline; a number with no
   baseline is not evidence of anything.
 - Before calling a change a regression, rule out a traffic-mix shift — the
