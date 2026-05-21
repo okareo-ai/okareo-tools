@@ -6,8 +6,16 @@
     "name": "Okareo",
     "url": "https://okareo.com"
   },
-  "homepage": "https://tools.okareo.com",
+  "homepage": "https://okareo.com",
   "repository": "https://github.com/okareo-ai/okareo-tools",
   "license": "MIT",
-  "keywords": ["okareo", "evaluation", "llm-testing", "agent-testing", "mcp"]
+  "keywords": [
+    "okareo",
+    "voice-testing",
+    "synthetic-users",
+    "voice-agent-testing",
+    "agent-evaluation",
+    "agent-testing",
+    "mcp"
+  ]
 }
