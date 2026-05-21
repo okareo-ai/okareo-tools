@@ -1,0 +1,8 @@
+# Build output — .skill packages are generated, not committed
+dist/*.skill
+dist/*.zip
+
+# Local tooling
+node_modules/
+__pycache__/
+.DS_Store

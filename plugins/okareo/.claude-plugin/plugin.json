@@ -1,0 +1,13 @@
+{
+  "name": "okareo",
+  "version": "0.3.0",
+  "description": "Okareo MCP server plus Skills for evaluating LLM apps and agents. Bundles the connector and the playbooks that drive it.",
+  "author": {
+    "name": "Okareo",
+    "url": "https://okareo.com"
+  },
+  "homepage": "https://tools.okareo.com",
+  "repository": "https://github.com/okareo-ai/okareo-tools",
+  "license": "MIT",
+  "keywords": ["okareo", "evaluation", "llm-testing", "agent-testing", "mcp"]
+}

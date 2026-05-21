@@ -1,0 +1,26 @@
+<!--
+  Drop this block into the CLAUDE.md of any repo that uses Okareo. Claude
+  reads CLAUDE.md at the start of every session, so it will know which
+  plugin to ask for if the skills are missing. This is a soft contract —
+  Claude cannot auto-install the plugin, but it will tell the person exactly
+  what to run.
+-->
+
+## Okareo tooling
+
+This project uses Okareo to simulate, evaluate, and monitor LLM and agent
+behavior. The Okareo MCP server and skills ship as one Claude Code plugin.
+
+One-time setup:
+
+```
+/plugin marketplace add okareo-ai/okareo-tools
+/plugin install okareo@okareo
+```
+
+Set `OKAREO_API_KEY` in your environment before starting Claude Code.
+
+The plugin provides four skills — `okareo-agent-simulation`,
+`okareo-evaluation`, `okareo-monitoring`, and `okareo-scenario-from-traces`.
+If an Okareo task runs and the relevant skill is not available, tell the
+user to run the two commands above, then continue.
