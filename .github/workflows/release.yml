@@ -27,6 +27,9 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Validate skills
+        run: python3 scripts/validate_skills.py
+
       - name: Build the .skill packages
         run: ./scripts/build.sh
 

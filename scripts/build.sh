@@ -23,6 +23,11 @@ DIST="$ROOT/dist"
 
 VERSION="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["version"])' "$PLUGIN_JSON")"
 
+# Refuse to package a skill that fails validation (frontmatter, references,
+# and — the contract that matters — only real Okareo MCP tool names).
+echo "Validating skills"
+python3 "$ROOT/scripts/validate_skills.py"
+
 mkdir -p "$DIST"
 rm -f "$DIST"/*.skill
 
