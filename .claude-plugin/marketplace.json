@@ -5,8 +5,7 @@
     "url": "https://okareo.com"
   },
   "metadata": {
-    "description": "Official Okareo tools for Claude — MCP server and companion Skills for evaluating LLM apps and agents.",
-    "homepage": "https://tools.okareo.com"
+    "description": "Official Okareo tools for Claude — MCP server and companion Skills for evaluating LLM apps and agents."
   },
   "plugins": [
     {
@@ -14,8 +13,15 @@
       "source": "./plugins/tools",
       "description": "Okareo MCP server plus Skills that teach Claude how to design, run, and analyze evaluations of LLM and agent behavior.",
       "version": "0.3.0",
-      "category": ["testing", "evaluation", "ai"],
-      "keywords": ["okareo", "evaluation", "evals", "llm-testing", "agent-testing", "voice-testing"]
+      "category": "agent-assurance",
+      "keywords": [
+        "okareo",
+        "evaluation",
+        "evals",
+        "llm-testing",
+        "agent-testing",
+        "voice-testing"
+      ]
     }
   ]
 }
