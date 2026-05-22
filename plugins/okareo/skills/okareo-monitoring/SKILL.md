@@ -26,8 +26,8 @@ to turn the flagged conversations into a regression test.
 Use it when the subject is *live* traffic — putting checks on a production
 stream, reading the resulting metrics, investigating drift, or tuning the
 thresholds that decide what counts as a regression. If the user wants
-a one-time judgement on a fixed test set, that is evaluation — use
-`okareo-evaluation`.
+a one-time judgement on a fixed test set, that is evaluation, not
+monitoring — run checks over that set directly instead.
 
 ## How the pieces fit
 
@@ -110,9 +110,9 @@ When a monitor flags a genuine regression:
 
 - Characterize the failure from the flagged datapoints.
 - Hand off to `okareo-scenario-from-traces` to turn those datapoints into a
-  scenario set, then to `okareo-evaluation` to confirm a fix and guard
-  against recurrence.
-- Monitoring catches the regression; the evaluation skills prevent it from
+  scenario set, then re-run that set to confirm a fix and guard against
+  recurrence.
+- Monitoring catches the regression; a durable scenario set prevents it from
   coming back silently.
 
 ## Reporting format

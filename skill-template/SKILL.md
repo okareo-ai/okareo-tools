@@ -14,8 +14,8 @@ description: >-
 — e.g. "it drives the Okareo MCP server rather than eyeballing outputs".>
 
 <Optional: how this skill relates to the others in the lifecycle —
-simulation → monitoring → scenario-from-traces → evaluation — and which
-skill to hand off to.>
+simulation → monitoring → scenario-from-traces — and which skill to hand
+off to.>
 
 ## When this skill applies
 

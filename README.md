@@ -18,16 +18,17 @@ Four skills, one MCP server, bundled as a single installable plugin:
 
 | Skill                        | What it does                                            |
 | ---------------------------- | ------------------------------------------------------- |
+| `okareo-voice-quickstart`    | Onboard a voice agent and run a first voice simulation  |
 | `okareo-agent-simulation`    | Stress-test an agent with simulated multi-turn users    |
-| `okareo-evaluation`          | Design, run, and analyze evaluations                    |
 | `okareo-monitoring`          | Monitor live traffic; alert on regressions and drift    |
 | `okareo-scenario-from-traces`| Turn production traces and issues into a test set       |
 
-The skills compose into one lifecycle: **simulation** finds failures before
-release, **monitoring** catches them in production, **scenario-from-traces**
-converts either kind of failure into a durable test set, and **evaluation**
-runs that set on every change. More skills are planned — see
-[ROADMAP.md](ROADMAP.md).
+`okareo-voice-quickstart` is the on-ramp — it onboards a voice agent end to
+end and runs a first simulation against it. The other three compose into a
+lifecycle: **simulation** finds failures before release, **monitoring**
+catches them in production, and **scenario-from-traces** converts either kind
+of failure into a durable test set you can re-run on every change. More
+skills are planned — see [ROADMAP.md](ROADMAP.md).
 
 ## Repository structure
 
@@ -50,9 +51,9 @@ okareo-tools/
 │           ├── okareo-agent-simulation/
 │           │   ├── SKILL.md          Instructions + YAML frontmatter.
 │           │   └── references/       Extra docs, loaded only when needed.
-│           ├── okareo-evaluation/
 │           ├── okareo-monitoring/
-│           └── okareo-scenario-from-traces/
+│           ├── okareo-scenario-from-traces/
+│           └── okareo-voice-quickstart/
 │
 ├── skill-template/                   Copy-to-author scaffold for a new
 │                                     skill. Lives outside skills/ so it is

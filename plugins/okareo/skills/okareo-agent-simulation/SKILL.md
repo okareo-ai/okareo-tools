@@ -27,8 +27,9 @@ When a simulation surfaces failures worth locking in as tests, hand off to
 
 Use it when the goal is to *generate* conversations against an agent —
 probing, red-teaming, or coverage testing before a release. If the user
-already has real transcripts and wants to score them, that is evaluation —
-use `okareo-evaluation` instead.
+already has real transcripts and wants to score them as-is, that is
+evaluation — capture them as a scenario set with `okareo-scenario-from-traces`
+and run checks over that set, rather than simulating new conversations.
 
 ## How the pieces fit
 
@@ -116,7 +117,7 @@ a stuck agent produces an endless transcript. Always set one.
 
 For failures worth preventing permanently, hand off to
 `okareo-scenario-from-traces` — it turns the failing transcripts into a
-durable scenario set, which `okareo-evaluation` can then run on every change.
+durable scenario set you can re-run on every change.
 
 ## Reporting format
 

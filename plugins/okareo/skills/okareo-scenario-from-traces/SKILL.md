@@ -17,17 +17,18 @@ description: >-
 This skill captures what actually happened in production and turns it into a
 durable test set, so a bug that bit users once can never come back unnoticed.
 
-It is the front half of an evaluation workflow. This skill *builds* the
-scenario set; the `okareo-evaluation` skill *runs* it. When the set is ready,
-hand off to that skill rather than scoring outputs here.
+It is the front half of an evaluation workflow: this skill *builds* the
+scenario set. Running that set — registering a target, choosing checks, and
+scoring — is the separate evaluation step that follows. This skill stops once
+the set exists rather than scoring outputs here.
 
 ## When this skill applies
 
 Use it when the raw material is real-world: production traces, application
 logs, error-tracker issues, support tickets, an incident write-up, or the
 failing rows from a previous evaluation. If the user wants to invent test
-cases from scratch instead, that is ordinary scenario authoring — go
-straight to `okareo-evaluation`.
+cases from scratch instead, that is ordinary scenario authoring — create the
+set with `save_scenario` directly.
 
 ## How the pieces fit
 
@@ -132,8 +133,8 @@ step needs it.
 
 The set now exists but has not been run. Tell the user what was built — how
 many rows, which clusters, which failure modes — and hand off to the
-`okareo-evaluation` skill to register a target, choose checks, and run it.
-The checks should target the exact failure modes this skill surfaced.
+evaluation step: register a target, choose checks that target the exact
+failure modes this skill surfaced, and run the set.
 
 ## Reporting format
 
@@ -149,7 +150,7 @@ Rows: <count>  across <N> clusters
 - ...
 
 ### Next step
-Run with the okareo-evaluation skill; suggested checks: <...>
+Run as an evaluation; suggested checks: <...>
 ```
 
 ## Guardrails

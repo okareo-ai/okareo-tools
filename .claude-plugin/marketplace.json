@@ -15,7 +15,7 @@
       "description": "Okareo MCP server plus Skills that teach Claude how to design, run, and analyze evaluations of LLM and agent behavior.",
       "version": "0.3.0",
       "category": ["testing", "evaluation", "ai"],
-      "keywords": ["okareo", "evaluation", "evals", "llm-testing", "agent-testing"]
+      "keywords": ["okareo", "evaluation", "evals", "llm-testing", "agent-testing", "voice-testing"]
     }
   ]
 }

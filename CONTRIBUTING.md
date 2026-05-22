@@ -43,7 +43,7 @@ description: >-             # third person, trigger-rich, ≤ 1024 chars
 The `description` is what Claude reads to decide whether to invoke the
 skill, so it carries real weight:
 
-- Write in the **third person** ("Design, run, and analyze evaluations…"),
+- Write in the **third person** ("Stress-test an agent before production…"),
   not "You will…".
 - Pack it with **triggers** — the verbs and phrasings a user would actually
   use. Include concrete example requests in quotes.
@@ -94,14 +94,15 @@ The skills are designed as one lifecycle, and a skill should hand off to the
 next rather than do its neighbour's job:
 
 ```
-agent-simulation ──▶ scenario-from-traces ──▶ evaluation
+agent-simulation ──▶ scenario-from-traces ──▶ run on every change
         ▲                     ▲
    monitoring ────────────────┘
 ```
 
 Simulation finds failures before release; monitoring catches them in
 production; scenario-from-traces turns either kind of failure into a durable
-test set; evaluation runs that set on every change. When adding a skill,
+test set that is then re-run on every change. (`okareo-voice-quickstart`
+sits outside this loop — it is the onboarding on-ramp.) When adding a skill,
 decide where it sits in this flow and which skills it hands off to.
 
 When you find yourself adding a fifth concern to an existing skill, that is
