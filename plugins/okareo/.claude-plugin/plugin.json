@@ -1,5 +1,5 @@
 {
-  "name": "tools",
+  "name": "okareo",
   "version": "0.3.0",
   "description": "Okareo MCP server plus Skills for evaluating LLM apps and agents. Bundles the connector and the playbooks that drive it.",
   "author": {

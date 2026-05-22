@@ -1,5 +1,5 @@
 ---
-name: okareo-scenario-from-traces
+name: scenario-from-traces
 description: >-
   Turn production traces, logs, incidents, and issue reports into a reusable
   Okareo scenario set for evaluation. Use this skill whenever the user wants
@@ -19,16 +19,16 @@ durable test set, so a bug that bit users once can never come back unnoticed.
 
 It is the front half of an evaluation workflow: this skill *builds* the
 scenario set. Running that set — registering a target, choosing checks, and
-scoring — is the separate evaluation step that follows. This skill stops once
-the set exists rather than scoring outputs here.
+scoring — is the separate `evaluation` skill that follows. This skill stops
+once the set exists rather than scoring outputs here.
 
 ## When this skill applies
 
 Use it when the raw material is real-world: production traces, application
-logs, error-tracker issues, support tickets, an incident write-up, or the
-failing rows from a previous evaluation. If the user wants to invent test
-cases from scratch instead, that is ordinary scenario authoring — create the
-set with `save_scenario` directly.
+logs, error-tracker issues, support tickets, an incident write-up, the
+failing rows from a previous evaluation, or a logged voice call. If the user
+wants to invent test cases from scratch instead — composing coverage from a
+description rather than from observed traffic — that is `scenario-design`.
 
 ## How the pieces fit
 
@@ -117,7 +117,7 @@ Getting the expected result right is the whole game:
   evaluation results stay diagnosable.
 
 `references/trace-mapping.md` covers how to extract the input/expected pair
-from chat, RAG, and agent trace shapes specifically.
+from chat, RAG, agent, and voice-call trace shapes specifically.
 
 ### 5. Create or extend the scenario set
 
@@ -133,7 +133,7 @@ step needs it.
 
 The set now exists but has not been run. Tell the user what was built — how
 many rows, which clusters, which failure modes — and hand off to the
-evaluation step: register a target, choose checks that target the exact
+`evaluation` skill: register a target, choose checks that target the exact
 failure modes this skill surfaced, and run the set.
 
 ## Reporting format

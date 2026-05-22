@@ -25,7 +25,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PLUGIN_JSON="$ROOT/plugins/tools/.claude-plugin/plugin.json"
+PLUGIN_JSON="$ROOT/plugins/okareo/.claude-plugin/plugin.json"
 DIST="$ROOT/dist"
 SKILL_IDS_FILE="$ROOT/skill-ids.json"
 
@@ -102,7 +102,7 @@ fi
 
 # --- 3. Claude Code: tag the release ---------------------------------------
 # The repo itself is the marketplace. Consumers run
-# `/plugin marketplace update okareo` to pull the new version.
+# `/plugin marketplace update okareo-tools` to pull the new version.
 echo "==> Publishing to Claude Code (plugin marketplace)"
 TAG="v$VERSION"
 if git -C "$ROOT" rev-parse "$TAG" >/dev/null 2>&1; then

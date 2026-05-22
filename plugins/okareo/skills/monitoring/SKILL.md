@@ -1,15 +1,15 @@
 ---
-name: okareo-monitoring
+name: monitoring
 description: >-
-  Set up and interpret production monitoring of an LLM app or agent with
-  Okareo — checks running on live traffic, quality baselines, and alerts on
-  regressions or drift. Use this skill whenever the user wants to monitor
-  production, watch live quality, catch regressions in the wild, set up
-  alerts, or investigate a drift in behavior — including requests like
-  "monitor my agent in production", "alert me when quality drops", "why did
-  responses get worse this week", or "track our model in the wild". Use it
-  even when the user does not say "Okareo" but is clearly trying to observe
-  a live LLM system.
+  Set up and interpret production monitoring of an LLM app, agent, or voice
+  agent with Okareo — checks running on live traffic, quality baselines, and
+  alerts on regressions or drift. Use this skill whenever the user wants to
+  monitor production, watch live quality, catch regressions in the wild, set
+  up alerts, or investigate a drift in behavior — including requests like
+  "monitor my agent in production", "watch my voice agent's live calls",
+  "alert me when quality drops", "why did responses get worse this week", or
+  "track our model in the wild". Use it even when the user does not say
+  "Okareo" but is clearly trying to observe a live LLM or voice system.
 ---
 
 # Okareo: Monitoring
@@ -17,8 +17,8 @@ description: >-
 This skill puts continuous checks on live traffic so quality regressions are
 caught in production rather than discovered by users.
 
-It is the production counterpart to `okareo-agent-simulation`. When
-monitoring flags a real problem, hand off to `okareo-scenario-from-traces`
+It is the production counterpart to `agent-simulation`. When
+monitoring flags a real problem, hand off to `scenario-from-traces`
 to turn the flagged conversations into a regression test.
 
 ## When this skill applies
@@ -51,11 +51,13 @@ metrics — if a needed tool is unavailable, say so and stop.
 Okareo has no single "monitor" object. Monitoring is **checks evaluated on
 ingested production traffic, surfaced through a dashboard and read with
 analytics queries**. Discover existing pieces with `list_checks`,
-`generate_check`, `get_check`, `list_dashboards`, and `get_dashboard`. For
-voice traffic, wire the stream in with `connect_voice_integration` /
-`get_voice_webhook_url`. Continuous paging is configured in the Okareo
-product UI — through these tools, "checking for a regression" means
-re-running `query_analytics` and applying the threshold judgement below.
+`generate_check`, `get_check`, `list_dashboards`, and `get_dashboard`.
+Continuous paging is configured in the Okareo product UI — through these
+tools, "checking for a regression" means re-running `query_analytics` and
+applying the threshold judgement below.
+
+For a **voice agent**, the live stream is wired in differently — see
+*Monitoring voice traffic* below. The loop after ingestion is the same.
 
 ## The monitoring loop
 
@@ -104,16 +106,43 @@ positives — the thresholds are judgement you apply when reading
   with `get_conversation_transcript` and characterize what is actually
   failing.
 
+When a metric has moved and you need to say *why*, the distinction that
+matters is behavioral drift versus data drift — the model changed, or its
+inputs did. See [references/drift.md](references/drift.md) for how to tell
+them apart and why the response differs.
+
 ### 5. Triage and hand off
 
 When a monitor flags a genuine regression:
 
 - Characterize the failure from the flagged datapoints.
-- Hand off to `okareo-scenario-from-traces` to turn those datapoints into a
+- Hand off to `scenario-from-traces` to turn those datapoints into a
   scenario set, then re-run that set to confirm a fix and guard against
   recurrence.
 - Monitoring catches the regression; a durable scenario set prevents it from
   coming back silently.
+
+## Monitoring voice traffic
+
+A voice agent is monitored with the same loop — baseline, checks,
+thresholds, interpret — but its live stream reaches Okareo through a
+**voice integration** rather than `ingest_conversations`.
+
+1. Connect the provider with `connect_voice_integration`. The provider is
+   one of `retell`, `twilio`, `vapi`, or `elevenlabs` — this set is
+   distinct from the voice *simulation* edge types. The integration returns
+   an id and a public id.
+2. Get the inbound endpoint with `get_voice_webhook_url` and have the user
+   paste it into the provider's console. From then on the provider posts
+   completed calls to Okareo.
+3. Manage integrations with `list_voice_integrations`, `get_voice_integration`,
+   `update_voice_integration`, `rotate_voice_integration_secret`, and
+   `delete_voice_integration`. Treat integration secrets as secrets — never
+   echo them into a report.
+
+Once calls are flowing, the loop is unchanged: define checks, baseline,
+threshold, interpret. What differs is *which signals matter on a spoken
+session* — see [references/voice-signals.md](references/voice-signals.md).
 
 ## Reporting format
 

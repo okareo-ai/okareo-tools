@@ -1,5 +1,5 @@
 {
-  "name": "okareo",
+  "name": "okareo-tools",
   "owner": {
     "name": "Okareo",
     "url": "https://okareo.com"
@@ -9,8 +9,8 @@
   },
   "plugins": [
     {
-      "name": "tools",
-      "source": "./plugins/tools",
+      "name": "okareo",
+      "source": "./plugins/okareo",
       "description": "Okareo MCP server plus Skills that teach Claude how to design, run, and analyze evaluations of LLM and agent behavior.",
       "version": "0.3.0",
       "category": "agent-assurance",

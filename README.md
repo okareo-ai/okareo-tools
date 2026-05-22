@@ -14,21 +14,29 @@ installed together.
 
 ## What's in the box
 
-Four skills, one MCP server, bundled as a single installable plugin:
+Seven skills and four slash commands, one MCP server, bundled as a single
+installable plugin:
 
-| Skill                        | What it does                                            |
-| ---------------------------- | ------------------------------------------------------- |
-| `okareo-voice-quickstart`    | Onboard a voice agent and run a first voice simulation  |
-| `okareo-agent-simulation`    | Stress-test an agent with simulated multi-turn users    |
-| `okareo-monitoring`          | Monitor live traffic; alert on regressions and drift    |
-| `okareo-scenario-from-traces`| Turn production traces and issues into a test set       |
+| Skill                  | What it does                                             |
+| ---------------------- | -------------------------------------------------------- |
+| `quickstart`           | Onboard a new user; verify the connection; first run     |
+| `scenario-design`      | Compose a synthetic test scenario set from scratch        |
+| `scenario-from-traces` | Turn production traces and issues into a test set         |
+| `agent-simulation`     | Stress-test a text agent with simulated multi-turn users  |
+| `voice-simulation`     | Run simulated calls against a voice agent                 |
+| `evaluation`           | Score a model or prompt against a scenario set            |
+| `monitoring`           | Monitor live text or voice traffic; catch drift           |
 
-`okareo-voice-quickstart` is the on-ramp — it onboards a voice agent end to
-end and runs a first simulation against it. The other three compose into a
-lifecycle: **simulation** finds failures before release, **monitoring**
-catches them in production, and **scenario-from-traces** converts either kind
-of failure into a durable test set you can re-run on every change. More
-skills are planned — see [ROADMAP.md](ROADMAP.md).
+The commands — `/okareo:quickstart`, `/okareo:scenario`, `/okareo:simulate`,
+`/okareo:monitor` — are thin entry points that frame a task and route to the
+skill that does the work.
+
+`quickstart` is the on-ramp. The rest compose into a lifecycle: build a
+scenario set (`scenario-design` or `scenario-from-traces`), exercise an agent
+before release (`agent-simulation`, `voice-simulation`), score it
+(`evaluation`), and watch it in production (`monitoring`) — where any failure
+flows back into a scenario set that is re-run on every change. More skills
+and commands are planned — see [ROADMAP.md](ROADMAP.md).
 
 ## Repository structure
 
@@ -40,24 +48,31 @@ okareo-tools/
 │                                     the okareo plugin and where to find it.
 │
 ├── plugins/
-│   └── tools/                        ONE installable plugin = MCP + skills.
+│   └── okareo/                       ONE installable plugin = MCP + skills.
 │       ├── .claude-plugin/
 │       │   └── plugin.json           Plugin manifest. The release version
 │       │                             (semver) lives here.
 │       ├── .mcp.json                 Okareo MCP server config. Auto-loaded
 │       │                             by Claude Code when the plugin installs.
+│       ├── commands/                 Slash commands (/okareo:<name>). Thin
+│       │                             entry points that route to a skill.
 │       └── skills/                   One folder per skill. Each is a
 │           │                         self-contained Agent Skill.
-│           ├── okareo-agent-simulation/
+│           ├── agent-simulation/
 │           │   ├── SKILL.md          Instructions + YAML frontmatter.
 │           │   └── references/       Extra docs, loaded only when needed.
-│           ├── okareo-monitoring/
-│           ├── okareo-scenario-from-traces/
-│           └── okareo-voice-quickstart/
+│           ├── evaluation/
+│           ├── monitoring/
+│           ├── quickstart/
+│           ├── scenario-design/
+│           ├── scenario-from-traces/
+│           └── voice-simulation/
 │
 ├── skill-template/                   Copy-to-author scaffold for a new
 │                                     skill. Lives outside skills/ so it is
 │                                     never packaged.
+├── command-template.md               Copy-to-author scaffold for a new
+│                                     slash command.
 │
 ├── scripts/
 │   ├── build.sh                      Packages each skill into a .skill file.
@@ -85,7 +100,7 @@ Two structural rules to keep in mind:
   Everything else in a plugin (`skills/`, `.mcp.json`) sits in the plugin
   root, not in `.claude-plugin/`.
 - **One skill = one folder with a `SKILL.md` at its top level.** Adding a
-  skill is just adding a folder under `plugins/tools/skills/`; the build and
+  skill is just adding a folder under `plugins/okareo/skills/`; the build and
   release scripts pick it up automatically.
 
 ## What a `.skill` package is
@@ -102,17 +117,18 @@ install path. `scripts/install.sh` automates the scriptable ones.
 
 ### Claude Code (recommended)
 
-The plugin bundles the MCP server and all four skills as one unit:
+The plugin bundles the MCP server, all seven skills, and the commands as
+one unit:
 
 ```
 /plugin marketplace add okareo-ai/okareo-tools
-/plugin install tools@okareo
+/plugin install okareo@okareo-tools
 ```
 
 The plugin connects to the hosted Okareo MCP server
 (`https://tools.okareo.com/mcp`). The first Okareo tool call opens a browser
 for a one-time sign-in — no API key needs to be set. Update later with
-`/plugin marketplace update okareo`.
+`/plugin marketplace update okareo-tools`.
 
 ### Claude API
 
@@ -139,7 +155,7 @@ Skills, and add the Okareo MCP server under Settings → Connectors.
 To add or change a skill, see [CONTRIBUTING.md](CONTRIBUTING.md). In short:
 
 ```bash
-cp -r skill-template plugins/tools/skills/<skill-name>    # scaffold
+cp -r skill-template plugins/okareo/skills/<skill-name>   # scaffold
 # ...edit SKILL.md...
 python3 scripts/validate_skills.py                        # check the contract
 ./scripts/build.sh                                        # package to dist/
@@ -173,7 +189,7 @@ a release.
 
 ```bash
 # 1. Bump the version in BOTH manifests (keep them in sync):
-#      plugins/tools/.claude-plugin/plugin.json    -> "version"
+#      plugins/okareo/.claude-plugin/plugin.json   -> "version"
 #      .claude-plugin/marketplace.json             -> plugins[].version
 #
 # 2. Build + publish to all three surfaces:

@@ -15,14 +15,16 @@ One-time setup:
 
 ```
 /plugin marketplace add okareo-ai/okareo-tools
-/plugin install tools@okareo
+/plugin install okareo@okareo-tools
 ```
 
 The plugin connects to the hosted Okareo MCP server; the first Okareo tool
 call opens a browser for a one-time sign-in. No API key needs to be set for
 the normal install — `OKAREO_API_KEY` is only required for headless/CI use.
 
-The plugin provides four skills — `okareo-voice-quickstart`,
-`okareo-agent-simulation`, `okareo-monitoring`, and
-`okareo-scenario-from-traces`. If an Okareo task runs and the relevant skill
-is not available, tell the user to run the two commands above, then continue.
+The plugin provides skills for the full loop — `quickstart`,
+`scenario-design`, `scenario-from-traces`, `agent-simulation`,
+`voice-simulation`, `evaluation`, and `monitoring` — plus `/okareo:`
+commands that route to them. If an Okareo task runs and the relevant skill
+is not available, tell the user to run the two commands above, then
+continue.

@@ -1,5 +1,5 @@
 ---
-name: okareo-agent-simulation
+name: agent-simulation
 description: >-
   Stress-test an agent or chatbot before production by running simulated
   multi-turn conversations against it with Okareo. Use this skill whenever
@@ -18,17 +18,17 @@ This skill exercises an agent the way real users would — across many
 personas, many goals, many turns — so failures surface in simulation rather
 than in production.
 
-It is the pre-production counterpart to `okareo-monitoring`. Where
+It is the pre-production counterpart to `monitoring`. Where
 monitoring watches live traffic, simulation generates traffic on purpose.
 When a simulation surfaces failures worth locking in as tests, hand off to
-`okareo-scenario-from-traces`.
+`scenario-from-traces`.
 
 ## When this skill applies
 
 Use it when the goal is to *generate* conversations against an agent —
 probing, red-teaming, or coverage testing before a release. If the user
 already has real transcripts and wants to score them as-is, that is
-evaluation — capture them as a scenario set with `okareo-scenario-from-traces`
+evaluation — capture them as a scenario set with `scenario-from-traces`
 and run checks over that set, rather than simulating new conversations.
 
 ## How the pieces fit
@@ -91,16 +91,32 @@ A multi-turn simulation needs to know when a conversation ends — goal
 achieved, an explicit max-turn cap, or a failure state. Without a turn cap,
 a stuck agent produces an endless transcript. Always set one.
 
-### 4. Register the agent and run
+### 4. Register the agent as a target
 
-- Register the agent under test with `create_or_update_target`.
+Register the agent under test with `create_or_update_target`. How depends on
+what the agent is:
+
+- A **custom HTTP agent** — a `custom_endpoint` target, where you describe
+  how Okareo calls the agent's API (including streaming/SSE endpoints).
+- A **prompt under test** — a `generation` target, when the thing being
+  exercised is a prompt against a model rather than a deployed service.
+
+See [references/targets.md](references/targets.md) for how to configure each
+target type, including endpoint auth and streaming.
+
+### 5. Configure and run the simulation
+
 - Define the simulated user — persona, goal, and behavior — with
   `create_or_update_driver`, and the per-conversation goals/seeds with
   `save_scenario`. The checks that define failure are attached at run time.
-- Start it with `run_simulation`. Simulations run many conversations
-  and take time; poll `get_test_run_results` rather than assuming failure.
+- Decide who speaks first. **Inbound** — the agent greets first, as it would
+  on a channel a user walks up to. **Outbound** — the driver opens, as when
+  the agent is reaching out. Match this to how the agent runs in production;
+  the wrong choice makes the first turn unrealistic.
+- Start it with `run_simulation`. Simulations run many conversations and
+  take time; poll `get_test_run_results` rather than assuming failure.
 
-### 5. Analyze transcripts, do not just count
+### 6. Analyze transcripts, do not just count
 
 - Lead with the **headline**: across the persona set, what share of
   conversations reached the goal without a failure.
@@ -113,10 +129,10 @@ a stuck agent produces an endless transcript. Always set one.
 - Translate findings into concrete fixes: a prompt change, a guardrail, a
   tool fix, or "ready to ship".
 
-### 6. Hand off
+### 7. Hand off
 
 For failures worth preventing permanently, hand off to
-`okareo-scenario-from-traces` — it turns the failing transcripts into a
+`scenario-from-traces` — it turns the failing transcripts into a
 durable scenario set you can re-run on every change.
 
 ## Reporting format
@@ -131,7 +147,7 @@ Outcome: <success rate> — <ready to ship? y/n>
 - ...
 
 ### Next step
-Lock failing transcripts into a scenario set via okareo-scenario-from-traces.
+Lock failing transcripts into a scenario set via scenario-from-traces.
 ```
 
 ## Guardrails

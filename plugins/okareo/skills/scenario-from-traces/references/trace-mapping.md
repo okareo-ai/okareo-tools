@@ -66,6 +66,25 @@ A trace of a multi-step, tool-using run.
 - Capture intermediate steps only when a specific step is what failed;
   otherwise judge on the final state to keep the row robust.
 
+### Voice-call trace
+
+A transcribed phone or voice conversation between a caller and a voice
+agent. The trace is turn-by-turn text, plus possibly audio metadata.
+
+- **Input** — a JSON object describing the caller's situation and goal at
+  the start of the call, not the verbatim opening line. The simulation that
+  re-runs this row drives a *simulated caller* from this input, so capture
+  the caller's intent and context, not a script.
+- **Expected** — the outcome a successful call reaches: what the agent
+  should have accomplished by the time the call ends (the booking confirmed,
+  the issue resolved, the caller correctly routed). Describe the outcome,
+  not the agent's exact words.
+- Voice traces carry transcription noise — a misheard word is the
+  transcriber's error, not the agent's. Do not lock a transcription artifact
+  into a row's expected result.
+- A voice scenario row is re-run by `voice-simulation`, not a text
+  evaluation; note that in the hand-off.
+
 ## Deriving expected behavior from an issue report
 
 When a trace comes from a bug ticket or incident, the report usually states

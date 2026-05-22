@@ -1,19 +1,21 @@
 # Contributing — authoring Okareo skills
 
-This repo packages the Okareo MCP server and a set of **Agent Skills** as
-one Claude Code plugin. The MCP server gives Claude the *tools*; a skill
-gives Claude the *method* — when to reach for those tools and how to run a
-real workflow with them. This guide is for adding or changing a skill.
+This repo packages the Okareo MCP server, a set of **Agent Skills**, and a
+set of **slash commands** as one Claude Code plugin. The MCP server gives
+Claude the *tools*; a skill gives Claude the *method* — when to reach for
+those tools and how to run a real workflow with them; a command is a thin
+entry point that frames a task and routes to a skill. This guide is for
+adding or changing a skill or a command.
 
 ## The shape of a skill
 
-One skill = one folder under `plugins/tools/skills/<skill-name>/` with a
+One skill = one folder under `plugins/okareo/skills/<skill-name>/` with a
 `SKILL.md` at its top level and an optional `references/` directory. The
 build and release scripts pick up any such folder automatically — adding a
 skill is adding a folder.
 
 ```
-plugins/tools/skills/<skill-name>/
+plugins/okareo/skills/<skill-name>/
 ├── SKILL.md              # frontmatter + instructions
 └── references/           # detail loaded only when a step needs it
     └── <topic>.md
@@ -21,7 +23,7 @@ plugins/tools/skills/<skill-name>/
 
 ## Authoring a new skill
 
-1. Copy the scaffold: `cp -r skill-template plugins/tools/skills/<skill-name>`.
+1. Copy the scaffold: `cp -r skill-template plugins/okareo/skills/<skill-name>`.
 2. Fill in `SKILL.md` and replace the example reference file.
 3. Validate: `python3 scripts/validate_skills.py`.
 4. Build locally to confirm it packages: `./scripts/build.sh --build-only`
@@ -68,6 +70,22 @@ never come back.
 - Keep the `<!-- TOOL NAMES … -->` comment in each `SKILL.md` — it is a live
   reminder of the contract.
 
+## The two voice surfaces
+
+Voice work touches two *different* tool surfaces — do not conflate them:
+
+- **Voice simulation** — `create_or_update_target` with target type voice
+  and an *edge type* of `openai`, `deepgram`, or `twilio`. This is the agent
+  under test. There is no "custom" voice edge type; a custom HTTP agent is a
+  `custom_endpoint` target, which is text.
+- **Voice monitoring** — `connect_voice_integration` with a *provider* of
+  `retell`, `twilio`, `vapi`, or `elevenlabs`, paired with
+  `get_voice_webhook_url` and `ingest_conversations`. This wires a live voice
+  stream into Okareo.
+
+The simulation edge types and the monitoring providers are distinct sets.
+A skill that names the wrong one will mislead the user.
+
 ## Standard SKILL.md structure
 
 Every Okareo skill follows the same spine (see any existing skill):
@@ -88,22 +106,46 @@ needs it. The agent loads a reference file only when it reaches that step,
 which keeps `SKILL.md` short and focused. If a reference file is needed on
 every run, fold it back into `SKILL.md`.
 
+## Authoring a command
+
+A command lives at `plugins/okareo/commands/<name>.md` and is invoked as
+`/okareo:<name>` — the filename is the command name, and the `okareo`
+namespace comes from the plugin. Commands in that directory are
+auto-discovered; no `plugin.json` change is needed.
+
+1. Copy the scaffold: `cp command-template.md plugins/okareo/commands/<name>.md`.
+2. Fill in the frontmatter (`description`, optional `argument-hint`) and the
+   thin body.
+3. Validate: `python3 scripts/validate_skills.py` checks commands too.
+
+A command is **thin**: it frames the task, asks the one branching question
+it needs, and routes to the skill that does the real work. It never teaches
+the workflow itself. The user's argument is available as `$ARGUMENTS` (or
+`$1`, `$2`); accept one where it is natural (`/okareo:simulate voice`) and
+otherwise ask. Commands are not packaged into `.skill` files — they ship
+with the plugin through the marketplace.
+
 ## How skills compose
 
 The skills are designed as one lifecycle, and a skill should hand off to the
 next rather than do its neighbour's job:
 
 ```
-agent-simulation ──▶ scenario-from-traces ──▶ run on every change
-        ▲                     ▲
-   monitoring ────────────────┘
+quickstart ──▶ scenario-design ─┐
+                                ├─▶ agent-simulation / voice-simulation ─┐
+scenario-from-traces ───────────┘                                       │
+        ▲                                                               ▼
+   monitoring ◀────────────────────────────────────────────────── evaluation
+        └──▶ scenario-from-traces ──▶ run on every change
 ```
 
-Simulation finds failures before release; monitoring catches them in
-production; scenario-from-traces turns either kind of failure into a durable
-test set that is then re-run on every change. (`okareo-voice-quickstart`
-sits outside this loop — it is the onboarding on-ramp.) When adding a skill,
-decide where it sits in this flow and which skills it hands off to.
+`quickstart` is the on-ramp. Scenario sets come from `scenario-design`
+(synthetic) or `scenario-from-traces` (real traffic). Simulation finds
+failures before release; `evaluation` scores a set; monitoring catches
+failures in production; either kind of failure flows back through
+`scenario-from-traces` into a durable set re-run on every change. When
+adding a skill, decide where it sits in this flow and which skills it hands
+off to.
 
 When you find yourself adding a fifth concern to an existing skill, that is
 usually a sign it should be a new skill instead.
