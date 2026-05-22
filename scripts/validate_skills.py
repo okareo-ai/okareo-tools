@@ -4,7 +4,7 @@
 Run by scripts/build.sh (and CI) before producing any .skill file. A skill
 that fails here must not ship. Stdlib only — no third-party YAML parser.
 
-Checks, per directory under plugins/okareo/skills/:
+Checks, per directory under plugins/tools/skills/:
   1. SKILL.md exists and has a YAML frontmatter block.
   2. frontmatter `name` equals the directory name.
   3. `description` is present and within DESCRIPTION_MAX_CHARS.
@@ -23,7 +23,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-SKILLS_DIR = ROOT / "plugins" / "okareo" / "skills"
+SKILLS_DIR = ROOT / "plugins" / "tools" / "skills"
 
 # Anthropic skills cap the frontmatter `description`; stay well under it.
 DESCRIPTION_MAX_CHARS = 1024

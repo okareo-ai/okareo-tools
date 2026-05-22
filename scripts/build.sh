@@ -17,8 +17,8 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SKILLS_DIR="$ROOT/plugins/okareo/skills"
-PLUGIN_JSON="$ROOT/plugins/okareo/.claude-plugin/plugin.json"
+SKILLS_DIR="$ROOT/plugins/tools/skills"
+PLUGIN_JSON="$ROOT/plugins/tools/.claude-plugin/plugin.json"
 DIST="$ROOT/dist"
 
 VERSION="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["version"])' "$PLUGIN_JSON")"

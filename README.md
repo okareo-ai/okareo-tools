@@ -40,7 +40,7 @@ okareo-tools/
 │                                     the okareo plugin and where to find it.
 │
 ├── plugins/
-│   └── okareo/                       ONE installable plugin = MCP + skills.
+│   └── tools/                        ONE installable plugin = MCP + skills.
 │       ├── .claude-plugin/
 │       │   └── plugin.json           Plugin manifest. The release version
 │       │                             (semver) lives here.
@@ -85,7 +85,7 @@ Two structural rules to keep in mind:
   Everything else in a plugin (`skills/`, `.mcp.json`) sits in the plugin
   root, not in `.claude-plugin/`.
 - **One skill = one folder with a `SKILL.md` at its top level.** Adding a
-  skill is just adding a folder under `plugins/okareo/skills/`; the build and
+  skill is just adding a folder under `plugins/tools/skills/`; the build and
   release scripts pick it up automatically.
 
 ## What a `.skill` package is
@@ -106,7 +106,7 @@ The plugin bundles the MCP server and all four skills as one unit:
 
 ```
 /plugin marketplace add okareo-ai/okareo-tools
-/plugin install okareo@okareo
+/plugin install tools@okareo
 ```
 
 The plugin connects to the hosted Okareo MCP server
@@ -139,7 +139,7 @@ Skills, and add the Okareo MCP server under Settings → Connectors.
 To add or change a skill, see [CONTRIBUTING.md](CONTRIBUTING.md). In short:
 
 ```bash
-cp -r skill-template plugins/okareo/skills/<skill-name>   # scaffold
+cp -r skill-template plugins/tools/skills/<skill-name>    # scaffold
 # ...edit SKILL.md...
 python3 scripts/validate_skills.py                        # check the contract
 ./scripts/build.sh                                        # package to dist/
@@ -173,7 +173,7 @@ a release.
 
 ```bash
 # 1. Bump the version in BOTH manifests (keep them in sync):
-#      plugins/okareo/.claude-plugin/plugin.json   -> "version"
+#      plugins/tools/.claude-plugin/plugin.json    -> "version"
 #      .claude-plugin/marketplace.json             -> plugins[].version
 #
 # 2. Build + publish to all three surfaces:

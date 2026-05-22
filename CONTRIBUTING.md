@@ -7,13 +7,13 @@ real workflow with them. This guide is for adding or changing a skill.
 
 ## The shape of a skill
 
-One skill = one folder under `plugins/okareo/skills/<skill-name>/` with a
+One skill = one folder under `plugins/tools/skills/<skill-name>/` with a
 `SKILL.md` at its top level and an optional `references/` directory. The
 build and release scripts pick up any such folder automatically — adding a
 skill is adding a folder.
 
 ```
-plugins/okareo/skills/<skill-name>/
+plugins/tools/skills/<skill-name>/
 ├── SKILL.md              # frontmatter + instructions
 └── references/           # detail loaded only when a step needs it
     └── <topic>.md
@@ -21,7 +21,7 @@ plugins/okareo/skills/<skill-name>/
 
 ## Authoring a new skill
 
-1. Copy the scaffold: `cp -r skill-template plugins/okareo/skills/<skill-name>`.
+1. Copy the scaffold: `cp -r skill-template plugins/tools/skills/<skill-name>`.
 2. Fill in `SKILL.md` and replace the example reference file.
 3. Validate: `python3 scripts/validate_skills.py`.
 4. Build locally to confirm it packages: `./scripts/build.sh --build-only`

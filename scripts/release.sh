@@ -25,7 +25,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PLUGIN_JSON="$ROOT/plugins/okareo/.claude-plugin/plugin.json"
+PLUGIN_JSON="$ROOT/plugins/tools/.claude-plugin/plugin.json"
 DIST="$ROOT/dist"
 SKILL_IDS_FILE="$ROOT/skill-ids.json"
 

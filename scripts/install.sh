@@ -40,7 +40,7 @@ Run these inside Claude Code. They add this repo as a plugin marketplace
 and install the okareo plugin — the MCP server and all skills together:
 
   /plugin marketplace add ${REPO_SLUG}
-  /plugin install okareo@okareo
+  /plugin install tools@okareo
 
 The plugin connects to the hosted Okareo MCP server. The first Okareo tool
 call opens a browser for a one-time sign-in — no API key required.
