@@ -85,11 +85,29 @@ difficult users, clear and vague requests, in-scope and out-of-scope goals,
 and at least one adversarial persona that actively tries to break policy.
 Give each persona a concrete goal so the simulated conversation has a point.
 
-### 3. Set stopping conditions
+### 3. Set stopping conditions and turn pacing
 
 A multi-turn simulation needs to know when a conversation ends — goal
 achieved, an explicit max-turn cap, or a failure state. Without a turn cap,
 a stuck agent produces an endless transcript. Always set one.
+
+`run_simulation` exposes four optional pacing knobs alongside `max_turns`;
+default behaviour is unchanged when you leave them out:
+
+- `turn_transition_time` — ms of pause between turns.
+- `checks_at_every_turn` — `True` evaluates checks per turn, not just at
+  end-of-run. Catches agents that say the right thing at turn 4 and the
+  wrong thing at turn 12.
+- `stop_check` — `{"check_name": str, "stop_on": <value>}` halts the run
+  the moment that check returns the configured value. Right for "stop on
+  PII leak" — the run short-circuits before reaching `max_turns`.
+- `silence_timeout_ms` — voice-only; not relevant here. See
+  `voice-simulation`.
+
+The fifth new kwarg — `augmentation` — is **voice-only**. The MCP rejects
+it pre-network on `generation` or `custom_endpoint` targets. Don't pass it
+from this skill; if a user asks for "realistic call conditions" they want
+`voice-simulation`, not this one.
 
 ### 4. Register the agent as a target
 
@@ -102,7 +120,13 @@ what the agent is:
   exercised is a prompt against a model rather than a deployed service.
 
 See [references/targets.md](references/targets.md) for how to configure each
-target type, including endpoint auth and streaming.
+target type, including endpoint auth and streaming. **When reusing or
+cloning an existing target rather than building one fresh**, follow the
+*Reusing or cloning an existing target* section there — `get_target` now
+returns a flat envelope whose keys mirror these kwargs (so you can feed it
+back into create), but any sensitive value comes back as `"***REDACTED***"`
+and must be re-supplied; `create_or_update_target` rejects the sentinel
+pre-network.
 
 ### 5. Configure and run the simulation
 

@@ -51,6 +51,7 @@ a call outcome — if a needed tool is unavailable, say so and stop.
 | Register the agent   | `create_or_update_target`      | Point Okareo at the voice agent under test         |
 | Build the caller     | `create_or_update_driver`      | Define a simulated caller as a voice persona       |
 | Define the cases     | `save_scenario`                | Scenario rows — per-call goals and expected outcome |
+| Augmentation ref     | `get_templates`                | Fetch `voice_augmentations` field schema for the `augmentation` param |
 | Run                  | `run_simulation`               | Place the simulated calls and score them           |
 | Read outcomes        | `get_test_run_results`         | Pull success rates and check results               |
 | Read a call          | `get_conversation_transcript`  | Inspect an individual call transcript              |
@@ -88,11 +89,27 @@ just the words — cooperative and difficult callers, clear and vague goals,
 in-scope and out-of-scope requests — and give every caller one concrete
 objective so the call has a point.
 
-### 3. Set stopping conditions
+### 3. Set stopping conditions and turn pacing
 
 Every call needs a max-turn cap. Without one, a stuck agent produces an
 endless call — and for a phone-based target that is an endless *billed*
 call. Always set a cap high enough to finish a normal call.
+
+`run_simulation` exposes four optional pacing knobs that round out the cap.
+Pass them as kwargs alongside `max_turns`; default behaviour is unchanged
+when you leave them out:
+
+- `turn_transition_time` — ms of pause between turns. Raise it for
+  STT-heavy agents whose "let me check" filler would otherwise get talked
+  over by a quick caller.
+- `silence_timeout_ms` — ms of silence before the simulator advances. Give
+  the agent room during tool calls or holds without letting it stall.
+- `checks_at_every_turn` — `True` evaluates checks per turn, not just at
+  end-of-call. Use it when the agent might say the right thing at turn 4
+  and the wrong thing at turn 12.
+- `stop_check` — `{"check_name": str, "stop_on": <value>}` halts the call
+  the moment that check returns the configured value. Right for "stop if
+  the agent leaks PII" — the run short-circuits before reaching `max_turns`.
 
 ### 4. Register the voice agent as a target
 
@@ -100,9 +117,30 @@ Register the agent with `create_or_update_target` as a voice target. The
 *edge type* depends on how the agent is reached — a dialable phone number,
 or a realtime voice backend. See
 [references/voice-targets.md](references/voice-targets.md) for configuring
-`twilio`, `openai`, and `deepgram` voice targets.
+`twilio`, `openai`, and `deepgram` voice targets. **When reusing or cloning
+an existing voice target**, follow the *Reusing or cloning a voice target*
+section there — `create_or_update_target` is a full replace and Twilio
+credentials cannot be read back, so a casual "copy and tweak" silently
+drops `account_sid`/`auth_token` and `max_parallel_requests`.
 
-### 5. Configure and run the simulation
+### 5. Decide whether to augment the call audio
+
+A voice simulation runs on a clean line by default — no noise, no second
+voice, no interruptions. That's the right setting for proving the agent's
+*conversation logic*. To prove its **resilience**, layer an augmentation on
+top: a caller who interrupts, a noisy room, a second voice nearby, off-mic
+stretches, or a "stack-two-questions" pattern. The MCP exposes six
+augmentation knobs and a composition rule (at most one non-noise strategy
+plus optionally `noise`). See
+[references/voice-augmentations.md](references/voice-augmentations.md) for
+the judgment call — *should I augment, and which one* — and call
+`get_templates(["voice_augmentations"])` for the exact field schema.
+
+Skip augmentation on first scoping runs and on pure-logic failure
+investigations; reach for it once the conversation logic is proven and the
+user wants production-condition coverage.
+
+### 6. Configure and run the simulation
 
 - Build the simulated callers with `create_or_update_driver` — each a voice
   persona from step 2, with a voice, profile, and language, plus brief voice
@@ -116,12 +154,14 @@ or a realtime voice backend. See
   call reached the scenario's expected result — a call with no completion
   check produces a transcript nobody can score. Add one or two checks for
   the business case.
+- If step 5 said yes, pass `augmentation={...}` to `run_simulation` along
+  with any of the pacing kwargs from step 3.
 - **Confirm with the user before running.** A `twilio` voice target places
   real outbound phone calls that incur telephony cost. Then call
   `run_simulation`; it returns immediately with a test-run id and app link.
   Poll `get_test_run_results` rather than assuming failure.
 
-### 6. Analyze transcripts, do not just count
+### 7. Analyze transcripts, do not just count
 
 - Lead with the **headline**: across the caller set, what share of calls
   reached the goal without a failure.
@@ -133,7 +173,7 @@ or a realtime voice backend. See
   Flag those rather than counting them against the agent.
 - Translate findings into concrete fixes, or "ready to ship".
 
-### 7. Hand off
+### 8. Hand off
 
 For failures worth preventing permanently, hand off to
 `scenario-from-traces` — it turns the failing calls into a durable scenario
@@ -143,8 +183,9 @@ set you can re-run on every change.
 
 ```
 ## Voice simulation: <agent under test>
+Augmentation: <strategy + params, or "none — clean line">
 Callers: <count> across <N> persona types
-Outcome: <success rate> — <ready to ship? y/n>
+Outcome: <success rate> — <ready to ship under these conditions? y/n>
 
 ### Failure modes
 - <mode> — <which callers / turn depth> — <suggested fix>
@@ -153,6 +194,10 @@ Outcome: <success rate> — <ready to ship? y/n>
 ### Next step
 Lock failing calls into a scenario set via scenario-from-traces.
 ```
+
+When an augmentation is active, name it in the report header. "95% success
+under barge-in over cafeteria noise" is a different claim than "95% success
+on a clean line" — never collapse them.
 
 ## Guardrails
 

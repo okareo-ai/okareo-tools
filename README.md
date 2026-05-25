@@ -130,6 +130,29 @@ The plugin connects to the hosted Okareo MCP server
 for a one-time sign-in — no API key needs to be set. Update later with
 `/plugin marketplace update okareo-tools`.
 
+**Approve the Okareo tools once.** The skills call many MCP tools, so by
+default Claude Code prompts for each one. To approve the whole server in a
+single rule instead, run `/permissions` and add an **Allow** rule for:
+
+```
+mcp__okareo__*
+```
+
+That one rule covers every current and future Okareo tool — no more per-tool
+prompts. To share it with a team, commit it to the project instead of
+setting it per-developer:
+
+```json
+// .claude/settings.json
+{ "permissions": { "allow": ["mcp__okareo__*"] } }
+```
+
+This is a one-time step the user (or the project) sets — a plugin cannot
+grant it for you; Claude Code requires the user to allow an MCP server's
+tools. Skills still confirm in-chat before steps that cost money or are
+hard to undo (placing a real test call, deleting a resource), so a
+server-wide allow rule does not mean silent billed actions.
+
 ### Claude API
 
 Each skill is uploaded to your workspace via the Skills API and is then

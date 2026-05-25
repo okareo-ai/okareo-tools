@@ -72,7 +72,24 @@ TOOL_TOKEN = re.compile(r"`([a-z][a-z0-9]*(?:_[a-z0-9]+)+)`")
 # A non-tool snake_case allowlist — identifiers that are not MCP tools
 # (target-type and config-field names that legitimately appear in backticks).
 NON_TOOL_TOKENS = {
-    "next_message_params", "start_session_params", "custom_endpoint",
+    "next_message_params", "start_session_params", "end_session_params",
+    "custom_endpoint", "auth_params", "max_parallel_requests",
+    "sensitive_fields",
+    # Voice target config field names (not MCP tools).
+    "account_sid", "auth_token", "to_phone_number", "from_phone_number",
+    "output_voice", "edge_type",
+    # run_simulation kwargs (peer simulation_params knobs added by
+    # specs/023-tool-fixes in okareo-mcp-beta).
+    "max_turns", "turn_transition_time", "silence_timeout_ms",
+    "checks_at_every_turn", "stop_check",
+    # Augmentation strategy keys and field names (under the `augmentation`
+    # kwarg on run_simulation). These appear in skill prose when copilots
+    # need to reason about voice-simulation realism conditions.
+    "directed_speech", "secondary_speaker", "barge_in",
+    "noise_profile", "noise_snr_db",
+    # Template names registered in src/tools/docs.py — referenced via
+    # get_templates([...]); they are not MCP tools themselves.
+    "voice_augmentations",
 }
 REF_LINK = re.compile(r"\(references/([^)]+)\)")
 

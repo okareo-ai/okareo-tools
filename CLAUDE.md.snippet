@@ -22,6 +22,9 @@ The plugin connects to the hosted Okareo MCP server; the first Okareo tool
 call opens a browser for a one-time sign-in. No API key needs to be set for
 the normal install — `OKAREO_API_KEY` is only required for headless/CI use.
 
+To avoid a permission prompt on every Okareo tool, run `/permissions` and
+add an Allow rule for `mcp__okareo__*` — one rule covers the whole server.
+
 The plugin provides skills for the full loop — `quickstart`,
 `scenario-design`, `scenario-from-traces`, `agent-simulation`,
 `voice-simulation`, `evaluation`, and `monitoring` — plus `/okareo:`
