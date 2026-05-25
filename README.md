@@ -127,8 +127,8 @@ one unit:
 
 The plugin connects to the hosted Okareo MCP server
 (`https://tools.okareo.com/mcp`). The first Okareo tool call opens a browser
-for a one-time sign-in — no API key needs to be set. Update later with
-`/plugin marketplace update okareo-tools`.
+for a one-time sign-in — no API key needs to be set. See
+[Updating](#updating) to pull a newer version later.
 
 **Approve the Okareo tools once.** The skills call many MCP tools, so by
 default Claude Code prompts for each one. To approve the whole server in a
@@ -172,6 +172,49 @@ than the interactive browser sign-in.
 Per-user, through the web UI: download the `.skill` files from
 https://tools.okareo.com, then add them under Settings → Capabilities →
 Skills, and add the Okareo MCP server under Settings → Connectors.
+
+## Updating
+
+Plugin updates are pulled explicitly — none of the three surfaces
+auto-upgrade by default.
+
+### Claude Code
+
+Refresh the marketplace metadata, then reinstall to pick up the new version:
+
+```
+/plugin marketplace update okareo-tools
+/plugin install okareo@okareo-tools
+```
+
+There is no `/plugin update` command. To see what's installed, run `/plugin`
+and check the **Installed** tab — entries on Claude Code v2.1.144+ show a
+**Last updated** date. To stop doing this by hand, opt in to auto-update from
+the **Marketplaces** tab in `/plugin`, or set it for the whole project in
+`.claude/settings.json`:
+
+```json
+{ "extraKnownMarketplaces": { "okareo-tools": { "autoUpdate": true } } }
+```
+
+### Claude API
+
+Re-run the installer to upload a new version of every skill to your
+workspace:
+
+```
+./scripts/install.sh api
+```
+
+The Skills API versions each skill on upload — pin a specific version in
+production and only use `latest` in development. See [Versioning](#versioning).
+
+### claude.ai
+
+Download the new `.skill` files from https://tools.okareo.com, remove the
+previous versions under **Settings → Capabilities → Skills**, and add the
+new ones. The Okareo MCP server connector itself does not need to be
+re-added.
 
 ## Developing skills
 
