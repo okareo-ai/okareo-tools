@@ -14,29 +14,32 @@ installed together.
 
 ## What's in the box
 
-Seven skills and four slash commands, one MCP server, bundled as a single
+Eight skills and six slash commands, one MCP server, bundled as a single
 installable plugin:
 
-| Skill                  | What it does                                             |
-| ---------------------- | -------------------------------------------------------- |
-| `quickstart`           | Onboard a new user; verify the connection; first run     |
-| `scenario-design`      | Compose a synthetic test scenario set from scratch        |
-| `scenario-from-traces` | Turn production traces and issues into a test set         |
-| `agent-simulation`     | Stress-test a text agent with simulated multi-turn users  |
-| `voice-simulation`     | Run simulated calls against a voice agent                 |
-| `evaluation`           | Score a model or prompt against a scenario set            |
-| `monitoring`           | Monitor live text or voice traffic; catch drift           |
+| Skill                   | What it does                                             |
+| ----------------------- | -------------------------------------------------------- |
+| `quickstart`            | Onboard a new user; verify the connection; first run     |
+| `scenario-design`       | Compose a synthetic test scenario set from scratch        |
+| `scenario-from-traces`  | Turn production traces and issues into a test set         |
+| `agent-simulation`      | Stress-test a text agent with simulated multi-turn users  |
+| `voice-simulation`      | Run simulated calls against a voice agent                 |
+| `agent-improvement-loop`| Iteratively improve an agent over N cycles; track the trend |
+| `evaluation`            | Score a model or prompt against a scenario set            |
+| `monitoring`            | Monitor live text or voice traffic; catch drift           |
 
 The commands — `/okareo:quickstart`, `/okareo:scenario`, `/okareo:simulate`,
-`/okareo:monitor` — are thin entry points that frame a task and route to the
-skill that does the work.
+`/okareo:improve`, `/okareo:monitor`, `/okareo:update` — are thin entry points
+that frame a task and route to the skill that does the work (`/okareo:update`
+checks for and explains how to install a newer version).
 
 `quickstart` is the on-ramp. The rest compose into a lifecycle: build a
 scenario set (`scenario-design` or `scenario-from-traces`), exercise an agent
 before release (`agent-simulation`, `voice-simulation`), score it
-(`evaluation`), and watch it in production (`monitoring`) — where any failure
-flows back into a scenario set that is re-run on every change. More skills
-and commands are planned — see [ROADMAP.md](ROADMAP.md).
+(`evaluation`), iteratively improve it until it meets the bar
+(`agent-improvement-loop`), and watch it in production (`monitoring`) — where
+any failure flows back into a scenario set that is re-run on every change. More
+skills and commands are planned — see [ROADMAP.md](ROADMAP.md).
 
 ## Repository structure
 
@@ -58,6 +61,7 @@ okareo-tools/
 │       │                             entry points that route to a skill.
 │       └── skills/                   One folder per skill. Each is a
 │           │                         self-contained Agent Skill.
+│           ├── agent-improvement-loop/
 │           ├── agent-simulation/
 │           │   ├── SKILL.md          Instructions + YAML frontmatter.
 │           │   └── references/       Extra docs, loaded only when needed.
@@ -117,7 +121,7 @@ install path. `scripts/install.sh` automates the scriptable ones.
 
 ### Claude Code (recommended)
 
-The plugin bundles the MCP server, all seven skills, and the commands as
+The plugin bundles the MCP server, all eight skills, and the commands as
 one unit:
 
 ```

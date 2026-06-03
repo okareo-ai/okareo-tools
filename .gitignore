@@ -1,6 +1,8 @@
 # Build output — .skill packages are generated, not committed
 dist/*.skill
 dist/*.zip
+*swp
+docs/
 
 # Local tooling
 node_modules/
