@@ -1,0 +1,10 @@
+{
+  "pillar": "Execution",
+  "probe_classes": [
+    { "id": "error-recovery", "label": "Error recovery", "importance": "High", "modality": "both", "requires_tuning": false },
+    { "id": "flow-completion", "label": "Flow completion", "importance": "High", "modality": "both", "requires_tuning": false },
+    { "id": "hallucinated-action", "label": "Hallucinated action", "importance": "High", "modality": "both", "requires_tuning": false },
+    { "id": "subtask-drop", "label": "Subtask drop", "importance": "High", "modality": "both", "requires_tuning": false },
+    { "id": "tool-selection", "label": "Tool selection", "importance": "High", "modality": "both", "requires_tuning": false }
+  ]
+}

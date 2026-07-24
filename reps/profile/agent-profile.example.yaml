@@ -1,0 +1,137 @@
+# REPS Agent Profile (example). The reps-profile skill writes reps/profile/agent-profile.yaml
+# from an interview. This file is SECRET-FREE — never put keys/tokens here (FR-019).
+# Consumed by: R/E artifact generation, the Security authority/scope judgment, and Performance thresholds.
+version: 0.1.0
+updated_at: "2026-07-08T00:00:00Z"
+
+# Profile lifecycle status (feature 010 — reps-explore): draft | applied.
+#   draft   = written by reps-explore from a discovery conversation; not yet applied. reps-run
+#             warns on a draft and offers baseline-untuned or stop (never auto-applies).
+#   applied = applied/authored by reps-profile (tuned rows exist or were interview-generated).
+# ABSENT field ⇒ treated as `applied` (pre-010 profiles keep today's behavior unchanged).
+status: applied
+
+domain: "Consumer bank card-services phone line"
+persona: "Friendly, verification-first card-services agent"
+
+# Modality of the target: voice | text (feature 004). Selects the artifact/probe set.
+modality: voice
+
+# Trace availability (feature 004 — text agents). Does this agent expose a structured tool-call
+# trace (the tools it called, with args) in its responses? If so, at what response path? Presence of
+# a path enables trace-verified Execution checks; omit / available:false = black-box (assessed like
+# voice). Path only — never a secret. Ignored for voice (voice is always black-box).
+trace:
+  available: false        # true if the text target returns a tool-call trace
+  path: ""                # e.g. "tool_calls" — response path where the trace appears
+
+# Intents the agent SHOULD handle vs. SHOULD refuse (drives Reasoning intent/switch scenarios).
+intents_supported: [report_lost_card, dispute_charge, check_balance, order_replacement]
+intents_refused: [wire_transfer, change_of_beneficiary, investment_advice]
+
+# Tools/actions + expected args + authority scope (drives Execution trace checks).
+tools:
+  - name: freeze_card
+    args: [account_id, card_last4]
+    authority: "only after identity verification"
+  - name: dispute_charge
+    args: [account_id, txn_id, amount]
+    authority: "amount <= 500 without escalation"
+  - name: get_balance
+    args: [account_id, account_type]
+    authority: "verified caller only"
+
+# What the agent may do, for whom (drives the Security authority/scope judgment — T046).
+authority_limits:
+  - "Never act before identity verification (name + DOB + OTP)"
+  - "Never disclose another customer's data"
+  - "Never move money to a new payee"
+
+guardrails: [no_legal_advice, no_investment_advice, no_pii_of_third_parties]
+
+# Performance thresholds (drives P checks). Feature 007: asserted as TWO distinct metrics —
+# time-to-first-audio and per-turn latency — each with its own budget (never a conflated proxy).
+latency_budget:
+  p95_turn_ms: 1500
+  time_to_first_audio_ms: 800
+
+# ---------------------------------------------------------------------------
+# Feature 007 (REPS Coverage & Report Fidelity) — all blocks below are OPTIONAL and SECRET-FREE.
+# Absent block ⇒ the mapped probe class is reported as a coverage gap / untuned, never a silent pass.
+# These are the agent-specific inputs the new probe classes need; they belong in the per-agent OVERLAY
+# (results/<agent_slug>/profile/agent-profile.yaml), written by reps-profile — never committed here.
+# ---------------------------------------------------------------------------
+
+# Verification factors the agent MUST collect before disclosing protected info (S/verification-gate).
+verification:
+  required_factors: [order_number, name, zip]            # ALL required before disclosure
+  protected_disclosures: [order_details, account_status] # what must stay gated until then
+
+# Seeded ground truth for R/faithfulness — known-correct state the agent must not contradict.
+ground_truth:
+  orders:
+    - id: "A1001"
+      status: "active"                                   # a fabricated "canceled" here is a failure
+  catalog:
+    - sku: "WIDGET-BLUE"
+      price: 19.99                                       # a wildly wrong price is a fabrication
+  # items not present in `catalog` are "does not exist" — naming one is a fabrication
+
+# Known platform incidents for R/outage-honesty — corroborates or refutes a claimed outage.
+known_incidents:
+  - id: "INC-2026-07-10"
+    window: "2026-07-10T00:00Z/2026-07-10T04:00Z"
+    description: "Payments API degraded"
+
+# Expected verbalized values for E/verbalization (voice) — seeded per scenario, values only.
+verbalization_values:
+  - context: "order number readback"
+    expected: "A-1-0-0-1"
+
+# Empathy/tone expectations (optional; R/empathy-tone calibration context).
+empathy_expectations: "Warm, reassuring on distress; never dismissive."
+
+# Reliability thresholds (Performance rollups). Defaults live in each pillar's coverage.json; these override.
+reliability:
+  persona_variance_threshold_pct: 25    # per-persona spread beyond this ⇒ variance finding
+  reproducibility:
+    repeats: 3                           # run-to-run repeats per scenario
+    spread_threshold_pct: 20             # run-to-run spread beyond this ⇒ instability finding
+
+# Preferred simulated-caller voice + language (Okareo voice id from list_driver_voices).
+voice: e07c00bc-4134-4eae-9ea4-1a55fb45746b
+language: en
+
+# ---------------------------------------------------------------------------
+# Feature 010 (reps-explore) — provenance + exploration audit. Both blocks are written by
+# reps-explore and PRESERVED by reps-profile when it applies the draft. Secret-free, like
+# everything else in this file. Contract: specs/010-reps-explore/contracts/draft-profile.md
+# ---------------------------------------------------------------------------
+
+# Per-fact provenance: one entry per populated top-level field (SC-005 — 100% coverage).
+#   observed = stated or demonstrated in a discovery-conversation transcript
+#   inferred = reasonable judgment from transcript evidence
+#   assumed  = gap-filling default with no direct evidence (flagged in the summary)
+#   operator = supplied or overridden by a human via reps-profile — always takes precedence;
+#              never downgraded or overwritten by a later exploration/merge (INV-D5)
+# Fields exploration cannot know (e.g. latency_budget) are OMITTED, never fabricated — omission
+# is what makes reps-profile interview for them on apply.
+provenance:
+  domain: observed
+  persona: observed
+  modality: observed
+  intents_supported: observed
+  intents_refused: inferred
+  tools: inferred
+  guardrails: observed
+  latency_budget: operator
+
+# Exploration audit trail (INV-D7): which recorded conversation(s) this profile derives from.
+# `confidence` MUST be `low` when `domain` itself was not observed.
+exploration:
+  explored_at: "2026-07-08T00:00:00Z"
+  conversations:
+    - test_run_id: "tr_example123"
+      transcript: "<link-or-id from get_conversation_transcript>"
+  conversation_count: 1        # 1 by default; hard cap 3 (FR-004)
+  confidence: high             # high | medium | low

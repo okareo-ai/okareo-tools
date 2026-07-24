@@ -1,0 +1,22 @@
+{
+  "simulations": [
+    {
+      "scenario": "R-core",
+      "driver": "confused-caller",
+      "checks": [
+        "reasoning-expectation-met"
+      ],
+      "max_turns": 10,
+      "first_turn": "target"
+    },
+    {
+      "scenario": "R-core",
+      "driver": "assertive-caller",
+      "checks": [
+        "reasoning-expectation-met"
+      ],
+      "max_turns": 10,
+      "first_turn": "target"
+    }
+  ]
+}

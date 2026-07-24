@@ -1,0 +1,46 @@
+{
+  "simulations": [
+    {
+      "scenario": "P-core",
+      "driver": "steady-caller",
+      "checks": [
+        "perf-expectation-met"
+      ],
+      "max_turns": 16,
+      "first_turn": "target"
+    },
+    {
+      "scenario": "P-output-consistency",
+      "driver": "steady-caller",
+      "checks": [
+        "perf-expectation-met"
+      ],
+      "max_turns": 4,
+      "first_turn": "target",
+      "repeats": 5,
+      "sub_capability": "consistency"
+    },
+    {
+      "scenario": "P-turn-latency-budget",
+      "driver": "steady-caller",
+      "checks": [
+        "perf-turn-latency"
+      ],
+      "max_turns": 6,
+      "first_turn": "target",
+      "repeats": 3,
+      "sub_capability": "turn-latency"
+    },
+    {
+      "scenario": "P-concurrency-load",
+      "driver": "steady-caller",
+      "checks": [
+        "perf-error-rate"
+      ],
+      "max_turns": 4,
+      "first_turn": "target",
+      "repeats": 5,
+      "sub_capability": "load"
+    }
+  ]
+}

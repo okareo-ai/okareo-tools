@@ -1,0 +1,14 @@
+{
+  "simulations": [
+    {
+      "scenario": "E-core",
+      "driver": "requester",
+      "checks": [
+        "execution-expectation-met",
+        "execution-tool-arg-schema"
+      ],
+      "max_turns": 10,
+      "first_turn": "target"
+    }
+  ]
+}

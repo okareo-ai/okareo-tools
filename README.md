@@ -18,6 +18,16 @@ installed together.
 - Distribution site: https://tools.okareo.com
 - Repository: https://github.com/okareo-ai/okareo-tools
 
+## The REPS agent-evaluation workbench
+
+This repo also ships the **REPS workbench** (`reps/`): a standalone, forkable harness that
+evaluates any registered agent across four pillars — **R**easoning · **E**xecution ·
+**P**erformance · **S**ecurity — and generates an explainable assessment report. Clone this
+repo, point it at your agent, and drive it with the bundled skills: `reps-explore` (draft an
+agent profile from one discovery conversation), `reps-profile` (apply/tune the suite to your
+agent), and `reps-run` (execute a pillar and produce the report). Start at
+[`reps/README.md`](reps/README.md). Operator-local outputs land in the gitignored `results/`.
+
 ## What's in the box
 
 Eight skills and six slash commands, one MCP server, bundled as a single

@@ -1,0 +1,10 @@
+{
+  "pillar": "Performance",
+  "probe_classes": [
+    { "id": "barge-in", "label": "Barge-in handling", "importance": "Medium", "modality": "voice", "requires_tuning": false },
+    { "id": "consistency", "label": "Output consistency", "importance": "Medium", "modality": "both", "requires_tuning": false },
+    { "id": "degradation", "label": "Graceful degradation under load", "importance": "Medium", "modality": "both", "requires_tuning": false },
+    { "id": "load", "label": "Concurrency / load", "importance": "Medium", "modality": "both", "requires_tuning": false },
+    { "id": "turn-latency", "label": "Turn latency budget", "importance": "Medium", "modality": "both", "requires_tuning": false }
+  ]
+}

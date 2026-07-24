@@ -1,0 +1,8 @@
+# Profiling slot-template (feature 002 + 009: contracts/scenario-row.md). Performance rows use the
+# single neutral voice persona (steady-caller). Judge-graded rows (degradation, barge-in,
+# consistency) go in the perf-* banks; latency/error-rate probes are measured by the .py code
+# checks. Keep run-parameter-distinct probes as their own eval_config entries (FR-002).
+# Feature 009: state the correct outcome ONCE, in `result` (scenario_result). NEVER put an
+# `expected_behavior` (or any answer-key text) inside `input` — it would leak to the simulated
+# caller and validation now rejects it.
+{"input": {"sub_capability": "{sub_capability}", "persona": "{caller_demeanor}", "script": "{behavioral_arc_directives}", "severity_on_fail": "Medium"}, "result": "{pass_criterion_ie_what_the_agent_should_do}"}

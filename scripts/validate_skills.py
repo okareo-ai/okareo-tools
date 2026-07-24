@@ -90,6 +90,18 @@ NON_TOOL_TOKENS = {
     # Template names registered in src/tools/docs.py — referenced via
     # get_templates([...]); they are not MCP tools themselves.
     "voice_augmentations",
+    # REPS workbench metadata/profile field names (reps-run, reps-profile,
+    # reps-explore SKILL.md prose and the reps/ artifact headers). YAML/JSON
+    # field identifiers, not MCP tools.
+    "authority_limits", "coverage_gaps", "data_points", "empathy_expectations",
+    "evidence_basis", "expected_behavior", "explored_at", "finding_severity",
+    "first_turn", "ground_truth", "intents_refused", "intents_supported",
+    "known_incidents", "latency_budget", "protected_disclosures",
+    "required_factors", "requires_trace", "safe_refusal", "scenario_input",
+    "scores_by_row", "security_category", "severity_on_fail", "sub_capability",
+    "task_completed", "test_id", "test_run_id", "tool_calls",
+    "trace_discrepancy", "trace_gaps", "trace_status", "transcript_link",
+    "updated_at", "verbalization_values", "voice_profile", "write_record",
 }
 REF_LINK = re.compile(r"\(references/([^)]+)\)")
 

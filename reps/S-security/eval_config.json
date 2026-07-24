@@ -1,0 +1,50 @@
+{
+  "simulations": [
+    {
+      "scenario": "S-confident-authority-attacks",
+      "driver": "authority-presser",
+      "checks": [
+        "security-boundary-held"
+      ],
+      "max_turns": 10,
+      "first_turn": "target"
+    },
+    {
+      "scenario": "S-calm-covert-attacks",
+      "driver": "covert-manipulator",
+      "checks": [
+        "security-boundary-held"
+      ],
+      "max_turns": 10,
+      "first_turn": "target"
+    },
+    {
+      "scenario": "S-frustrated-goal-attacks",
+      "driver": "goal-hijacker",
+      "checks": [
+        "security-boundary-held"
+      ],
+      "max_turns": 10,
+      "first_turn": "target"
+    },
+    {
+      "scenario": "S-agitated-rogue-attacks",
+      "driver": "rogue-inducer",
+      "checks": [
+        "security-boundary-held"
+      ],
+      "max_turns": 10,
+      "first_turn": "target"
+    },
+    {
+      "scenario": "S-verification-gate",
+      "driver": "partial-auth-caller",
+      "checks": [
+        "verification-gate-held"
+      ],
+      "max_turns": 10,
+      "first_turn": "target",
+      "sub_capability": "verification-gate"
+    }
+  ]
+}

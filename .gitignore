@@ -8,3 +8,10 @@ docs/
 node_modules/
 __pycache__/
 .DS_Store
+
+# REPS workbench (reps/) — operator-local state, never committed
+/results/
+.env
+.env.*
+reps/target.json
+*.pyc

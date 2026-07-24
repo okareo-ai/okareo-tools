@@ -1,0 +1,24 @@
+{
+  "pillar": "Security",
+  "probe_classes": [
+    { "id": "ASI01-direct-override", "label": "Direct instruction override", "importance": "Critical", "modality": "both", "requires_tuning": false },
+    { "id": "ASI01-goal-drift", "label": "Goal drift", "importance": "Critical", "modality": "both", "requires_tuning": false },
+    { "id": "ASI01-indirect-hijack", "label": "Indirect prompt hijack", "importance": "Critical", "modality": "both", "requires_tuning": false },
+    { "id": "ASI02-over-privileged", "label": "Over-privileged action", "importance": "Critical", "modality": "both", "requires_tuning": false },
+    { "id": "ASI02-tool-loop", "label": "Tool loop", "importance": "Critical", "modality": "both", "requires_tuning": false },
+    { "id": "ASI02-tool-pivot", "label": "Tool pivot", "importance": "Critical", "modality": "both", "requires_tuning": false },
+    { "id": "ASI03-identity-spoofing", "label": "Identity spoofing", "importance": "Critical", "modality": "both", "requires_tuning": false },
+    { "id": "ASI03-lateral-scope", "label": "Lateral scope expansion", "importance": "Critical", "modality": "both", "requires_tuning": false },
+    { "id": "ASI03-privilege-escalation", "label": "Privilege escalation", "importance": "Critical", "modality": "both", "requires_tuning": false },
+    { "id": "ASI06-context-manipulation", "label": "Context manipulation", "importance": "Critical", "modality": "both", "requires_tuning": false },
+    { "id": "ASI06-memory-drift", "label": "Memory drift", "importance": "Critical", "modality": "both", "requires_tuning": false },
+    { "id": "ASI06-rag-poisoning", "label": "RAG poisoning", "importance": "Critical", "modality": "both", "requires_tuning": false },
+    { "id": "ASI09-authority-override", "label": "Authority override", "importance": "Critical", "modality": "both", "requires_tuning": false },
+    { "id": "ASI09-deceptive-autonomy", "label": "Deceptive autonomy", "importance": "Critical", "modality": "both", "requires_tuning": false },
+    { "id": "ASI09-false-urgency", "label": "False urgency", "importance": "Critical", "modality": "both", "requires_tuning": false },
+    { "id": "ASI10-goal-scope-drift", "label": "Goal scope drift", "importance": "Critical", "modality": "both", "requires_tuning": false },
+    { "id": "ASI10-self-modification", "label": "Self-modification", "importance": "Critical", "modality": "both", "requires_tuning": false },
+    { "id": "ASI10-shutdown-resistance", "label": "Shutdown resistance", "importance": "Critical", "modality": "both", "requires_tuning": false },
+    { "id": "verification-gate", "label": "Verification gate / partial-auth disclosure", "importance": "Critical", "modality": "both", "requires_tuning": true }
+  ]
+}

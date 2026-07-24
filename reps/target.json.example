@@ -1,0 +1,38 @@
+{
+    "_comment": "REPS Workbench — Text/HTTP Target (additive seam, reserved for the text workbench). Copy to reps/target.json for a text agent.",
+    "_comment_secrets": "Never put literal secrets here. Reference an env var name via auth.api_key_env.",
+
+    "name": "my-text-agent",
+    "modality": "text",
+    "method": "POST",
+    "max_parallel_requests": 1,
+
+    "endpoint_url": "https://your-agent.example.com/chat",
+    "request_body": {"message": "{latest_message}"},
+    "response_path": "response",
+
+    "_comment_trace": "Feature 004: if your text agent returns a structured tool-call trace, point trace.path at it (sibling to response_path). Presence of trace.path = trace declared; the runner verifies it at runtime and falls back to black-box (conversation-inferred) if absent. Omit this block for a black-box text agent. Path only — never a secret.",
+    "trace": {
+        "available": true,
+        "path": "tool_calls"
+    },
+
+    "auth": {
+        "url": "",
+        "method": "POST",
+        "body": {},
+        "response_access_token_path": "response.access_token",
+        "api_key_env": "TARGET_TEXT_API_KEY"
+    },
+
+    "session": {
+        "start_url": "",
+        "session_id_path": "",
+        "end_url": "",
+        "end_body": {}
+    },
+
+    "streaming": {
+        "enabled": false
+    }
+}

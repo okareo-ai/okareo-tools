@@ -1,0 +1,10 @@
+{
+  "pillar": "Reasoning",
+  "probe_classes": [
+    { "id": "ambiguous-intent", "label": "Ambiguity handling", "importance": "High", "modality": "both", "requires_tuning": false },
+    { "id": "constraint-retention", "label": "Constraint retention", "importance": "High", "modality": "both", "requires_tuning": false },
+    { "id": "contradiction", "label": "Contradiction detection", "importance": "High", "modality": "both", "requires_tuning": false },
+    { "id": "intent-switch", "label": "Intent switching", "importance": "High", "modality": "both", "requires_tuning": false },
+    { "id": "slot-fill", "label": "Slot filling", "importance": "High", "modality": "both", "requires_tuning": false }
+  ]
+}
