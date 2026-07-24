@@ -12,6 +12,8 @@ description: >-
   "Okareo" but is clearly trying to observe a live LLM or voice system.
 ---
 
+> **Canonical source**: this skill is developed in the private [`okareo-tools-dev`](https://github.com/okareo-ai/okareo-tools-dev) repository and published here by its publish pipeline. To propose a change, open an issue on okareo-tools — direct edits to this copy will be flagged as drift and blocked at the next publish.
+
 # Okareo: Monitoring
 
 This skill puts continuous checks on live traffic so quality regressions are

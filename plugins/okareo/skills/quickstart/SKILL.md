@@ -13,6 +13,8 @@ description: >-
   straight to the matching skill instead.
 ---
 
+> **Canonical source**: this skill is developed in the private [`okareo-tools-dev`](https://github.com/okareo-ai/okareo-tools-dev) repository and published here by its publish pipeline. To propose a change, open an issue on okareo-tools — direct edits to this copy will be flagged as drift and blocked at the next publish.
+
 # Okareo: Quickstart
 
 This skill is the on-ramp to Okareo. It takes someone new and, in one guided

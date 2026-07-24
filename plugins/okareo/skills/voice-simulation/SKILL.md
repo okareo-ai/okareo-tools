@@ -14,6 +14,8 @@ description: >-
   `monitoring`.
 ---
 
+> **Canonical source**: this skill is developed in the private [`okareo-tools-dev`](https://github.com/okareo-ai/okareo-tools-dev) repository and published here by its publish pipeline. To propose a change, open an issue on okareo-tools — direct edits to this copy will be flagged as drift and blocked at the next publish.
+
 # Okareo: Voice Simulation
 
 This skill exercises a voice agent the way real callers would — across many

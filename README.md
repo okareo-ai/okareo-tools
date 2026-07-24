@@ -1,5 +1,11 @@
 # okareo-tools
 
+> **Where development happens**: this repository's content is developed in Okareo's private
+> `okareo-tools-dev` repository and published here automatically on every change — the
+> `.sync-state.json` file at the repo root fingerprints each sync. Direct edits here will be
+> flagged as drift and reconciled upstream rather than kept in place; see
+> [CONTRIBUTING.md](CONTRIBUTING.md) for how to propose a change.
+
 Official Okareo tooling for Claude: the Okareo **MCP server** plus a set of
 **Agent Skills** that teach Claude how to simulate, evaluate, and monitor
 LLM apps and agents with Okareo.
