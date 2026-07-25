@@ -11,34 +11,41 @@ The zero-setup entry point: **pass a target name and a pillar, get a report.** N
 required — every pillar ships generic starters that produce a complete baseline. (Run `reps-profile`
 first only if you want Reasoning/Execution probes tailored to the specific agent.)
 
-## Pre-flight — the workbench lives in the operator's repo (vendor it if missing)
+## Pre-flight — where the baseline comes from (local wins; MCP otherwise)
 
-Everything below reads the `reps/` tree at the working-directory root (scenario banks, drivers,
-checks, report tooling) and writes operator-local outputs to `results/` beside it. Run from the
-operator's own repo — never ask them to leave their workspace, and never `git clone` into it
-(a nested repo confuses git and strands their reports in a foreign checkout). Check for the tree
-first (`test -d reps/S-security`). If it is absent, offer to **vendor** the workbench into the
-current repo:
+The run reads the agent-agnostic **baseline** (scenario banks, drivers, checks, eval configs) and
+writes operator-local outputs to `results/` in the current directory. Resolve the baseline
+**source** first — check `test -d reps/S-security`:
 
-1. Resolve the latest release tag from
-   `https://api.github.com/repos/okareo-ai/okareo-tools/releases/latest`.
-2. Extract ONLY the `reps/` directory from that tag's source tarball into the repo root:
-   ```bash
-   tmp=$(mktemp -d) \
-     && curl -fsSL https://github.com/okareo-ai/okareo-tools/archive/refs/tags/<TAG>.tar.gz \
-        | tar -xz -C "$tmp" --strip-components=1 \
-     && mv "$tmp/reps" ./reps && rm -rf "$tmp"
-   ```
-3. Write the tag into `reps/.workbench-version` (how future upgrades know what is installed).
-4. Ensure `results/` is in the repo's `.gitignore` (append it if missing).
-5. Suggest committing `reps/` — it is the agent-agnostic **baseline** and belongs in the
-   operator's history (Constitution: committed baseline, gitignored overlay). Their tuning never
-   touches it, so `git status --porcelain reps/` stays a valid cleanliness check.
+- **Local `reps/` present → local mode.** Read baseline files from the tree exactly as documented
+  below. Record its version from `reps/.workbench-version` (or `unversioned` if absent).
+- **No local `reps/` → MCP mode (the zero-setup default).** Serve every baseline read through the
+  `get_reps_baseline` Okareo MCP tool — do NOT vendor, prompt to install, or `git clone`
+  anything. The tool serves the latest released tree:
+  - **Discover** — call with `{"pillar": "<pillar-dir>"}` (no `path`) → envelope lists `files[]`
+    (tree-relative paths) and the serving `tag`. Record that `tag` once; it is the run's baseline
+    version.
+  - **Fetch** — call with `{"pillar": ..., "path": "<pillar-dir>/scenarios/core.jsonl"}` → the
+    envelope's `content` field is the exact published file text. Wherever the steps below read
+    `reps/<pillar-dir>/<x>`, fetch path `<pillar-dir>/<x>` instead.
+  - **Envelope handling** — `stale: true` means the server is serving a cached snapshot (surface
+    it and the `stale_reason` to the operator, then proceed). Ignore unknown extra fields. On
+    errors branch on `error.code`, never message text: `rate_limited` → wait
+    `retry_after_seconds` and retry; `baseline_unavailable` → STOP and tell the operator the
+    baseline cannot be served right now (offer `/okareo:reps` local install as the workaround);
+    `unknown_path` → re-discover (the tree may have changed between calls); others → surface
+    `message` verbatim.
+  - **Helper scripts** live in the baseline tree, so in MCP mode replace them with their
+    documented rules: the agent slug is the target name lowercased, spaces → `_`, other
+    non-`[a-z0-9_]` runs collapsed to `_` (e.g. "The Parts Store" → "the_parts_store"); profile
+    status is the `status:` field of `results/<agent_slug>/profile/agent-profile.yaml` when that
+    file exists locally; overlay resolution is a direct check of
+    `results/<agent_slug>/tuned/<pillar-dir>/…` (no local filesystem at all ⇒ no overlay — run
+    pure baseline and say so). The CLI/SDK fallback (Path B) is unavailable in MCP mode.
 
-If a `reps/` directory exists but is clearly not the workbench (no REPS `reps/README.md`), STOP
-and ask the operator how to proceed — never overwrite. To upgrade later: verify
-`git status --porcelain reps/` is clean, then re-extract a newer tag over `reps/` the same way.
-Never proceed without the workbench — the banks ARE the evaluation.
+Local mode is the deliberate opt-in for operators who want to iterate on the material, work
+offline, or pin a version — `/okareo:reps` installs and updates it. Mention it when relevant;
+never require it.
 
 ## Inputs
 
@@ -270,6 +277,11 @@ content-changed, tuned, or platform-drift) — all stated honestly, never as pas
 state the Execution **evidence basis** honestly: how much was trace-verified vs conversation-inferred
 vs not-assessed-for-lack-of-trace, and note that a trace-less text Execution has the same confidence
 ceiling as voice (black-box).
+
+**Baseline provenance (always):** the summary AND the written report must record which baseline the
+run scored against — source and version, e.g. `baseline: mcp@v0.5.1` (append `(stale)` if the
+envelope said so) or `baseline: local@v0.5.1` (from `reps/.workbench-version`). Two runs against
+different baselines are not comparable; this line is what makes a score shift explainable.
 
 ## Notes
 

@@ -47,9 +47,11 @@ installable plugin:
 | `monitoring`            | Monitor live text or voice traffic; catch drift           |
 
 The commands — `/okareo:quickstart`, `/okareo:scenario`, `/okareo:simulate`,
-`/okareo:improve`, `/okareo:monitor`, `/okareo:update` — are thin entry points
-that frame a task and route to the skill that does the work (`/okareo:update`
-checks for and explains how to install a newer version).
+`/okareo:improve`, `/okareo:monitor`, `/okareo:update`, `/okareo:reps` — are thin
+entry points that frame a task and route to the skill that does the work
+(`/okareo:update` checks for and explains how to install a newer version;
+`/okareo:reps` installs or refreshes a local copy of the REPS workbench baseline
+in your repo).
 
 `quickstart` is the on-ramp. The rest compose into a lifecycle: build a
 scenario set (`scenario-design` or `scenario-from-traces`), exercise an agent

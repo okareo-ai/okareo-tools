@@ -64,6 +64,9 @@ KNOWN_TOOLS = {
     "list_tenants", "switch_tenant",
     # documentation
     "get_docs", "get_templates",
+    # REPS baseline serving (okareo-mcp-dev feature 033) — discovery + fetch
+    # of the released reps/ tree; contract: contracts/get_reps_baseline.md
+    "get_reps_baseline",
 }
 
 # A backtick token that looks like an MCP tool: snake_case, lowercase, no
@@ -102,6 +105,13 @@ NON_TOOL_TOKENS = {
     "task_completed", "test_id", "test_run_id", "tool_calls",
     "trace_discrepancy", "trace_gaps", "trace_status", "transcript_link",
     "updated_at", "verbalization_values", "voice_profile", "write_record",
+    # GitHub Releases API field, referenced by the /okareo:reps command and
+    # the reps skills' vendor pre-flight. Not an MCP tool.
+    "tag_name",
+    # get_reps_baseline envelope fields and error codes (see
+    # contracts/get_reps_baseline.md). Contract identifiers, not MCP tools.
+    "baseline_unavailable", "rate_limited", "retry_after_seconds",
+    "stale_reason", "unknown_path",
 }
 REF_LINK = re.compile(r"\(references/([^)]+)\)")
 XML_TAG = re.compile(r"</?[A-Za-z_][^<>]*>")  # Skills API: no XML tags in description

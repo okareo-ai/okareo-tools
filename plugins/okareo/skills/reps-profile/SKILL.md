@@ -22,32 +22,31 @@ Artifacts are file-first (Constitution VII: a *file*, not necessarily a *commit*
 `git status --porcelain reps/` MUST print nothing. Never write secrets into the profile or any
 artifact (FR-019).
 
-**Pre-flight — the workbench lives in the operator's repo.** This skill's tuning operations read
-the committed baseline under `reps/` at the working-directory root. Everything runs from the
-operator's own repo — never ask them to leave their workspace, and never `git clone` into it (a
-nested repo confuses git and strands their artifacts in a foreign checkout). Check for the tree
-first (`test -d reps/R-reasoning`). If it is absent:
+**Pre-flight — where the baseline comes from (local wins; MCP otherwise).** This skill runs from
+the operator's own repo — never ask them to leave their workspace, and never `git clone` into it.
+Baseline reads resolve by source; check `test -d reps/R-reasoning` first:
 
-- The **interview and profile writing (Operation A)** can proceed immediately — the profile shape
-  and the slot templates it feeds are bundled with this skill (see the file links below), and the
-  profile lands in `results/<agent_slug>/profile/` relative to the repo root. Make sure
-  `results/` is in the repo's `.gitignore` (append it if missing).
-- **Operations B/C/D** (and the draft check below) also need the baseline banks. Offer to
-  **vendor** the workbench into the current repo: resolve the latest release tag from
-  `https://api.github.com/repos/okareo-ai/okareo-tools/releases/latest`, then extract ONLY its
-  `reps/` directory into the repo root:
+- **Local `reps/` present → local mode.** Read templates and banks from the tree as documented
+  below.
+- **No local `reps/` → MCP mode (the zero-setup default).** The **interview and profile writing
+  (Operation A)** proceed immediately either way — the profile shape and the slot templates it
+  feeds are bundled with this skill (see the file links below), and the profile lands in
+  `results/<agent_slug>/profile/` relative to the repo root (ensure `results/` is gitignored).
+  For **Operations B/C/D**, read each baseline template or bank through the `get_reps_baseline`
+  Okareo MCP tool instead of the filesystem: discover with `{"pillar": "<pillar-dir>"}`, fetch
+  with `{"path": "<pillar-dir>/scenarios/core.jsonl"}` etc. — wherever the steps below read
+  `reps/<x>`, fetch path `<x>`. Record the envelope's `tag` in the profile's `provenance:` notes
+  so later tuning is traceable to a baseline version. In MCP mode replace the `reps.paths`
+  helper calls with their rules: slug = target name lowercased, spaces → `_`, other
+  non-`[a-z0-9_]` runs collapsed to `_`; profile status = the `status:` field of
+  `results/<agent_slug>/profile/agent-profile.yaml` if present, else no profile. On tool errors
+  branch on `error.code` (`rate_limited` → wait `retry_after_seconds` and retry;
+  `baseline_unavailable` → tell the operator and offer `/okareo:reps` local install as the
+  workaround).
 
-  ```bash
-  tmp=$(mktemp -d) \
-    && curl -fsSL https://github.com/okareo-ai/okareo-tools/archive/refs/tags/<TAG>.tar.gz \
-       | tar -xz -C "$tmp" --strip-components=1 \
-    && mv "$tmp/reps" ./reps && rm -rf "$tmp"
-  ```
-
-  Write the tag into `reps/.workbench-version`, and suggest committing `reps/` — it is the
-  agent-agnostic baseline and belongs in the operator's history (tuning only ever writes to the
-  gitignored `results/` overlay, so the baseline stays clean). If a `reps/` directory exists but
-  is clearly not the workbench, STOP and ask the operator how to proceed — never overwrite.
+Local mode is the deliberate opt-in for operators who want to edit material, work offline, or pin
+a version — `/okareo:reps` installs and updates it; mention it when relevant, never require it.
+Either way, tuned output goes ONLY to the gitignored `results/` overlay.
 
 **Draft check first (feature 010):** before anything else, read the profile status:
 ```bash
