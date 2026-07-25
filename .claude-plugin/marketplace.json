@@ -1,17 +1,20 @@
 {
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "okareo-tools",
+  "description": "Official Okareo tools for Claude — MCP server and companion Skills for evaluating AI voice and conversational agents.",
   "owner": {
     "name": "Okareo",
     "url": "https://okareo.com"
-  },
-  "metadata": {
-    "description": "Official Okareo tools for Claude \u2014 MCP server and companion Skills for evaluating AI voice and conversational agents."
   },
   "plugins": [
     {
       "name": "okareo",
       "source": "./plugins/okareo",
-      "description": "Okareo MCP server plus Skills that teach Claude how to design, run, and analyze evaluations of AI voice and conversational agents across audio, reasoning, execution, performance, and security.",
+      "description": "Okareo MCP server plus Skills that teach Claude how to design, run, and analyze evaluations of AI voice and conversational agents across audio, reasoning, execution, performance, and security. Includes an agent-evaluation workbench to make analysis faster to run and share.",
+      "author": {
+        "name": "Okareo"
+      },
+      "homepage": "https://github.com/okareo-ai/okareo-tools/tree/main/plugins/okareo",
       "version": "0.6.0",
       "category": "agent-assurance",
       "keywords": [

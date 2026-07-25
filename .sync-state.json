@@ -1,8 +1,8 @@
 {
-  "content_hash": "sha256:6a978dc9a5b3c2c00b5ce4c4df362eda2ab234eea8f9ec3f1187f7d682f9ff88",
-  "dev_revision": "4700e5a",
+  "content_hash": "sha256:8b2545bbc5a8a554b1a73ed0db829771ceaf381837562dfa465ec744cc8dbfcd",
+  "dev_revision": "ea595c2",
   "file_hashes": {
-    ".claude-plugin/marketplace.json": "sha256:3bf54fde47aeedd9c79c4021f5cd6b4b5d9ed02fc45acfa8957362941ae7bb83",
+    ".claude-plugin/marketplace.json": "sha256:2bbfc4c20fae7457e9d7913c343cc78ec2c422322767a5f7ce458b628a10c294",
     ".github/workflows/release.yml": "sha256:b5559eacfcfd953e927346d798f0636ae204f09c5cbf8ecfdfe1c2a7b2ba80d5",
     ".gitignore": "sha256:1cf2e848bd76aeb8c662c1219439553870697b5d48c267c7db014b84c2c8a0c1",
     "CLAUDE.md.snippet": "sha256:78d16844c62f2596aa19a8973e8507aecc4c5acc60535eff8d8abda01621be92",
@@ -153,5 +153,5 @@
     "skill-template/references/example-reference.md": "sha256:4542b912bd674664a44d6751fb9a058467b3580f6fbbb194a86778e6be43b8e3"
   },
   "pipeline": "ci",
-  "synced_at": "2026-07-25T19:27:20Z"
+  "synced_at": "2026-07-25T19:59:49Z"
 }
