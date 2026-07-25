@@ -296,6 +296,33 @@ def write_record(
     return out
 
 
+def write_improvements(*, record: dict, results_dir: Path) -> Path:
+    """Write the transcript-derived improvements record (feature 013, schema v1).
+
+    Sole writer for results/<agent_slug>/findings/improvements_<stamp>.json — the source the
+    report's "Suggested Agent Improvements" section renders from. Key-free and callable via
+    `python -c` from the MCP co-pilot path, exactly like `write_record`. Validates the record
+    (specs/013-report-remediations/contracts/improvements-record.md) including that the
+    companion `analysis_doc` already exists under the agent's results tree; raises ValueError
+    on any violation. Never touches pillar findings records.
+    """
+    from reps.report.improvements import FILENAME_PREFIX, validate_improvements
+
+    results_dir = Path(results_dir)
+    if results_dir.name != "findings":
+        raise ValueError(f"improvements record: results_dir must be a findings/ directory, "
+                         f"got {results_dir}")
+    warnings = validate_improvements(record, agent_dir=results_dir.parent)
+    for w in warnings:
+        print(f"warning: {w}")
+    out = results_dir / f"{FILENAME_PREFIX}{fs_stamp(record['generated_at'])}.json"
+    if out.parent.resolve() != results_dir.resolve():
+        raise ValueError("improvements record: output path escapes the findings directory")
+    results_dir.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(record, indent=2), encoding="utf-8")
+    return out
+
+
 def capture_results(
     *,
     pillar: str,

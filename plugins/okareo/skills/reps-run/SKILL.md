@@ -245,7 +245,53 @@ If the agent has no overlay, every artifact resolves to the baseline and the run
    ```
    (Write your assembled `simulations` list to `/tmp/reps_sims.json`, the reuse disposition to
    `/tmp/reps_reuse.json`, and your aggregate summary to `/tmp/reps_aggregate.txt` first.)
-7. **Render the report** — `python reps/report/gen_reps_report.py --agent "<target>"` →
+7. **Transcript review → improvements record (feature 013, MANDATORY before render)** — the
+   report's **Suggested Agent Improvements** section (07) renders solely from
+   `results/<agent_slug>/findings/improvements_<stamp>.json`; without one it shows an explicit
+   "no transcript review captured" note. You (the co-pilot) author it now:
+   - **Enumerate** every failing/errored conversation across the **latest findings record of EVERY
+     captured pillar** for this agent (not just the pillar you just ran) — failing datapoints,
+     errored simulations, and coverage-gap rows. **Default: review ALL of them.** Any you cannot or
+     will not review (unretrievable transcript, errored before completion, operator-declared cap)
+     go into `review_coverage.unreviewed` with a reason — never silently dropped.
+   - **Read the transcripts** — `get_test_run_results(..., include_transcripts=true)` /
+     `get_conversation_transcript(test_id)` per failure (Okareo MCP, Constitution III). Derive
+     what actually went wrong from the conversation itself, not from the check verdict.
+   - **Classify each reviewed failure into exactly one bucket**:
+     - **Agent defect** → a prioritized suggestion: a short imperative `title`, the **specific
+       behavioral change** (never generic advice), a `basis` in the findings, and ≥1 `evidence`
+       item with `test_run_id` + **verbatim** quoted utterances. When one root cause drives several
+       failures, write it as the `headline` (title + narrative + evidence) and let suggestions cite
+       `{"headline": true}`.
+     - **Discounted verdict** → the transcript contradicts the check criterion (judge artifact,
+       criterion mismatch, or a harness/driver fault). Record pillar/scenario/`test_run_id`, a
+       transcript-grounded `reason`, `disposition: "full"` (or `"partial"` when only framing is at
+       fault). Add an `effective_picture` sentence reconciling headline numbers. Discounts NEVER
+       modify the captured findings records or scores — they are narrative reconciliation only.
+     - **Test-side coverage gap** → untuned/unrun/errored scenario: a `coverage_gap_notes` entry
+       telling the operator to close the gap, not to change the agent.
+   - Also record `held_up`: behaviors the transcripts show working that the developer should keep.
+   - **Write the companion analysis doc FIRST** (the writer verifies it exists):
+     `results/<agent_slug>/<agent_slug>-reps-analysis.md` — title `# <Agent> — REPS transcript
+     analysis`, one `## <pillar> · <scenario> · <run-id-short>` section per reviewed conversation
+     with the longer excerpts and reasoning, ending with `## Verdicts discounted` when any.
+     Overwrite (or extend with a dated section) on each review pass. **Secret-free** — quote
+     transcript excerpts only; the whole tree stays gitignored and uncommitted.
+   - **Write the record** (schema + validation:
+     `specs/013-report-remediations/contracts/improvements-record.md`; `based_on` = the exact
+     `run_timestamp` + filename of each pillar record you reviewed — it drives the stale banner):
+   ```bash
+   python -c "import json; from reps.report.capture import write_improvements; \
+   from reps.slug import agent_slug; t='<target>'; \
+   write_improvements(record=json.load(open('/tmp/reps_improvements.json')), \
+   results_dir=__import__('pathlib').Path(f'results/{agent_slug(t)}/findings'))"
+   ```
+   (Assemble the record to `/tmp/reps_improvements.json` first; `write_improvements` raises with a
+   field-precise message on any contract violation — fix the record, don't bypass it.)
+   **Standalone re-review**: invoked with findings already captured and no new pillar run, do this
+   step + render against the existing records (that also clears a stale banner after new runs).
+   Path B (CLI/SDK) never authors this record — its reports show the absent-state note.
+8. **Render the report** — `python reps/report/gen_reps_report.py --agent "<target>"` →
    `results/<agent_slug>/report_<date-time>.html`. (`capture.py` + `gen_reps_report.py` are pure
    Python — no key, no `okareo` import.)
 

@@ -105,6 +105,11 @@ NON_TOOL_TOKENS = {
     "task_completed", "test_id", "test_run_id", "tool_calls",
     "trace_discrepancy", "trace_gaps", "trace_status", "transcript_link",
     "updated_at", "verbalization_values", "voice_profile", "write_record",
+    # Improvements-record fields + writer (feature 013, reps-run transcript-review
+    # step; specs/013-report-remediations/contracts/improvements-record.md).
+    # JSON field identifiers and a local capture helper, not MCP tools.
+    "based_on", "coverage_gap_notes", "effective_picture", "held_up",
+    "review_coverage", "run_timestamp", "write_improvements",
     # GitHub Releases API field, referenced by the /okareo:reps command and
     # the reps skills' vendor pre-flight. Not an MCP tool.
     "tag_name",

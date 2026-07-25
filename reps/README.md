@@ -52,12 +52,23 @@ the `reps/` code — organized by agent (`agent_slug` = target name lowercased, 
 results/                       # gitignored (generated, per-engagement, may be sensitive)
 └── the_parts_store/
     ├── report_2026-07-08_1423.html
+    ├── the_parts_store-reps-analysis.md      # companion transcript analysis (feature 013)
     └── findings/
         ├── security_2026-07-08_1423.json
-        └── reasoning_2026-07-08_1423.json
+        ├── reasoning_2026-07-08_1423.json
+        └── improvements_2026-07-08_1500.json  # transcript-derived improvements record
 ```
 
 The report is regenerable any time by re-running the committed `reps/` artifacts.
+
+**Suggested Agent Improvements (feature 013):** report section 07 gives the agent's developers
+prioritized, root-cause fixes derived from reading the transcripts of the failing conversations —
+with verbatim quotes, run IDs, discounted judging artifacts, and test-side coverage gaps kept
+separate from real defects. It renders solely from the latest `improvements_<stamp>.json` in the
+agent's findings dir, authored by the `reps-run` co-pilot's transcript-review step (schema:
+`specs/013-report-remediations/contracts/improvements-record.md`). CLI/SDK runs don't author it —
+the report then shows an explicit "no transcript review captured" note, and a stale banner appears
+if new pillar runs land after the last review. Discounts never change recorded scores.
 
 ## Tune to your agent (recommended)
 
