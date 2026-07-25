@@ -3,5 +3,11 @@
   "agent-simulation": "skill_01AWmfj5c9jzmKCTc5m8o8F2",
   "evaluation": "skill_01X7XNav2aHq4dNA2hV7guPW",
   "monitoring": "skill_01NC95uSF3c1xkDvqKKoSek7",
-  "quickstart": "skill_01ECRjkDaqdmqi923a2ZPB9m"
+  "quickstart": "skill_01ECRjkDaqdmqi923a2ZPB9m",
+  "reps-explore": "skill_01ANj9aeqYd3SVMewY2C8Ppo",
+  "reps-profile": "skill_01Qd7HQMU3ecbkVYjNn7JTUq",
+  "reps-run": "skill_0125qCnQ2GmMifYFzr4Gq2J3",
+  "scenario-design": "skill_01UrABMYub7d7q8XjztifwAe",
+  "scenario-from-traces": "skill_01K4K9bnUCuiRAXJFNPzFQjq",
+  "voice-simulation": "skill_01GoqqSJ36GFUVPC79RNXcuA"
 }
