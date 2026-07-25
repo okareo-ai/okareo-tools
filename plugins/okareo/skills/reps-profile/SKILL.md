@@ -22,6 +22,33 @@ Artifacts are file-first (Constitution VII: a *file*, not necessarily a *commit*
 `git status --porcelain reps/` MUST print nothing. Never write secrets into the profile or any
 artifact (FR-019).
 
+**Pre-flight — the workbench lives in the operator's repo.** This skill's tuning operations read
+the committed baseline under `reps/` at the working-directory root. Everything runs from the
+operator's own repo — never ask them to leave their workspace, and never `git clone` into it (a
+nested repo confuses git and strands their artifacts in a foreign checkout). Check for the tree
+first (`test -d reps/R-reasoning`). If it is absent:
+
+- The **interview and profile writing (Operation A)** can proceed immediately — the profile shape
+  and the slot templates it feeds are bundled with this skill (see the file links below), and the
+  profile lands in `results/<agent_slug>/profile/` relative to the repo root. Make sure
+  `results/` is in the repo's `.gitignore` (append it if missing).
+- **Operations B/C/D** (and the draft check below) also need the baseline banks. Offer to
+  **vendor** the workbench into the current repo: resolve the latest release tag from
+  `https://api.github.com/repos/okareo-ai/okareo-tools/releases/latest`, then extract ONLY its
+  `reps/` directory into the repo root:
+
+  ```bash
+  tmp=$(mktemp -d) \
+    && curl -fsSL https://github.com/okareo-ai/okareo-tools/archive/refs/tags/<TAG>.tar.gz \
+       | tar -xz -C "$tmp" --strip-components=1 \
+    && mv "$tmp/reps" ./reps && rm -rf "$tmp"
+  ```
+
+  Write the tag into `reps/.workbench-version`, and suggest committing `reps/` — it is the
+  agent-agnostic baseline and belongs in the operator's history (tuning only ever writes to the
+  gitignored `results/` overlay, so the baseline stays clean). If a `reps/` directory exists but
+  is clearly not the workbench, STOP and ask the operator how to proceed — never overwrite.
+
 **Draft check first (feature 010):** before anything else, read the profile status:
 ```bash
 python -c "from reps.paths import read_profile_status; print(read_profile_status('<Target Name>'))"
@@ -67,15 +94,15 @@ gap, never a pass):
     thresholds and repeat count (`reliability`).
 
 Write these blocks into the overlay profile exactly as shaped in
-`reps/profile/agent-profile.example.yaml`.
+`references/agent-profile.example.yaml`.
 
 Then write the profile to the agent's **per-agent overlay directory** (never the committed tree):
 
 ```
 results/<agent_slug>/profile/agent-profile.yaml
 ```
-Shape it like `reps/profile/agent-profile.example.yaml` (that example stays in the baseline and is
-read-only). Get the slug from `reps.paths`:
+Shape it like `references/agent-profile.example.yaml` (a read-only reference — copy its shape,
+never edit it). Get the slug from `reps.paths`:
 ```bash
 python -c "from reps.paths import agent_profile_path; print(agent_profile_path('<Target Name>'))"
 ```
@@ -119,14 +146,14 @@ not write fall back to the baseline automatically, so coverage is never lost.
 Overlay target for each pillar — `results/<agent_slug>/tuned/<pillar-dir>/scenarios/<stem>.jsonl`
 (plus its `<stem>_meta.md`, which must be written alongside it):
 
-- **Reasoning** — read template `reps/R-reasoning/templates/reasoning-scenario.template.jsonl`
+- **Reasoning** — read template `references/reasoning-scenario.template.jsonl`
   → write `results/<agent_slug>/tuned/R-reasoning/scenarios/core.jsonl`:
   - `intent-switch` rows scripting pairs from `intents_supported` (e.g. cancel → downgrade).
   - `ambiguous-intent` rows whose script names plausible intents from `intents_supported`.
   - `constraint-retention` / `slot-fill` / `contradiction` rows using domain-real constraints,
     slots, and identifiers (part numbers, account ids…).
   - Route `driver` by demeanor: `confused-caller` or `assertive-caller`.
-- **Execution** — read template `reps/E-execution/templates/execution-scenario.template.jsonl`
+- **Execution** — read template `references/execution-scenario.template.jsonl`
   → write `results/<agent_slug>/tuned/E-execution/scenarios/core.jsonl`: one `tool-invocation` row per
   entry in `tools` (script the ask so the `result` pass criterion binds the tool + argument correctness), a
   `compound-request` row pairing two supported intents, plus `error-recovery` /

@@ -12,7 +12,7 @@
       "name": "okareo",
       "source": "./plugins/okareo",
       "description": "Okareo MCP server plus Skills that teach Claude how to design, run, and analyze evaluations of AI voice and conversational agents across audio, reasoning, execution, performance, and security.",
-      "version": "0.5.0",
+      "version": "0.5.1",
       "category": "agent-assurance",
       "keywords": [
         "okareo",

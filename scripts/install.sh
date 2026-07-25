@@ -77,7 +77,7 @@ install_claude_ai() {
 
 claude.ai installs skills per individual user, via the web UI:
 
-  1. Download the .skill files from https://tools.okareo.com
+  1. Download the .skill files from https://github.com/okareo-ai/okareo-tools/releases/latest
   2. In claude.ai, open Settings -> Capabilities -> Skills
   3. Upload each .skill file
   4. Add the Okareo MCP server under Settings -> Connectors

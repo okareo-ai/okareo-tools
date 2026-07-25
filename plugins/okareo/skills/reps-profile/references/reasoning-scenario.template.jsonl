@@ -1,0 +1,8 @@
+# Profiling slot-template (feature 002 + 009: contracts/scenario-row.md). The reps-profile skill
+# fills the slots with the target agent's real intents/domain, then APPENDS rows to
+# scenarios/core.jsonl (never a new scenario file, never a new driver/check).
+# Route `driver` by audible demeanor: confused-caller | assertive-caller.
+# Feature 009: state the correct agent outcome ONCE, in `result` (scenario_result). NEVER put an
+# `expected_behavior` (or any answer-key text) inside `input` — it would leak to the simulated
+# caller and validation now rejects it.
+{"input": {"sub_capability": "{sub_capability}", "persona": "{caller_demeanor}", "script": "{behavioral_arc_directives}", "driver": "{routed_driver}", "severity_on_fail": "High"}, "result": "{pass_criterion_ie_what_the_agent_should_do}"}

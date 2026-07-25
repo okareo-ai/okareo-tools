@@ -1,0 +1,8 @@
+# Profiling slot-template (feature 002 + 009: contracts/scenario-row.md). The reps-profile skill
+# fills the slots with the target agent's real tools/intents, then APPENDS rows to
+# scenarios/core.jsonl (never a new scenario file, never a new driver/check).
+# All rows use the single neutral voice persona (requester) — no driver field needed.
+# Feature 009: state the correct execution outcome ONCE, in `result` (scenario_result). NEVER put an
+# `expected_behavior` (or any answer-key text) inside `input` — it would leak to the simulated
+# caller and validation now rejects it.
+{"input": {"sub_capability": "{sub_capability}", "persona": "{caller_demeanor}", "script": "{behavioral_arc_directives}", "severity_on_fail": "High"}, "result": "{pass_criterion_shape_of_truth_incl_tool_and_args}"}

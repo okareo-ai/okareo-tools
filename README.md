@@ -15,18 +15,20 @@ Okareo). The skills give Claude the *method* — when to reach for those
 tools and how to run a real workflow with them. They are designed to be
 installed together.
 
-- Distribution site: https://tools.okareo.com
 - Repository: https://github.com/okareo-ai/okareo-tools
+- Skill downloads: https://github.com/okareo-ai/okareo-tools/releases/latest
 
 ## The REPS agent-evaluation workbench
 
-This repo also ships the **REPS workbench** (`reps/`): a standalone, forkable harness that
-evaluates any registered agent across four pillars — **R**easoning · **E**xecution ·
-**P**erformance · **S**ecurity — and generates an explainable assessment report. Clone this
-repo, point it at your agent, and drive it with the bundled skills: `reps-explore` (draft an
-agent profile from one discovery conversation), `reps-profile` (apply/tune the suite to your
-agent), and `reps-run` (execute a pillar and produce the report). Start at
-[`reps/README.md`](reps/README.md). Operator-local outputs land in the gitignored `results/`.
+This repo also ships the **REPS workbench** (`reps/`): a harness that evaluates any registered
+agent across four pillars — **R**easoning · **E**xecution · **P**erformance · **S**ecurity — and
+generates an explainable assessment report. It runs from **your own repo**: install the plugin and
+invoke the skills from your agent's workspace — on first use they vendor the `reps/` baseline into
+your repo from the latest release (no clone, no nested git; commit it as your baseline). Drive it
+with `reps-explore` (draft an agent profile from one discovery conversation), `reps-profile`
+(apply/tune the suite to your agent), and `reps-run` (execute a pillar and produce the report).
+Start at [`reps/README.md`](reps/README.md). Operator-local outputs land in the gitignored
+`results/`.
 
 ## What's in the box
 
@@ -189,9 +191,10 @@ than the interactive browser sign-in.
 
 ### claude.ai
 
-Per-user, through the web UI: download the `.skill` files from
-https://tools.okareo.com, then add them under Settings → Capabilities →
-Skills, and add the Okareo MCP server under Settings → Connectors.
+Per-user, through the web UI: download the `.skill` files from the
+[latest GitHub Release](https://github.com/okareo-ai/okareo-tools/releases/latest),
+then add them under Settings → Capabilities → Skills, and add the Okareo
+MCP server under Settings → Connectors.
 
 ## Updating
 
@@ -231,9 +234,10 @@ production and only use `latest` in development. See [Versioning](#versioning).
 
 ### claude.ai
 
-Download the new `.skill` files from https://tools.okareo.com, remove the
-previous versions under **Settings → Capabilities → Skills**, and add the
-new ones. The Okareo MCP server connector itself does not need to be
+Download the new `.skill` files from the
+[latest GitHub Release](https://github.com/okareo-ai/okareo-tools/releases/latest),
+remove the previous versions under **Settings → Capabilities → Skills**, and
+add the new ones. The Okareo MCP server connector itself does not need to be
 re-added.
 
 ## Developing skills

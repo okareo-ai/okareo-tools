@@ -2,7 +2,7 @@
 #
 # release.sh — publish the Okareo skill packages to all three Claude
 # surfaces: Claude Code (plugin marketplace), the Claude API (Skills API),
-# and claude.ai (downloadable .skill files hosted on tools.okareo.com).
+# and claude.ai (downloadable .skill files attached to the GitHub Release).
 #
 # One git repo is the single source of truth. release.sh first calls
 # build.sh to produce the .skill packages, then ships them per surface.
@@ -112,10 +112,11 @@ else
   echo "    created git tag $TAG  (push with: git push origin main --tags)"
 fi
 
-# --- 4. claude.ai: stage the downloadable .skill files ---------------------
+# --- 4. claude.ai: downloadable .skill files -------------------------------
 # claude.ai has no upload API for custom skills — users download a .skill
-# file and add it under Settings. Host these on tools.okareo.com.
-echo "==> Staging claude.ai downloads — upload to tools.okareo.com:"
+# file and add it under Settings. release.yml attaches these to the GitHub
+# Release automatically when the version tag is pushed; nothing manual here.
+echo "==> claude.ai downloads ship as GitHub Release assets on tag push:"
 for p in "${PACKAGES[@]}"; do echo "      $p"; done
 
 echo "==> Release v$VERSION complete"

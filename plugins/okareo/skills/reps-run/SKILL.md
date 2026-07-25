@@ -11,6 +11,35 @@ The zero-setup entry point: **pass a target name and a pillar, get a report.** N
 required — every pillar ships generic starters that produce a complete baseline. (Run `reps-profile`
 first only if you want Reasoning/Execution probes tailored to the specific agent.)
 
+## Pre-flight — the workbench lives in the operator's repo (vendor it if missing)
+
+Everything below reads the `reps/` tree at the working-directory root (scenario banks, drivers,
+checks, report tooling) and writes operator-local outputs to `results/` beside it. Run from the
+operator's own repo — never ask them to leave their workspace, and never `git clone` into it
+(a nested repo confuses git and strands their reports in a foreign checkout). Check for the tree
+first (`test -d reps/S-security`). If it is absent, offer to **vendor** the workbench into the
+current repo:
+
+1. Resolve the latest release tag from
+   `https://api.github.com/repos/okareo-ai/okareo-tools/releases/latest`.
+2. Extract ONLY the `reps/` directory from that tag's source tarball into the repo root:
+   ```bash
+   tmp=$(mktemp -d) \
+     && curl -fsSL https://github.com/okareo-ai/okareo-tools/archive/refs/tags/<TAG>.tar.gz \
+        | tar -xz -C "$tmp" --strip-components=1 \
+     && mv "$tmp/reps" ./reps && rm -rf "$tmp"
+   ```
+3. Write the tag into `reps/.workbench-version` (how future upgrades know what is installed).
+4. Ensure `results/` is in the repo's `.gitignore` (append it if missing).
+5. Suggest committing `reps/` — it is the agent-agnostic **baseline** and belongs in the
+   operator's history (Constitution: committed baseline, gitignored overlay). Their tuning never
+   touches it, so `git status --porcelain reps/` stays a valid cleanliness check.
+
+If a `reps/` directory exists but is clearly not the workbench (no REPS `reps/README.md`), STOP
+and ask the operator how to proceed — never overwrite. To upgrade later: verify
+`git status --porcelain reps/` is clean, then re-extract a newer tag over `reps/` the same way.
+Never proceed without the workbench — the banks ARE the evaluation.
+
 ## Inputs
 
 - **target** — the name (or id) of a voice agent already registered in Okareo. Fallback `$REPS_TARGET`.

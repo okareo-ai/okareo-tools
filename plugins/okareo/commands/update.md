@@ -55,7 +55,8 @@ stop doing this by hand, mention the opt-in: turn on auto-update from the
 The Skills API versions each skill on upload; pin a version in production and
 use `latest` only in development.
 
-**claude.ai**: download the new `.skill` files from https://tools.okareo.com,
+**claude.ai**: download the new `.skill` files from
+https://github.com/okareo-ai/okareo-tools/releases/latest,
 remove the previous versions under **Settings → Capabilities → Skills**, and add
 the new ones. The Okareo MCP connector itself does not need to be re-added.
 
