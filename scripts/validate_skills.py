@@ -104,6 +104,7 @@ NON_TOOL_TOKENS = {
     "updated_at", "verbalization_values", "voice_profile", "write_record",
 }
 REF_LINK = re.compile(r"\(references/([^)]+)\)")
+XML_TAG = re.compile(r"</?[A-Za-z_][^<>]*>")  # Skills API: no XML tags in description
 
 
 def split_frontmatter(text: str) -> dict[str, str] | None:
@@ -167,6 +168,14 @@ def validate_skill(skill_dir: Path) -> list[str]:
         problems.append(
             f"{name}: description is {len(description)} chars "
             f"(max {DESCRIPTION_MAX_CHARS})"
+        )
+    elif XML_TAG.search(description):
+        # The Skills API rejects these outright: "SKILL.md description
+        # cannot contain XML tags". Placeholders like <agent_slug> count.
+        problems.append(
+            f"{name}: description contains an XML-like tag "
+            f"({XML_TAG.search(description).group(0)!r}) — the Skills API "
+            f"rejects it; reword without angle brackets"
         )
 
     for ref in REF_LINK.findall(text):

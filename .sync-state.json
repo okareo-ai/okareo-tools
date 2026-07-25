@@ -1,6 +1,6 @@
 {
-  "content_hash": "sha256:09dd045bf0276f4a63bf3cfc245801fb1e9d0adfd2796997856d915d6ba3b0fd",
-  "dev_revision": "e873ee4",
+  "content_hash": "sha256:6fd6cb0ce744e60aa184c499e8b45aa3bc0b28c7c02c32eca8b8fef4db223f4b",
+  "dev_revision": "3c9a9e8",
   "file_hashes": {
     ".claude-plugin/marketplace.json": "sha256:9fc9455fb45e61844f1de35e63c1e597aa26acaf819c2441349ddec7f3f7b1a9",
     ".github/workflows/release.yml": "sha256:b5559eacfcfd953e927346d798f0636ae204f09c5cbf8ecfdfe1c2a7b2ba80d5",
@@ -39,12 +39,12 @@
     "plugins/okareo/skills/monitoring/references/voice-signals.md": "sha256:39c11b8a65a4ab28bbde42a69f6098723a1a711bad8b49bb394f5626f71a6e0d",
     "plugins/okareo/skills/quickstart/SKILL.md": "sha256:05e427d2de238e6c158cb09844e476d3ce31ed27a585d463f9ba1066cc5aa28c",
     "plugins/okareo/skills/quickstart/references/concepts.md": "sha256:4417e16fc17f402020c1c1b099354fd68646528d1be654ffeab1c4ae87ae8a9c",
-    "plugins/okareo/skills/reps-explore/SKILL.md": "sha256:f469642d473b8fcfe3179b7e81c452918b89b3d622fab36af3a44b4a9b735b37",
+    "plugins/okareo/skills/reps-explore/SKILL.md": "sha256:0315f3f801898f8e0bdf42c0b0195f716cd4eebacdf34bdf65c701bf498e0c54",
     "plugins/okareo/skills/reps-explore/references/agent-profile.example.yaml": "sha256:5b5c3e4a1905e5b785b0f801ab52a54b579e4e76f7e23add134f97cf0fed6484",
     "plugins/okareo/skills/reps-explore/references/curious-onboarder.md": "sha256:5f0ec48d66b742dce246a952aaa43eb64b9ca3deb58712a3205c102f8aec4bbb",
     "plugins/okareo/skills/reps-explore/references/discovery.jsonl": "sha256:641ec62f84581e196ff08fc10b7e954aacb8e857a6180790dc4ad35868a71f3a",
     "plugins/okareo/skills/reps-explore/references/discovery_meta.md": "sha256:b5f9cfefc43647d74d8a84a54d673c6cf365367b577a2850d52f891f7350675a",
-    "plugins/okareo/skills/reps-profile/SKILL.md": "sha256:30019319c6bb3d7952acaa99a3f941b4b918f1c3ccb70d9340a7ebbe36452d6e",
+    "plugins/okareo/skills/reps-profile/SKILL.md": "sha256:bdf7979c96be4656830dd840119fbf3bdefff161dbb126e1d707dbfef70ea254",
     "plugins/okareo/skills/reps-run/SKILL.md": "sha256:ef477834cb7cf1039981bb88bd36bb08e7fae29b3a5c09b3ff9c747b05c6ea2e",
     "plugins/okareo/skills/scenario-design/SKILL.md": "sha256:d1e2caca5f1994f57d3506376b34533e515b85082572e9aedbd3b90f3688d8d8",
     "plugins/okareo/skills/scenario-design/references/coverage.md": "sha256:2c5ac8363e2282700bb6675c0ceef88864441eb4bf954390ce7dd64020299f0c",
@@ -143,10 +143,10 @@
     "scripts/build.sh": "sha256:e364b4041dd399aaa1e8a989cb326090b46da65620c67f1f1b6088ffac29f168:x",
     "scripts/install.sh": "sha256:397c90f7516037f22656a0d852654dd98b857e6b84470130cffa076e3e08cf1d:x",
     "scripts/release.sh": "sha256:ea72f56513dc000bd33f10526e4529585f59f447238cbc37a9020ef1b22b4b4d:x",
-    "scripts/validate_skills.py": "sha256:8b4492020876e6758020f479614d89267679c1a40f594a16ed9e070a8ff26f36:x",
+    "scripts/validate_skills.py": "sha256:90bece51e13ac3c2bee0217883d80f0ada53a3f61dc676b2faf86c649a1cd03a:x",
     "skill-template/SKILL.md": "sha256:8e5b3fd7c26094c63b437313a85f243643604c596ae485337fb884a7db1b8a6d",
     "skill-template/references/example-reference.md": "sha256:4542b912bd674664a44d6751fb9a058467b3580f6fbbb194a86778e6be43b8e3"
   },
   "pipeline": "ci",
-  "synced_at": "2026-07-25T15:40:42Z"
+  "synced_at": "2026-07-25T16:08:13Z"
 }
