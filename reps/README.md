@@ -154,6 +154,15 @@ reps/
   voice/manner of speech**, a condition-free shell that renders only `{scenario_input.persona}`
   and `{scenario_input.script}`. All probe-specific behavior lives in rows, none in driver prose.
   R uses 2 (confused / assertive), E and P use 1 each.
+  Under the prompt heading a driver authors exactly the platform's four canonical sections —
+  `## Persona`, `## Scenario Details` (the two tokens, immediately before objectives),
+  `## Objectives`, `## Soft Tactics` — and **never** hand-writes conversation-rule sections:
+  the MCP appends the platform's canonical `Hard Rules` / `Turn-End Checklist` /
+  `Conversation Behavior` blocks on every save, replacing any authored variant. Those blocks are
+  captured verbatim in `reps/shared/driver-canonical-blocks.md` (platform-owned, do not edit) and
+  appended by the SDK path in `run_suite.py` so both run paths store the same effective prompt.
+  Enforced by `tests/test_driver_conformance.py`; contract:
+  `specs/014-driver-conformance/contracts/driver-file-format.md`.
 - **Checks** — one per-pillar **rubric judge** (`<pillar>-expectation-met`) grades a conversation
   against the row's `result` (pass criterion); deterministic/metric checks (`.py`:
   latency, error-rate, tool-arg-schema) stay separate (Constitution V).

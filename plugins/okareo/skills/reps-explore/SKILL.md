@@ -22,7 +22,17 @@ reps-run      →  executes the simulations (warns + offers baseline-or-stop on 
 ```
 
 Never generate tuned rows, never run a REPS pillar, never modify the committed `reps/` tree.
-After any exploration, `git status --porcelain reps/` MUST print nothing.
+After any exploration, `git status --porcelain reps/` MUST print nothing (when a local tree
+exists).
+
+**Run where you are invoked.** Everything you write — the draft profile and the exploration
+summary — lands under `results/<agent_slug>/` in the CURRENT project root (the directory the
+session was invoked in). A REPS workbench that is merely *visible* elsewhere on disk (another
+checkout, an additional working directory) is NOT this run's home: never anchor paths there,
+never import its `reps` helpers, and never read or write its `results/` tree. **Local-helper
+mode applies only when the current project root itself contains the `reps/` tree**; otherwise
+run standalone with the rules inlined below. If a prior draft for this agent exists only in an
+external workbench, say where it is and continue fresh in the current project.
 
 **Keyless.** Drive Okareo through the MCP tools (its own auth) — no local `OKAREO_API_KEY`.
 
@@ -33,13 +43,16 @@ After any exploration, `git status --porcelain reps/` MUST print nothing.
 
 ## Step 1 — Resolve the target and check for an existing profile
 
-1. Confirm the target exists: `list_targets` / `get_target`. Compute the agent slug — in the
-   REPS workbench repo: `python -c "from reps.slug import agent_slug; print(agent_slug('<target>'))"`;
-   standalone (no workbench `reps` package on disk): lowercase the target name and collapse every
-   run of non-alphanumeric characters into a single hyphen.
+1. Confirm the target exists: `list_targets` / `get_target`. Compute the agent slug — local mode
+   (a `reps/` tree in the current project root):
+   `python -c "from reps.slug import agent_slug; print(agent_slug('<target>'))"`; standalone:
+   lowercase the target name, spaces → `_`, and collapse every other run of non-`[a-z0-9_]`
+   characters into a single `_` (e.g. "The Parts Store" → "the_parts_store" — the same rule the
+   other reps skills use, so the overlay folder never forks).
 2. Check for an existing profile at `results/<slug>/profile/agent-profile.yaml` in the current
-   project (the workbench helper `reps.paths.agent_profile_path` resolves the same location;
-   standalone, create the directory on write if it does not exist).
+   project root (in local mode `reps.paths.agent_profile_path` resolves the same location;
+   standalone, create the directory on write if it does not exist). Never resolve this path
+   against any other repo.
 3. **If a profile already exists, NEVER silently overwrite it** (FR-012). Report its **status**,
    **version**, and **updated_at**, then ask the operator to choose:
    - **refresh** *(offered only when status is `draft`)* — re-explore and overwrite the draft.
@@ -51,8 +64,8 @@ After any exploration, `git status --porcelain reps/` MUST print nothing.
 
 ## Step 2 — Resolve the discovery modality
 
-No profile modality exists yet (first run), so derive from the target type. In the workbench
-repo the helper below applies the rule; standalone, apply it directly from `get_target`'s type:
+No profile modality exists yet (first run), so derive from the target type. In local mode the
+helper below applies the rule; standalone, apply it directly from `get_target`'s type:
 
 ```bash
 python -c "from reps.trace import resolve_run_modality; \
@@ -74,7 +87,7 @@ The committed baseline files are the source of truth (Constitution VII, read-onl
   **`explore-discovery-task-first`**, row 3 → **`explore-discovery-limits-first`**; tags
   `reps, explore, standard, fp:<hash>` (fingerprint of that one row)
 
-Bias to reuse (feature 003): fingerprint the committed file (workbench helper
+Bias to reuse (feature 003): fingerprint the committed file (local mode: helper
 `reps.reuse.fingerprint`; standalone, a SHA-256 of the file's bytes), discover
 by name (`list_drivers`+`get_driver` persona-hash; `list_scenarios` reading `fp:` tags), and
 **reuse on a confirmed match; upload only when new or superseded** (`create_or_update_driver` —
@@ -171,7 +184,9 @@ Then:
    `results/<agent_slug>/profile/exploration-summary.md`. **Any earlier failure — target
    unreachable, simulation error, empty transcript — means you write NOTHING** (FR-016): report
    the failure plainly and leave any pre-existing overlay untouched.
-4. Prove the baseline is clean and show the operator: `git status --porcelain reps/` → no output.
+4. In local mode, prove the baseline is clean and show the operator:
+   `git status --porcelain reps/` → no output. (Standalone: no local `reps/` tree — nothing to
+   check.)
 
 ## Step 7 — Report back
 

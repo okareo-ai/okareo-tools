@@ -210,7 +210,7 @@ def upload_artifacts(okareo, pillar_dir: Path, prefix: str, modality: str,
         validate_rows,
     )
 
-    from reps.paths import discover_names, resolve_artifact
+    from reps.paths import discover_names, resolve_artifact, with_canonical_blocks
     from reps.rows import select_rows_for_modality
     from reps.coverage import load_manifest
 
@@ -238,7 +238,12 @@ def upload_artifacts(okareo, pillar_dir: Path, prefix: str, modality: str,
             continue
         data = parse_artifact(md, default_temperature=0.6)
         canonical = data["name"]
-        kwargs = dict(name=canonical, prompt_template=data["prompt_template"],
+        # Feature 014: driver files author only the four-section core; the MCP appends the
+        # platform's canonical rule blocks on save. The SDK does not, so append them here —
+        # otherwise an SDK-uploaded persona would run with no conversation rules, and its
+        # fingerprint could never match an MCP-saved driver (perpetual re-upload).
+        kwargs = dict(name=canonical,
+                      prompt_template=with_canonical_blocks(data["prompt_template"]),
                       temperature=data["temperature"])
         # Voice driver fields (additive; only when present and running voice)
         if modality == "voice":

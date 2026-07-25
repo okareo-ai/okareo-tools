@@ -24,14 +24,18 @@ artifact (FR-019).
 
 **Pre-flight — where the baseline comes from (local wins; MCP otherwise).** This skill runs from
 the operator's own repo — never ask them to leave their workspace, and never `git clone` into it.
-Baseline reads resolve by source; check `test -d reps/R-reasoning` first:
+All writes anchor to the current project root (the directory the session was invoked in), NEVER
+another repo — a REPS workbench checkout visible elsewhere on disk (e.g. an additional working
+directory) is not this run's home; do not anchor paths or import helpers from it. Baseline reads
+resolve by source; check `test -d reps/R-reasoning` in the current project root first:
 
 - **Local `reps/` present → local mode.** Read templates and banks from the tree as documented
   below.
 - **No local `reps/` → MCP mode (the zero-setup default).** The **interview and profile writing
   (Operation A)** proceed immediately either way — the profile shape and the slot templates it
   feeds are bundled with this skill (see the file links below), and the profile lands in
-  `results/<agent_slug>/profile/` relative to the repo root (ensure `results/` is gitignored).
+  `results/<agent_slug>/profile/` relative to the current project root (ensure `results/` is
+  gitignored).
   For **Operations B/C/D**, read each baseline template or bank through the `get_reps_baseline`
   Okareo MCP tool instead of the filesystem: discover with `{"pillar": "<pillar-dir>"}`, fetch
   with `{"path": "<pillar-dir>/scenarios/core.jsonl"}` etc. — wherever the steps below read

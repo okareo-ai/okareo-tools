@@ -14,8 +14,11 @@ first only if you want Reasoning/Execution probes tailored to the specific agent
 ## Pre-flight — where the baseline comes from (local wins; MCP otherwise)
 
 The run reads the agent-agnostic **baseline** (scenario banks, drivers, checks, eval configs) and
-writes operator-local outputs to `results/` in the current directory. Resolve the baseline
-**source** first — check `test -d reps/S-security`:
+writes operator-local outputs to `results/` in the current project root — the directory the
+session was invoked in, NEVER another repo (a REPS workbench checkout visible elsewhere on disk,
+e.g. as an additional working directory, is not this run's home; do not anchor paths or import
+helpers from it). Resolve the baseline **source** first — check `test -d reps/S-security` in the
+current project root:
 
 - **Local `reps/` present → local mode.** Read baseline files from the tree exactly as documented
   below. Record its version from `reps/.workbench-version` (or `unversioned` if absent).

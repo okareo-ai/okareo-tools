@@ -183,6 +183,49 @@ def exploration_summary_path(target_or_slug: str,
     return agent_dir(target_or_slug, project_root) / PROFILE_DIRNAME / "exploration-summary.md"
 
 
+# Feature 014: the platform's canonical driver rule blocks, captured verbatim. Driver files author
+# only the four-section core; the MCP appends these blocks on save, so the SDK path must append
+# them too or an SDK-uploaded driver would run with no conversation rules at all.
+CANONICAL_BLOCKS_FILENAME = "driver-canonical-blocks.md"
+_BLOCKS_START = "<!-- CANONICAL-BLOCKS-BODY-START -->"
+_BLOCKS_END = "<!-- CANONICAL-BLOCKS-BODY-END -->"
+
+
+def canonical_blocks_path(project_root: Optional[PathLike] = None) -> Path:
+    """`reps/shared/driver-canonical-blocks.md` — platform-owned text, never hand-edited."""
+    return _root(project_root) / "reps" / "shared" / CANONICAL_BLOCKS_FILENAME
+
+
+def canonical_driver_blocks(project_root: Optional[PathLike] = None) -> str:
+    """The canonical blocks body the platform appends to every saved driver.
+
+    Returns the text between the body markers, stripped. Raises if the file or markers are
+    missing — a silent empty string would ship SDK drivers with no conversation rules.
+    """
+    path = canonical_blocks_path(project_root)
+    text = path.read_text(encoding="utf-8")
+    try:
+        body = text.split(_BLOCKS_START, 1)[1].split(_BLOCKS_END, 1)[0]
+    except IndexError as exc:  # noqa: BLE001 - explicit, actionable failure
+        raise ValueError(
+            f"{path} is missing the canonical-blocks body markers "
+            f"({_BLOCKS_START} / {_BLOCKS_END})") from exc
+    return body.strip()
+
+
+def with_canonical_blocks(prompt_template: str,
+                          project_root: Optional[PathLike] = None) -> str:
+    """Authored four-section core + the platform's canonical blocks (MCP-save parity).
+
+    Idempotent: a template that already carries the blocks is returned unchanged, so re-uploads
+    and already-appended templates never duplicate them.
+    """
+    blocks = canonical_driver_blocks(project_root)
+    if blocks and blocks in prompt_template:
+        return prompt_template
+    return f"{prompt_template.rstrip()}\n\n{blocks}\n"
+
+
 _MODALITY_LINE = re.compile(r'^modality:\s*["\']?(voice|text)["\']?\s*(?:#.*)?$', re.IGNORECASE)
 
 
