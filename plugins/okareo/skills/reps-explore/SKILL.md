@@ -31,7 +31,11 @@ session was invoked in). A REPS workbench that is merely *visible* elsewhere on 
 checkout, an additional working directory) is NOT this run's home: never anchor paths there,
 never import its `reps` helpers, and never read or write its `results/` tree. **Local-helper
 mode applies only when the current project root itself contains the `reps/` tree**; otherwise
-run standalone with the rules inlined below. If a prior draft for this agent exists only in an
+run standalone with the rules inlined below. Standalone operation covers THIS skill's draft
+outputs only (the draft profile and exploration summary — prose artifacts with no generator);
+standalone mode never extends to reps-run's deliverables: its findings/improvements records or
+the report are always produced by reps-run's canonical tooling, per that skill's own hard
+invariant. If a prior draft for this agent exists only in an
 external workbench, say where it is and continue fresh in the current project.
 
 **Keyless.** Drive Okareo through the MCP tools (its own auth) — no local `OKAREO_API_KEY`.

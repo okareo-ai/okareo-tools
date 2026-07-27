@@ -1,8 +1,8 @@
 {
-  "content_hash": "sha256:df12483e971938bf2770f61a3f1bbe214f14a4eeadb47c6c4ecb5a738eb114fb",
-  "dev_revision": "edd7950",
+  "content_hash": "sha256:5b50e6093ba4a57c0525be4e62cf644e2adc17bc4e4bc2abffc27810511e300e",
+  "dev_revision": "e605a17",
   "file_hashes": {
-    ".claude-plugin/marketplace.json": "sha256:7a18accc49e91146d15743474ce9c2d215b55d418677cf37afbb8ab5031be477",
+    ".claude-plugin/marketplace.json": "sha256:275fdfe289a1711f933b51aee554419303332fc609d84d787ebf3ddbbad58f2f",
     ".github/workflows/release.yml": "sha256:b5559eacfcfd953e927346d798f0636ae204f09c5cbf8ecfdfe1c2a7b2ba80d5",
     ".gitignore": "sha256:1cf2e848bd76aeb8c662c1219439553870697b5d48c267c7db014b84c2c8a0c1",
     "CLAUDE.md.snippet": "sha256:78d16844c62f2596aa19a8973e8507aecc4c5acc60535eff8d8abda01621be92",
@@ -14,7 +14,7 @@
     "contracts/get_reps_baseline.md": "sha256:96ce398176dbef965ab185df8552d3553fcc1e15846f9cfffd759412a2710362",
     "media/okareo_logo.svg": "sha256:d75d2c056b57b2a91e5a1535f2f9d5f1dc11512daec08bc7657bd6ac5b0665ae",
     "media/okareo_logo_color.svg": "sha256:2beb8f7bf82cb7b3337167a5c657c9bafb8c21667a09620e1c76ba5d1fc9e5ce",
-    "plugins/okareo/.claude-plugin/plugin.json": "sha256:4111a5b414a822be1f7e3f88e5ce452005be14f8a72e3e78cf45f0f1c567f250",
+    "plugins/okareo/.claude-plugin/plugin.json": "sha256:2e59e790fd51e188a32fd468c460fcda523fdd74aecfd20a1a6423e5510174fe",
     "plugins/okareo/.mcp.json": "sha256:04589eb4da16fab369aebe561eb2a4b22bd9a765e3b0a549445a896b8ae285ae",
     "plugins/okareo/commands/improve.md": "sha256:16cc4209b04d78683e574a2937fd6b2acba80f6b1d87cb21016712ffc954d03e",
     "plugins/okareo/commands/monitor.md": "sha256:f6210ad5e9522891cb7682c607f62f9ae5cb76f18eb7b0e2c09996eb35c262f8",
@@ -41,7 +41,7 @@
     "plugins/okareo/skills/monitoring/references/voice-signals.md": "sha256:39c11b8a65a4ab28bbde42a69f6098723a1a711bad8b49bb394f5626f71a6e0d",
     "plugins/okareo/skills/quickstart/SKILL.md": "sha256:05e427d2de238e6c158cb09844e476d3ce31ed27a585d463f9ba1066cc5aa28c",
     "plugins/okareo/skills/quickstart/references/concepts.md": "sha256:4417e16fc17f402020c1c1b099354fd68646528d1be654ffeab1c4ae87ae8a9c",
-    "plugins/okareo/skills/reps-explore/SKILL.md": "sha256:2cb73e341c842645d8db3adce440baa87d7ed37bcc4b684ba89b32f8b21b7620",
+    "plugins/okareo/skills/reps-explore/SKILL.md": "sha256:2aafb51d0d2b08258b3448e7e8704ab11e86350f91abea791a6f20aa8f8ab193",
     "plugins/okareo/skills/reps-explore/references/agent-profile.example.yaml": "sha256:5b5c3e4a1905e5b785b0f801ab52a54b579e4e76f7e23add134f97cf0fed6484",
     "plugins/okareo/skills/reps-explore/references/curious-onboarder.md": "sha256:93700389e0d219476042593c0e7a3acb53c9506dd76610c077107b5f7b0b0ef5",
     "plugins/okareo/skills/reps-explore/references/discovery.jsonl": "sha256:641ec62f84581e196ff08fc10b7e954aacb8e857a6180790dc4ad35868a71f3a",
@@ -50,7 +50,7 @@
     "plugins/okareo/skills/reps-profile/references/agent-profile.example.yaml": "sha256:5b5c3e4a1905e5b785b0f801ab52a54b579e4e76f7e23add134f97cf0fed6484",
     "plugins/okareo/skills/reps-profile/references/execution-scenario.template.jsonl": "sha256:3be068c18f3856dce596b2d2c0dca0cae482471eed11206e0bee77ebf173a8db",
     "plugins/okareo/skills/reps-profile/references/reasoning-scenario.template.jsonl": "sha256:3df450c974e04ccbb627b371c06f24d32265199327e5681017f1e88aab05ffd7",
-    "plugins/okareo/skills/reps-run/SKILL.md": "sha256:e9c4c5b9d495a021304f36158337aeb70ce57cb3540b0c5a79cda8de5003140c",
+    "plugins/okareo/skills/reps-run/SKILL.md": "sha256:06828d867761530f573a7fcbb6c3548afc54a3ce68ea325c84020a43860e41c8",
     "plugins/okareo/skills/scenario-design/SKILL.md": "sha256:d1e2caca5f1994f57d3506376b34533e515b85082572e9aedbd3b90f3688d8d8",
     "plugins/okareo/skills/scenario-design/references/coverage.md": "sha256:2c5ac8363e2282700bb6675c0ceef88864441eb4bf954390ce7dd64020299f0c",
     "plugins/okareo/skills/scenario-from-traces/SKILL.md": "sha256:fc9bb62249763558defa7f507f2ccdf58f1bf49f7ad0a71069c5801ad4561a70",
@@ -155,5 +155,5 @@
     "skill-template/references/example-reference.md": "sha256:4542b912bd674664a44d6751fb9a058467b3580f6fbbb194a86778e6be43b8e3"
   },
   "pipeline": "ci",
-  "synced_at": "2026-07-25T21:45:13Z"
+  "synced_at": "2026-07-27T21:02:14Z"
 }

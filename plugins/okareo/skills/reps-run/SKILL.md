@@ -23,8 +23,12 @@ current project root:
 - **Local `reps/` present → local mode.** Read baseline files from the tree exactly as documented
   below. Record its version from `reps/.workbench-version` (or `unversioned` if absent).
 - **No local `reps/` → MCP mode (the zero-setup default).** Serve every baseline read through the
-  `get_reps_baseline` Okareo MCP tool — do NOT vendor, prompt to install, or `git clone`
-  anything. The tool serves the latest released tree:
+  `get_reps_baseline` Okareo MCP tool — do NOT vendor, prompt to install, or git clone baseline
+  artifacts (scenario banks, drivers, checks, eval configs): read them through the tool, never
+  write them to disk. The one required exception is the pure-Python **report tooling**: DO
+  materialize the MCP tooling set into a temporary directory (see "Materialize the MCP tooling
+  set" under Path A) — records and the report are produced by that tooling, in every mode. The
+  tool serves the latest released tree:
   - **Discover** — call with `{"pillar": "<pillar-dir>"}` (no `path`) → envelope lists `files[]`
     (tree-relative paths) and the serving `tag`. Record that `tag` once; it is the run's baseline
     version.
@@ -38,8 +42,9 @@ current project root:
     baseline cannot be served right now (offer `/okareo:reps` local install as the workaround);
     `unknown_path` → re-discover (the tree may have changed between calls); others → surface
     `message` verbatim.
-  - **Helper scripts** live in the baseline tree, so in MCP mode replace them with their
-    documented rules: the agent slug is the target name lowercased, spaces → `_`, other
+  - **Helper scripts** run from the materialized MCP tooling set (see Path A) — every `python -c`
+    helper below works in MCP mode with `PYTHONPATH="$TOOLING_ROOT"` prepended. Their semantics,
+    for reference: the agent slug is the target name lowercased, spaces → `_`, other
     non-`[a-z0-9_]` runs collapsed to `_` (e.g. "The Parts Store" → "the_parts_store"); profile
     status is the `status:` field of `results/<agent_slug>/profile/agent-profile.yaml` when that
     file exists locally; overlay resolution is a direct check of
@@ -104,6 +109,50 @@ this agent.
 This keeps the MCP path byte-identical to the SDK runner (`run_suite.py`) for the same overlay content.
 If the agent has no overlay, every artifact resolves to the baseline and the run is exactly as before.
 
+### Materialize the MCP tooling set (MCP mode only — before any step that runs Python)
+
+The capture and report steps below are executed by the canonical pure-Python tooling, never
+re-implemented by hand. In MCP mode, fetch that tooling first — DO materialize the MCP tooling
+set through `get_reps_baseline`; it is stdlib-only and runs on bare `python3`:
+
+1. **Discover once** — call `get_reps_baseline` with no `pillar`/`path`. The envelope's `files[]`
+   must list all 17 tooling paths below; record the serving `tag` (it is the run's baseline
+   version AND the tooling version — one tag for everything this run fetches). Surface
+   `stale: true` + `stale_reason` per the envelope rule above.
+2. **Fetch the set** — for each path below, call `get_reps_baseline` with that `path` and write
+   the envelope's `content` verbatim to `$TOOLING_ROOT/<path>`, where `TOOLING_ROOT` is a fresh
+   **temporary directory outside the project tree** (e.g. `TOOLING_ROOT=$(mktemp -d)` or the
+   session scratchpad). NEVER write the tooling under the project root and never create a
+   `reps/` directory in the project working tree — a project-root `reps/` would flip this
+   skill's mode detection for every later session.
+
+   ```text
+   reps/__init__.py            reps/report/__init__.py         reps/rows.py
+   reps/slug.py                reps/report/capture.py          reps/reuse/__init__.py
+   reps/trace.py               reps/report/scoring.py          reps/reuse/fingerprint.py
+   reps/paths.py               reps/report/improvements.py     reps/reuse/naming.py
+   reps/coverage.py            reps/report/gen_reps_report.py  reps/reuse/decision.py
+                                                               reps/reuse/orchestrate.py
+                                                               reps/reuse/platform.py
+   ```
+
+3. **Smoke-import** — `PYTHONPATH="$TOOLING_ROOT" python3 -c "import reps.report.capture,
+   reps.report.gen_reps_report"` (catches a truncated or missing fetch before anything runs).
+4. **Invocation pattern** — keep the project root as CWD for every step. Run each `python -c`
+   helper below as `PYTHONPATH="$TOOLING_ROOT" python3 -c "..."`, and render the report with
+   `python3 "$TOOLING_ROOT"/reps/report/gen_reps_report.py ...` passing explicit
+   `--results`/`--out` (step 8 — the generator's defaults anchor to the script's own tree, which
+   here is `$TOOLING_ROOT`, not the project). Records and the report land under the project-root
+   `results/` tree exactly as in local mode; `$TOOLING_ROOT` holds tooling only, never
+   deliverables, and is disposable (if lost, re-fetch — never re-author).
+5. **Errors** — reuse the envelope rules verbatim (`rate_limited` → wait and retry;
+   `unknown_path` → re-discover). If any of the ten `reps/report/…`/core files above still
+   cannot be obtained or smoke-imported, follow the STOP rule in step 6 below — do not proceed
+   to capture, and do not improvise.
+
+In local mode this section is a no-op: the tree on disk is the tooling, and the commands below
+run unprefixed exactly as written.
+
 ### Steps
 
 1. **Resolve the target** — `list_targets` / `get_target` to confirm the target name exists. Compute
@@ -131,7 +180,8 @@ If the agent has no overlay, every artifact resolves to the baseline and the run
    every row's `input` needs non-empty `sub_capability`, `persona`, `script`
    (+ `driver` routing when the bank feeds >1 driver) and a top-level `result`; `input` must NOT
    carry `expected_behavior` (feature 009 — the outcome belongs in `result`, out of the driver's view). Validate key-free before ANY upload:
-   Validate the **resolved** bank (the overlay when tuned, else the baseline):
+   Validate the **resolved** bank (the overlay when tuned, else the baseline) — in MCP mode,
+   prefix `PYTHONPATH="$TOOLING_ROOT"` (here and on every `python -c` below):
    ```bash
    python -c "from reps.rows import load_rows, validate_rows, bank_is_standardized; \
    from reps.paths import resolve_artifact; from pathlib import Path; \
@@ -218,7 +268,16 @@ If the agent has no overlay, every artifact resolves to the baseline and the run
      than the rows uploaded, add a `coverage_gaps` list to that simulation — one entry
      `{scenario, sub_capability, reason}` per row that produced no result, read from the
      committed bank file. Mark the simulation `status:"error"` (never a pass) if the run errored.
-6. **Write the record (key-free)** — call the shared writer; findings go to
+6. **Write the record (key-free)** — **HARD INVARIANT, every mode:** findings records,
+   improvements records, and the report HTML MUST be produced by write_record,
+   write_improvements, and gen_reps_report.py — never hand-assemble any of them, under any
+   framing (another skill's "standalone mode" grants no exception here). If the core tooling
+   cannot be obtained or smoke-imported — **STOP: do not write records or a report by hand.**
+   Tell the operator which step is blocked and why, that completed simulations are safely
+   captured on the Okareo platform, and the recovery: run `/okareo:reps` to install the local
+   tree, then re-invoke reps-run — its standalone re-review (step 7) captures and renders from
+   the existing platform runs without re-running simulations.
+   Now call the shared writer; findings go to
    `results/<agent_slug>/findings/` (slug = target name lowercased, spaces → `_`). Pass the
    **reuse disposition** you tracked in step 4 as `reuse={"counts": {...}, "uploaded": [...],
    "reused": [...], "coverage_risks": [...]}` (shape: `reps.reuse.orchestrate.RunDisposition.to_record`)
@@ -294,9 +353,16 @@ If the agent has no overlay, every artifact resolves to the baseline and the run
    **Standalone re-review**: invoked with findings already captured and no new pillar run, do this
    step + render against the existing records (that also clears a stale banner after new runs).
    Path B (CLI/SDK) never authors this record — its reports show the absent-state note.
-8. **Render the report** — `python reps/report/gen_reps_report.py --agent "<target>"` →
-   `results/<agent_slug>/report_<date-time>.html`. (`capture.py` + `gen_reps_report.py` are pure
-   Python — no key, no `okareo` import.)
+8. **Render the report** — local mode: `python reps/report/gen_reps_report.py --agent "<target>"`;
+   MCP mode (CWD = project root; the generator's *default* paths anchor to the script's own tree,
+   so always pass `--results` and `--out` explicitly):
+   ```bash
+   python3 "$TOOLING_ROOT"/reps/report/gen_reps_report.py --agent "<target>" \
+     --results "results/<agent_slug>/findings" \
+     --out "results/<agent_slug>/report_$(date +%F_%H%M%S).html"
+   ```
+   → `results/<agent_slug>/report_<date-time>.html`. (`capture.py` + `gen_reps_report.py` are
+   pure Python — no key, no `okareo` import.)
 
 > If the Okareo MCP is unavailable in this session (e.g. a headless/cron run), fall back to Path B.
 
