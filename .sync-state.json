@@ -1,6 +1,6 @@
 {
-  "content_hash": "sha256:8b87a0f98f39ca35706d3c2b0203ace97dce0a834510bdf507bd25cbdc9a56a7",
-  "dev_revision": "07c1b90",
+  "content_hash": "sha256:a2997d1100daa5adefa4ac3c8d7223861596491e7c67e742805ba5f4f7884dd4",
+  "dev_revision": "29626af",
   "file_hashes": {
     ".claude-plugin/marketplace.json": "sha256:226891d48087e3d774767e16fc6418f608f132db689f7dc7134d101f01604490",
     ".github/workflows/release.yml": "sha256:b5559eacfcfd953e927346d798f0636ae204f09c5cbf8ecfdfe1c2a7b2ba80d5",
@@ -8,7 +8,7 @@
     "CLAUDE.md.snippet": "sha256:78d16844c62f2596aa19a8973e8507aecc4c5acc60535eff8d8abda01621be92",
     "CONTRIBUTING.md": "sha256:d89fb5fbbe10da57aa29f6f646e96afbc21011372db2178fa4c41297e366c85a",
     "LICENSE": "sha256:b302b6664234e1ab7e287b7511c0fd5fa065c3f15b49285f97f94ee71d3ad607",
-    "README.md": "sha256:a97e3b679a3d37afd159fab3c0867e5d9a9d3672de206f6456a1cff9e017b6e5",
+    "README.md": "sha256:d81119f74cb5a4f3d5c5537d5b836f15e3dbca44f7857fbbf70cad6c95d8a589",
     "ROADMAP.md": "sha256:347b9cf777ba39aeeb87713e48f1d9aa3cf4683952402c46174c442370fbe4da",
     "command-template.md": "sha256:f98e47a21303ba6eac5b03cdbcad51f999b4d2a6fff86429c115f6e575e0244b",
     "contracts/get_reps_baseline.md": "sha256:15f339a3a72db62732e035dce05d5b5d1dfcc331e49bf03f4b3c80a447873610",
@@ -155,5 +155,5 @@
     "skill-template/references/example-reference.md": "sha256:4542b912bd674664a44d6751fb9a058467b3580f6fbbb194a86778e6be43b8e3"
   },
   "pipeline": "ci",
-  "synced_at": "2026-07-30T01:32:17Z"
+  "synced_at": "2026-07-30T19:40:27Z"
 }

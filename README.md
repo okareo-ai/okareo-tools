@@ -5,184 +5,135 @@
 > are replaced on the next sync rather than kept in place, so please propose changes as issues or
 > pull requests; see [CONTRIBUTING.md](CONTRIBUTING.md).
 
-Official Okareo tooling for Claude: the Okareo **MCP server** plus a set of
-**Agent Skills** that teach Claude how to simulate, evaluate, and monitor
-LLM apps and agents with Okareo.
+Official Okareo tooling for coding agents: the Okareo **MCP server** plus a set of **Agent Skills**
+that teach an agent how to simulate, evaluate, and monitor LLM apps and agents with
+[Okareo](https://okareo.com) — including the **REPS workbench**, a forkable harness that assesses an
+agent across four pillars and produces an explainable report.
 
-The MCP server gives Claude the *tools* (the callable actions against
-Okareo). The skills give Claude the *method* — when to reach for those
-tools and how to run a real workflow with them. They are designed to be
-installed together.
+The MCP server gives the agent the *tools* (the callable actions against Okareo). The skills give it
+the *method* — when to reach for those tools and how to run a real workflow with them. They are
+designed to be installed together.
 
-- Repository: https://github.com/okareo-ai/okareo-tools
-- Skill downloads: https://github.com/okareo-ai/okareo-tools/releases/latest
-
-## The REPS agent-evaluation workbench
-
-This repo also ships the **REPS workbench** (`reps/`): a harness that evaluates any registered
-agent across four pillars — **R**easoning · **E**xecution · **P**erformance · **S**ecurity — and
-generates an explainable assessment report. It runs from **your own repo**: install the plugin and
-invoke the skills from your agent's workspace — on first use they vendor the `reps/` baseline into
-your repo from the latest release (no clone, no nested git; commit it as your baseline). Drive it
-with `reps-explore` (draft an agent profile from one discovery conversation), `reps-profile`
-(apply/tune the suite to your agent), and `reps-run` (execute a pillar and produce the report).
-Start at [`reps/README.md`](reps/README.md). Operator-local outputs land in the gitignored
-`results/`.
+- Plugin & skill downloads: https://github.com/okareo-ai/okareo-tools/releases/latest
+- Okareo docs: https://docs.okareo.com
 
 ## What's in the box
 
-Eleven skills and seven slash commands, one MCP server, bundled as a single
-installable plugin:
+Eleven skills and seven slash commands, one MCP server, bundled as a single installable plugin.
 
-| Skill                   | What it does                                             |
-| ----------------------- | -------------------------------------------------------- |
-| `quickstart`            | Onboard a new user; verify the connection; first run     |
-| `scenario-design`       | Compose a synthetic test scenario set from scratch        |
-| `scenario-from-traces`  | Turn production traces and issues into a test set         |
-| `agent-simulation`      | Stress-test a text agent with simulated multi-turn users  |
-| `voice-simulation`      | Run simulated calls against a voice agent                 |
-| `agent-improvement-loop`| Iteratively improve an agent over N cycles; track the trend |
-| `evaluation`            | Score a model or prompt against a scenario set            |
-| `monitoring`            | Monitor live text or voice traffic; catch drift           |
-| `reps-explore`          | Hold one benign discovery conversation; draft an agent profile |
-| `reps-profile`          | Apply the profile; generate rows tuned to your agent      |
-| `reps-run`              | Execute a REPS pillar and regenerate the report           |
+### Skills
 
-The commands — `/okareo:quickstart`, `/okareo:scenario`, `/okareo:simulate`,
-`/okareo:improve`, `/okareo:monitor`, `/okareo:update`, `/okareo:reps` — are thin
-entry points that frame a task and route to the skill that does the work
-(`/okareo:update` checks for and explains how to install a newer version;
-`/okareo:reps` installs or refreshes a local copy of the REPS workbench baseline
-in your repo).
+| Skill | What it does |
+|---|---|
+| `quickstart` | Onboard a new user; verify the connection; first run |
+| `scenario-design` | Compose a synthetic test scenario set from scratch |
+| `scenario-from-traces` | Turn production traces, logs, and incidents into a test set |
+| `agent-simulation` | Stress-test a text agent with simulated multi-turn users |
+| `voice-simulation` | Run simulated calls against a voice agent |
+| `evaluation` | Score a model or prompt against a scenario set |
+| `agent-improvement-loop` | Iteratively improve an agent over N cycles; track the trend |
+| `monitoring` | Monitor live text or voice traffic; catch regressions and drift |
+| `reps-explore` | Hold one benign discovery conversation; draft an agent profile |
+| `reps-profile` | Apply the profile; generate scenario rows tuned to your agent |
+| `reps-run` | Execute a REPS pillar against a target and regenerate the report |
 
-`quickstart` is the on-ramp. The rest compose into a lifecycle: build a
-scenario set (`scenario-design` or `scenario-from-traces`), exercise an agent
-before release (`agent-simulation`, `voice-simulation`), score it
-(`evaluation`), iteratively improve it until it meets the bar
-(`agent-improvement-loop`), and watch it in production (`monitoring`) — where
-any failure flows back into a scenario set that is re-run on every change. More
-skills and commands are planned — see [ROADMAP.md](ROADMAP.md).
+### Commands
 
-## Repository structure
+Thin entry points that frame a task and route to the skill that does the work.
 
-```
-okareo-tools/
-│
-├── .claude-plugin/
-│   └── marketplace.json              Claude Code marketplace catalog. Lists
-│                                     the okareo plugin and where to find it.
-│
-├── plugins/
-│   └── okareo/                       ONE installable plugin = MCP + skills.
-│       ├── .claude-plugin/
-│       │   └── plugin.json           Plugin manifest. The release version
-│       │                             (semver) lives here.
-│       ├── .mcp.json                 Okareo MCP server config. Auto-loaded
-│       │                             by Claude Code when the plugin installs.
-│       ├── commands/                 Slash commands (/okareo:<name>). Thin
-│       │                             entry points that route to a skill.
-│       └── skills/                   One folder per skill. Each is a
-│           │                         self-contained Agent Skill.
-│           ├── agent-improvement-loop/
-│           ├── agent-simulation/
-│           │   ├── SKILL.md          Instructions + YAML frontmatter.
-│           │   └── references/       Extra docs, loaded only when needed.
-│           ├── evaluation/
-│           ├── monitoring/
-│           ├── quickstart/
-│           ├── scenario-design/
-│           ├── scenario-from-traces/
-│           └── voice-simulation/
-│
-├── skill-template/                   Copy-to-author scaffold for a new
-│                                     skill. Lives outside skills/ so it is
-│                                     never packaged.
-├── command-template.md               Copy-to-author scaffold for a new
-│                                     slash command.
-│
-├── scripts/
-│   ├── build.sh                      Packages each skill into a .skill file.
-│   ├── release.sh                    Builds, then publishes to all 3 surfaces.
-│   ├── install.sh                    Consumer-side installer.
-│   └── validate_skills.py            Checks every skill before packaging.
-│
-├── .github/
-│   └── workflows/
-│       └── release.yml               CI: validate + build + publish on a v* tag.
-│
-├── dist/                             Build output (.skill files). Gitignored.
-├── skill-ids.json                    Claude API skill ids, managed by release.sh.
-├── CONTRIBUTING.md                   How to author a skill.
-├── ROADMAP.md                        Shipping and planned skills.
-├── CLAUDE.md.snippet                 Drop-in dependency hint for consuming repos.
-├── LICENSE
-├── .gitignore
-└── README.md
-```
+| Command | Routes to |
+|---|---|
+| `/okareo:quickstart` | `quickstart` — verify the connection and walk a first run |
+| `/okareo:scenario` | `scenario-design` or `scenario-from-traces` |
+| `/okareo:simulate` | `agent-simulation` or `voice-simulation` |
+| `/okareo:improve` | `agent-improvement-loop` |
+| `/okareo:monitor` | `monitoring` |
+| `/okareo:reps` | Installs or refreshes a local copy of the REPS baseline in your repo |
+| `/okareo:update` | Checks for a newer version and explains how to install it |
 
-Two structural rules to keep in mind:
+`quickstart` is the on-ramp. The rest compose into a lifecycle: build a scenario set
+(`scenario-design` or `scenario-from-traces`), exercise an agent before release
+(`agent-simulation`, `voice-simulation`), score it (`evaluation`), iteratively improve it until it
+meets the bar (`agent-improvement-loop`), and watch it in production (`monitoring`) — where any
+failure flows back into a scenario set that is re-run on every change. More skills and commands are
+planned — see [ROADMAP.md](ROADMAP.md).
 
-- **`plugin.json` and `marketplace.json` go inside `.claude-plugin/`.**
-  Everything else in a plugin (`skills/`, `.mcp.json`) sits in the plugin
-  root, not in `.claude-plugin/`.
-- **One skill = one folder with a `SKILL.md` at its top level.** Adding a
-  skill is just adding a folder under `plugins/okareo/skills/`; the build and
-  release scripts pick it up automatically.
+## The REPS agent-evaluation workbench
 
-## What a `.skill` package is
+REPS assesses an agent across four pillars and produces an assessment report that states plainly
+what is working and what is not, with transcript evidence behind every finding.
 
-A `.skill` file is the portable, installable unit of an Agent Skill — a zip
-archive whose root contains a single skill folder with `SKILL.md` inside it.
-`build.sh` produces one per skill in `dist/`. The same file installs on all
-three Claude surfaces.
+| Pillar | What it probes |
+|---|---|
+| **R**easoning | Ambiguity handling, intent switching, constraint retention, contradiction detection |
+| **E**xecution | Tool selection and arguments, compound requests, error recovery, hallucinated completions |
+| **P**erformance | Turn latency, output consistency, late-turn degradation, barge-in and resume |
+| **S**ecurity | OWASP Agentic-Security probes — goal hijack, tool misuse, privilege abuse, verification gates |
+
+### Quick start
+
+REPS runs from **your own repo**, not from a clone of this one. Register a target in Okareo, install
+the plugin, then run `/okareo:reps` from your agent's workspace — it vendors the `reps/` baseline
+into your repo (no clone, no nested git; commit it as your baseline). Then:
+
+1. `reps-explore` — one benign discovery conversation; drafts an agent profile
+2. `reps-profile` — applies the profile and generates rows tuned to your agent (optional)
+3. `reps-run` — executes a pillar and regenerates the report
+
+`reps-run` is the zero-setup entry point: pass a target name and a pillar letter (`R`/`E`/`P`/`S`)
+and it produces a complete baseline report with no profiling Q&A.
+
+Baseline artifacts live under `reps/<pillar>/` and are agent-agnostic — read-only to tuning flows.
+Per-agent tuned overlays, findings, and reports land in the gitignored `results/<agent_slug>/`,
+resolved overlay-first so your tuning never modifies the baseline.
+
+See [`reps/README.md`](reps/README.md) for the artifact model.
 
 ## Installing
 
-Skills do not sync between Claude surfaces, so each surface has its own
-install path. `scripts/install.sh` automates the scriptable ones.
+Skills do not sync between surfaces, so each has its own install path.
+
+A `.skill` file is the portable, installable unit of an Agent Skill — a zip archive whose root
+contains a single skill folder with `SKILL.md` inside it. One per skill is attached to every
+[GitHub Release](https://github.com/okareo-ai/okareo-tools/releases/latest), and the same file
+installs on all three Claude surfaces. `scripts/install.sh` automates the scriptable ones.
 
 ### Claude Code (recommended)
 
-The plugin bundles the MCP server, all eleven skills, and the commands as
-one unit:
+The plugin bundles the MCP server, all eleven skills, and the commands as one unit:
 
 ```
 /plugin marketplace add okareo-ai/okareo-tools
 /plugin install okareo@okareo-tools
 ```
 
-The plugin connects to the hosted Okareo MCP server
-(`https://tools.okareo.com/mcp`). The first Okareo tool call opens a browser
-for a one-time sign-in — no API key needs to be set. See
+The plugin connects to the hosted Okareo MCP server (`https://tools.okareo.com/mcp`). The first
+Okareo tool call opens a browser for a one-time sign-in — no API key needs to be set. See
 [Updating](#updating) to pull a newer version later.
 
-**Approve the Okareo tools once.** The skills call many MCP tools, so by
-default Claude Code prompts for each one. To approve the whole server in a
-single rule instead, run `/permissions` and add an **Allow** rule for:
+**Approve the Okareo tools once.** The skills call many MCP tools, so by default Claude Code prompts
+for each one. Run `/permissions` and add an **Allow** rule for:
 
 ```
 mcp__okareo__*
 ```
 
-That one rule covers every current and future Okareo tool — no more per-tool
-prompts. To share it with a team, commit it to the project instead of
-setting it per-developer:
+That one rule covers every current and future Okareo tool. To share it with a team, commit it to the
+project instead of setting it per-developer:
 
 ```json
 // .claude/settings.json
 { "permissions": { "allow": ["mcp__okareo__*"] } }
 ```
 
-This is a one-time step the user (or the project) sets — a plugin cannot
-grant it for you; Claude Code requires the user to allow an MCP server's
-tools. Skills still confirm in-chat before steps that cost money or are
-hard to undo (placing a real test call, deleting a resource), so a
-server-wide allow rule does not mean silent billed actions.
+A plugin cannot grant this for you — Claude Code requires the user to allow an MCP server's tools.
+Skills still confirm in-chat before steps that cost money or are hard to undo (placing a real test
+call, deleting a resource), so a server-wide allow rule does not mean silent billed actions.
 
 ### Cursor
 
-Cursor consumes the **MCP server** natively. Add it to `.cursor/mcp.json` in your
-project (or `~/.cursor/mcp.json` to enable it everywhere):
+Cursor consumes the **MCP server** natively. Add it to `.cursor/mcp.json` in your project (or
+`~/.cursor/mcp.json` to enable it everywhere):
 
 ```json
 {
@@ -194,151 +145,133 @@ project (or `~/.cursor/mcp.json` to enable it everywhere):
 }
 ```
 
-Reload Cursor, then confirm the server is connected and its tools are enabled
-under **Cursor Settings → MCP**. The first tool call opens a browser for the same
-one-time sign-in.
+Reload Cursor, then confirm the server is connected and its tools are enabled under
+**Cursor Settings → MCP**. The first tool call opens a browser for the same one-time sign-in.
 
 > Cursor's MCP config schema has changed across versions (some accept an explicit
 > `"type": "http"`). If the server does not appear, check
-> [Cursor's MCP docs](https://docs.cursor.com/context/model-context-protocol) for
-> the form your version expects.
+> [Cursor's MCP docs](https://docs.cursor.com/context/model-context-protocol) for the form your
+> version expects.
 
-**On the skills**: `.skill` packages are installers for the Claude surfaces, so
-there is no equivalent one-click install in Cursor. The MCP tools work fully; to
-give Cursor the *method* as well, copy the relevant `SKILL.md` bodies into your
-project as Cursor rules (`.cursor/rules/`) or into `AGENTS.md`. Native skill
-support in Cursor is not something this plugin provides today.
+**On the skills**: `.skill` packages are installers for the Claude surfaces, so there is no
+equivalent one-click install in Cursor. The MCP tools work fully; to give Cursor the *method* as
+well, copy the relevant `SKILL.md` bodies into your project as Cursor rules (`.cursor/rules/`) or
+into `AGENTS.md`. Native skill support in Cursor is not something this plugin provides today.
+
+### claude.ai
+
+Per-user, through the web UI: download the `.skill` files from the
+[latest GitHub Release](https://github.com/okareo-ai/okareo-tools/releases/latest), add them under
+**Settings → Capabilities → Skills**, and add the Okareo MCP server under **Settings → Connectors**.
 
 ### Claude API
 
-Each skill is uploaded to your workspace via the Skills API and is then
-available to all workspace members:
+Each skill is uploaded to your workspace via the Skills API and is then available to all workspace
+members:
 
 ```
 ./scripts/install.sh api          # uploads every dist/*.skill
 ```
 
-Attach the skills to a request via the `container` parameter, and pass the
-Okareo MCP server as an `mcp_servers` entry. API requests are headless, so
-authenticate the MCP server with a `Bearer ${OKAREO_API_KEY}` header rather
-than the interactive browser sign-in.
-
-### claude.ai
-
-Per-user, through the web UI: download the `.skill` files from the
-[latest GitHub Release](https://github.com/okareo-ai/okareo-tools/releases/latest),
-then add them under Settings → Capabilities → Skills, and add the Okareo
-MCP server under Settings → Connectors.
+Attach the skills to a request via the `container` parameter, and pass the Okareo MCP server as an
+`mcp_servers` entry. API requests are headless, so authenticate with a `Bearer ${OKAREO_API_KEY}`
+header rather than the interactive browser sign-in.
 
 ## Updating
 
-Plugin updates are pulled explicitly — none of the Claude surfaces
-auto-upgrade by default. (Cursor needs no update: it consumes the hosted MCP
-server, which is updated server-side. If you copied skill bodies into
-`.cursor/rules/` or `AGENTS.md`, re-copy them to pick up changes.)
+None of the surfaces auto-upgrade by default. Run `/okareo:update` for the exact steps for yours.
+(Cursor needs no update: it consumes the hosted MCP server, which is updated server-side. If you
+copied skill bodies into `.cursor/rules/` or `AGENTS.md`, re-copy them to pick up changes.)
 
-### Claude Code
-
-Refresh the marketplace metadata, then reinstall to pick up the new version:
+**Claude Code** — refresh the marketplace metadata, then reinstall:
 
 ```
 /plugin marketplace update okareo-tools
 /plugin install okareo@okareo-tools
 ```
 
-There is no `/plugin update` command. To see what's installed, run `/plugin`
-and check the **Installed** tab — entries on Claude Code v2.1.144+ show a
-**Last updated** date. To stop doing this by hand, opt in to auto-update from
-the **Marketplaces** tab in `/plugin`, or set it for the whole project in
-`.claude/settings.json`:
+There is no `/plugin update` command. To see what's installed, run `/plugin` and check the
+**Installed** tab — entries on Claude Code v2.1.144+ show a **Last updated** date. To stop doing
+this by hand, opt in to auto-update from the **Marketplaces** tab in `/plugin`, or set it for the
+whole project in `.claude/settings.json`:
 
 ```json
 { "extraKnownMarketplaces": { "okareo-tools": { "autoUpdate": true } } }
 ```
 
-### Claude API
+**claude.ai** — download the new `.skill` files from the latest release, remove the previous
+versions under **Settings → Capabilities → Skills**, and add the new ones. The Okareo MCP server
+connector does not need to be re-added.
 
-Re-run the installer to upload a new version of every skill to your
-workspace:
+**Claude API** — re-run `./scripts/install.sh api` to upload a new version of every skill. The
+Skills API versions each skill on upload, so pin a specific version in production and use `latest`
+only in development.
+
+## Repository structure
 
 ```
-./scripts/install.sh api
+okareo-tools/
+│
+├── .claude-plugin/
+│   └── marketplace.json              Claude Code marketplace catalog. Lists the
+│                                     okareo plugin and where to find it.
+│
+├── plugins/
+│   └── okareo/                       ONE installable plugin = MCP + skills + commands.
+│       ├── .claude-plugin/
+│       │   └── plugin.json           Plugin manifest. The release version lives here.
+│       ├── .mcp.json                 Okareo MCP server config. Auto-loaded by
+│       │                             Claude Code when the plugin installs.
+│       ├── commands/                 Slash commands (/okareo:<name>).
+│       └── skills/                   One folder per skill; each has a SKILL.md at
+│           │                         its top level, plus optional references/.
+│           ├── agent-improvement-loop/
+│           ├── agent-simulation/
+│           ├── evaluation/
+│           ├── monitoring/
+│           ├── quickstart/
+│           ├── reps-explore/
+│           ├── reps-profile/
+│           ├── reps-run/
+│           ├── scenario-design/
+│           ├── scenario-from-traces/
+│           └── voice-simulation/
+│
+├── reps/                             The agent-agnostic REPS baseline. Vendored into
+│   │                                 your repo by /okareo:reps — start at reps/README.md.
+│   ├── R-reasoning/                  One folder per pillar: drivers, scenario rows,
+│   ├── E-execution/                  checks, and templates.
+│   ├── P-performance/
+│   ├── S-security/
+│   ├── explore/                      Discovery driver and scenario for reps-explore.
+│   ├── profile/                      Profiling aids for reps-profile.
+│   ├── report/                       Capture, scoring, and report generation.
+│   ├── shared/                       Canonical driver blocks shared across pillars.
+│   └── targets/                      Target configuration examples.
+│
+├── contracts/                        Public contracts (e.g. get_reps_baseline).
+├── dist/                             Built .skill packages, one per skill.
+├── docs/                             Supporting design notes.
+├── media/                            Okareo logo assets.
+├── scripts/
+│   ├── build.sh                      Packages each skill into a .skill file.
+│   ├── release.sh                    Builds, then publishes to all 3 surfaces.
+│   ├── install.sh                    Consumer-side installer.
+│   └── validate_skills.py            Checks every skill before packaging.
+│
+├── .github/workflows/release.yml     CI: validate + build + publish on a v* tag.
+├── skill-template/                   Copy-to-author scaffold for a new skill.
+├── command-template.md               Copy-to-author scaffold for a new slash command.
+├── skill-ids.json                    Claude API skill ids.
+├── .sync-state.json                  Sync fingerprint (see the note at the top).
+├── CONTRIBUTING.md                   How to propose a change.
+├── ROADMAP.md                        Shipping and planned skills.
+├── CLAUDE.md.snippet                 Drop-in dependency hint for consuming repos.
+├── LICENSE
+└── README.md
 ```
 
-The Skills API versions each skill on upload — pin a specific version in
-production and only use `latest` in development. See [Versioning](#versioning).
+## Contributing
 
-### claude.ai
-
-Download the new `.skill` files from the
-[latest GitHub Release](https://github.com/okareo-ai/okareo-tools/releases/latest),
-remove the previous versions under **Settings → Capabilities → Skills**, and
-add the new ones. The Okareo MCP server connector itself does not need to be
-re-added.
-
-## Developing skills
-
-To add or change a skill, see [CONTRIBUTING.md](CONTRIBUTING.md). In short:
-
-```bash
-cp -r skill-template plugins/okareo/skills/<skill-name>   # scaffold
-# ...edit SKILL.md...
-python3 scripts/validate_skills.py                        # check the contract
-./scripts/build.sh                                        # package to dist/
-```
-
-`validate_skills.py` enforces the **tool-name contract**: every MCP tool a
-skill references must be a real Okareo MCP tool (the canonical list is
-`KNOWN_TOOLS` in that script). `build.sh` and CI run the validator first and
-refuse to package a skill that fails it.
-
-## Creating the GitHub repository
-
-One-time setup, using the GitHub CLI (`gh`):
-
-```bash
-# from the okareo-tools/ directory (already a git repo on branch main)
-gh repo create okareo-ai/okareo-tools --public --source=. --push
-```
-
-Then add the API key the release workflow needs:
-
-```bash
-gh secret set ANTHROPIC_API_KEY        # paste the workspace API key
-```
-
-That secret is read by `.github/workflows/release.yml` to publish skills to
-the Claude API. Nothing else needs configuring — pushing a `v*` tag triggers
-a release.
-
-## Releasing a new version
-
-```bash
-# 1. Bump the version in BOTH manifests (keep them in sync):
-#      plugins/okareo/.claude-plugin/plugin.json   -> "version"
-#      .claude-plugin/marketplace.json             -> plugins[].version
-#
-# 2. Build + publish to all three surfaces:
-./scripts/release.sh
-#
-# 3. Commit the (possibly updated) skill-ids.json and push:
-git add skill-ids.json && git commit -m "release: vX.Y.Z" || true
-git push origin main --tags
-```
-
-Pushing the tag also triggers `release.yml`, which validates and rebuilds
-the packages, publishes them to the Claude API, and creates a GitHub Release
-with the `.skill` files attached. `release.sh` and the CI workflow do the
-same job — run the script locally for a hands-on release, or just push a tag.
-
-## Versioning
-
-- **Claude API** has native version management. Each skill upload creates a
-  new version; pin a specific version in production and use `latest` only in
-  development.
-- **Claude Code** versions through git tags plus the `version` field in
-  `plugin.json`. Plugin updates are pulled explicitly by users, not
-  automatically.
-- `skill-ids.json` maps each skill name to its Claude API skill id. The first
-  release of a skill creates the skill and records its id here; later
-  releases add versions to that id. Commit it whenever it changes.
+This repository is generated, so changes are made upstream and published here. See
+[CONTRIBUTING.md](CONTRIBUTING.md) for the shape of a skill and how to propose a change.
