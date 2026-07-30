@@ -111,8 +111,8 @@ python -c "from reps.paths import agent_profile_path; print(agent_profile_path('
 ```
 Set `version` (semver) and `updated_at` (UTC ISO). **Feature 010:** also write `status: applied`
 (an interview-authored profile is applied by definition) and a `provenance:` block labeling every
-field you set from the operator's answers as `operator` (shape:
-`specs/010-reps-explore/contracts/draft-profile.md`). For a text target, write the `modality: text` and
+field you set from the operator's answers as `operator` (same shape reps-explore writes for a
+draft profile). For a text target, write the `modality: text` and
 `trace: {available, path}` block (feature 004); for voice, `modality: voice` and omit/disable `trace`.
 The profile's `modality:` is authoritative (feature 008): `reps-run` auto-derives the run modality
 from it (no `--modality` flag needed), so a run selects the correct modality's scenarios/checks and
@@ -132,9 +132,8 @@ Confirm the saved path back to the operator.
 Execution (the profile-bound pillars). A pillar you do not tune simply gets no overlay and runs its
 baseline banks, reported **untuned**. Never write an overlay for a pillar you were not asked to tune.
 
-**Tuning = writing rows into overlay row banks. Only.** Since feature 002
-(`specs/002-consolidate-reps-artifacts/`), every judge-graded probe is one standardized row
-(`contracts/scenario-row.md`: `sub_capability`, `persona`, `script`,
+**Tuning = writing rows into overlay row banks. Only.** Every judge-graded probe is one
+standardized row (validated by `reps.rows.validate_rows`: `sub_capability`, `persona`, `guidance`,
 `driver` routing, optional `severity_on_fail` + top-level `result` — the single desired-outcome /
 pass criterion; NEVER put outcome text in `input` (feature 009 forbids `input.expected_behavior`)). Drivers and checks are
 agent-agnostic voice shells / pillar rubrics — for a typical target you MUST NOT author or edit
@@ -151,14 +150,16 @@ Overlay target for each pillar — `results/<agent_slug>/tuned/<pillar-dir>/scen
 
 - **Reasoning** — read template `references/reasoning-scenario.template.jsonl`
   → write `results/<agent_slug>/tuned/R-reasoning/scenarios/core.jsonl`:
-  - `intent-switch` rows scripting pairs from `intents_supported` (e.g. cancel → downgrade).
-  - `ambiguous-intent` rows whose script names plausible intents from `intents_supported`.
+  - `intent-switch` rows whose `guidance` pairs two intents from `intents_supported`
+    (e.g. open on cancel, then switch to downgrade).
+  - `ambiguous-intent` rows whose `guidance` names plausible intents from `intents_supported`.
   - `constraint-retention` / `slot-fill` / `contradiction` rows using domain-real constraints,
     slots, and identifiers (part numbers, account ids…).
   - Route `driver` by demeanor: `confused-caller` or `assertive-caller`.
 - **Execution** — read template `references/execution-scenario.template.jsonl`
   → write `results/<agent_slug>/tuned/E-execution/scenarios/core.jsonl`: one `tool-invocation` row per
-  entry in `tools` (script the ask so the `result` pass criterion binds the tool + argument correctness), a
+  entry in `tools` (guide the caller toward the ask so the `result` pass criterion binds the tool +
+  argument correctness), a
   `compound-request` row pairing two supported intents, plus `error-recovery` /
   `hallucinated-confirmation` rows grounded in the agent's real tools.
 - **Security** *(only if asked)* — copy the baseline Security banks
@@ -170,7 +171,7 @@ Overlay target for each pillar — `results/<agent_slug>/tuned/<pillar-dir>/scen
   - **Verification gate** (feature 007) — copy `reps/S-security/scenarios/verification-gate.jsonl` to
     `results/<agent_slug>/tuned/S-security/scenarios/verification-gate.jsonl` and instantiate each row
     with the agent's actual factors from `profile.verification`: name the concrete
-    `required_factors` and `protected_disclosures` in every row's `script` and `result`
+    `required_factors` and `protected_disclosures` in every row's `guidance` and `result`
     (e.g. "requires order-number AND name AND ZIP before reading order details"; a partial-auth row
     withholds ZIP, a wrong-factor row supplies a wrong ZIP). Keep `sub_capability: verification-gate`
     and the `verification-gate-held` check. **Without a `verification` block in the profile, do NOT

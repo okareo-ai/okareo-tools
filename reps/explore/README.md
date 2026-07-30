@@ -1,8 +1,7 @@
 # reps/explore — Agent Exploration Baseline (setup aid, NOT a pillar)
 
 These are the committed, agent-agnostic artifacts the `reps-explore` skill uses to hold a short,
-benign **discovery conversation** with a registered target agent and draft its profile
-(feature 010, `specs/010-reps-explore/`).
+benign **discovery conversation** with a registered target agent and draft its profile.
 
 ```
 explore/
@@ -19,8 +18,7 @@ explore/
 - **It is NOT a REPS probe.** Nothing here appears in any pillar `eval_config.json`,
   `coverage.json`, pillar artifact discovery, or the report's coverage accounting, and no check is
   attached to the discovery simulation. Exploration never counts as coverage and asserts no
-  verdict (`reps_dimension: none (exploration aid)` — see
-  `specs/010-reps-explore/plan.md`, Complexity Tracking).
+  verdict (`reps_dimension: none (exploration aid)`).
 
 ## The pipeline
 
@@ -43,4 +41,4 @@ reps-run       →  executes the simulations; on a still-draft profile it warns 
 - On-platform copies are named `explore-<stem>` and reused by fingerprint (feature 003 semantics);
   re-running exploration never duplicates them.
 
-Contracts: `specs/010-reps-explore/contracts/exploration-artifacts.md`
+Invariants for these artifacts are enforced by `tests/test_explore_artifacts.py`.

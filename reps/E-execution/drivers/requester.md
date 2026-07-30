@@ -1,6 +1,6 @@
 ---
 name: requester
-description: "Neutral/matter-of-fact voice persona — serves all core bank rows. Condition-free shell: all probe behavior comes from the row's persona + script. Absorbs the former execution-task-requester and execution-compound-requester."
+description: "Neutral/matter-of-fact voice persona — serves all core bank rows. Condition-free shell: all probe behavior comes from the row's persona + guidance. Absorbs the former execution-task-requester and execution-compound-requester."
 evaluation_mode: multi-turn
 temperature: 0.7
 reps_pillar: Execution
@@ -8,7 +8,7 @@ modality: both
 severity: high
 artifact_type: driver
 status: active
-version: 0.3.0
+version: 0.4.0
 voice_profile: neutral
 language: en
 ---
@@ -26,7 +26,7 @@ language: en
 ## Scenario Details
 
 Demeanor: {scenario_input.persona}
-Behavior arc: {scenario_input.script}
+Behavior arc: {scenario_input.guidance}
 
 ## Objectives
 

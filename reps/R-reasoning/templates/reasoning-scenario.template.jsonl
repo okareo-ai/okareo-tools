@@ -5,4 +5,4 @@
 # Feature 009: state the correct agent outcome ONCE, in `result` (scenario_result). NEVER put an
 # `expected_behavior` (or any answer-key text) inside `input` — it would leak to the simulated
 # caller and validation now rejects it.
-{"input": {"sub_capability": "{sub_capability}", "persona": "{caller_demeanor}", "script": "{behavioral_arc_directives}", "driver": "{routed_driver}", "severity_on_fail": "High"}, "result": "{pass_criterion_ie_what_the_agent_should_do}"}
+{"input": {"sub_capability": "{sub_capability}", "persona": "{caller_demeanor}", "guidance": "{behavioral_arc_guidance}", "driver": "{routed_driver}", "severity_on_fail": "High"}, "result": "{pass_criterion_ie_what_the_agent_should_do}"}

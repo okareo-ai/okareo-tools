@@ -10,13 +10,13 @@ severity: high
 artifact_type: scenario
 checks: reasoning-expectation-met
 status: active
-version: 0.3.0
+version: 0.4.0
 ---
 
 # Scenario bank: core
 
 One row per probe. Each row carries its own `sub_capability` (report grouping key), `persona`
-(demeanor rendered into the driver shell), `script` (the caller's behavioral arc), and
+(demeanor rendered into the driver shell), `guidance` (the caller's behavioral arc), and
 `result` (the pass criterion the `reasoning-expectation-met` rubric judges against).
 
 ## Sub-capabilities covered (Constitution I)

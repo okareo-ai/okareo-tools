@@ -8,7 +8,7 @@ Provides:
 - Code-based check registration helper (CodeCheckFromSource)
 - Pass-through driver template for single-turn evals (SINGLE_TURN_DRIVER_TEMPLATE)
 
-Metadata schema: see specs/001-reps-voice-workbench/contracts/artifact-metadata.md.
+Metadata schema: the front-matter keys read below; enforced by tests/test_metadata.py.
 Runner-critical keys (name, description, evaluation_mode, checks, temperature and the
 `## Prompt Template` / `## Persona Prompt Template` section headers) match the compliance-owasp
 parser exactly; REPS rollup tags (reps_pillar, modality, severity, status, version, owasp_source,

@@ -8,7 +8,7 @@ present behind the same interface so a text workbench is an additive drop-in.
 Config loading, validation, and adapter selection are pure (no Okareo import) so they are unit
 testable without the SDK or network. Only `build_target()` constructs Okareo objects (lazy import).
 
-Schema: specs/001-reps-voice-workbench/contracts/target-config.md.
+Schema: the fields loaded below; see reps/target.json.example.
 """
 from __future__ import annotations
 

@@ -9,7 +9,7 @@ modality: both
 severity: high
 artifact_type: check
 status: active
-version: 0.3.0
+version: 0.4.0
 ---
 
 # Check: execution-expectation-met
@@ -19,7 +19,7 @@ You are auditing a voice agent's task execution from the CONVERSATION ALONE — 
 tool-call trace, so judge only what the transcript reveals.
 
 ## Probe definition
-The scenario input below describes what the caller was scripted to ask for (`script`) and the
+The scenario input below describes what the caller was guided to ask for (`guidance`) and the
 execution sub-capability under test (`sub_capability`). It is context about the caller only — it
 does NOT state the correct agent behavior:
 {scenario_input}

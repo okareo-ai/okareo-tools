@@ -1,7 +1,7 @@
 """
 The pure reuse decision core (feature 003).
 
-Contract: specs/003-artifact-upload-reuse/contracts/reuse-decision.md.
+Behavior is pinned by tests/test_reuse_decision.py.
 `decide()` is a pure function — same inputs, same output, no clock, no I/O (INV-6). The
 caller does discovery (reps.reuse.platform) and uploading; this module only decides.
 """

@@ -1,13 +1,13 @@
 ---
 name: curious-onboarder
-description: "Benign-discovery persona for reps-explore (feature 010) — a polite prospective user asking what the agent is for, what it can and can't help with, and who it serves. NOT a REPS probe: no adversarial, deceptive, or policy-probing behavior; the transcript must read as an ordinary onboarding conversation. Condition-free shell: the discovery arc comes from the row's persona + script."
+description: "Benign-discovery persona for reps-explore (feature 010) — a polite prospective user asking what the agent is for, what it can and can't help with, and who it serves. NOT a REPS probe: no adversarial, deceptive, or policy-probing behavior; the transcript must read as an ordinary onboarding conversation. Condition-free shell: the discovery arc comes from the row's persona + guidance."
 evaluation_mode: multi-turn
 temperature: 0.6
 reps_pillar: none (exploration aid)
 modality: both
 artifact_type: driver
 status: active
-version: 0.4.0
+version: 0.5.0
 voice_profile: neutral
 language: en
 ---
@@ -25,7 +25,7 @@ language: en
 ## Scenario Details
 
 Demeanor: {scenario_input.persona}
-Behavior arc: {scenario_input.script}
+Behavior arc: {scenario_input.guidance}
 
 ## Objectives
 

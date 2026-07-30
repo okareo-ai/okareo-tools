@@ -847,7 +847,7 @@ def _roadmap_rows(ordered, sc) -> list[tuple]:
 
 
 # ---------------- 07 Suggested Agent Improvements (feature 013) ----------------
-# Contract: specs/013-report-remediations/contracts/report-section.md. Renders solely from the
+# Renders solely from the
 # captured improvements record; four explicit states — the section is never silently absent.
 
 IMPROVEMENTS_TITLE = "Suggested Agent Improvements"

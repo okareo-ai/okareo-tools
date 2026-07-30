@@ -2,14 +2,18 @@
 Standardized scenario-row banks (feature 002: contracts/scenario-row.md).
 
 Every judge-graded multi-turn probe is one JSONL row whose `input` carries
-sub_capability, persona, script (+ optional `driver` routing, `security_category`,
+sub_capability, persona, guidance (+ optional `driver` routing, `security_category`,
 `severity_on_fail`); the top-level `result` is the single authoritative desired-outcome /
 pass criterion judged by the pillar rubric check.
 
 Feature 009: the correct-agent-outcome text lives ONLY in `result` (`scenario_result`), never
 inside `input` (`scenario_input`). `input.expected_behavior` is FORBIDDEN — keeping the answer key
 out of the payload handed to the simulated-user driver. `input` carries only caller-facing material
-(persona, script) plus routing/grouping/severity metadata.
+(persona, guidance) plus routing/grouping/severity metadata.
+
+Feature 016: the behavioral-arc field was renamed `script` -> `guidance`. "Script" invited the
+caller model to RECITE the field; it actually holds an arc to be PURSUED. Clean cut, no alias — a
+legacy `script` key is a hard validation error (see ROW_LEGACY_RENAMED_INPUT_FIELDS).
 
 Keyless module — deliberately NO okareo import — so the capture/report path, tests,
 and the Claude/MCP execution path can validate banks without SDK credentials
@@ -22,8 +26,19 @@ import re
 from pathlib import Path
 from typing import Optional
 
-ROW_REQUIRED_INPUT_FIELDS = ("sub_capability", "persona", "script")
+ROW_REQUIRED_INPUT_FIELDS = ("sub_capability", "persona", "guidance")
 ROW_SEVERITY_LEVELS = {"Critical", "High", "Medium", "Low"}
+
+# Feature 016: fields renamed by a past feature, mapped old -> new. Kept SEPARATE from
+# ROW_FORBIDDEN_INPUT_FIELDS on purpose: that constant's message diagnoses an answer-key leak
+# ("the outcome belongs in 'result'"), which would actively misdiagnose a rename and send the
+# operator restructuring a row that only needs a key renamed.
+#
+# This denial is REQUIRED, not cosmetic. `input` is an open-ended denylist (see below), so without
+# an explicit entry a stale `script` key is merely an unrecognized-but-permitted extra field: it
+# would ride along into the uploaded payload while the row failed separately on a confusing
+# "missing/empty required field 'input.guidance'".
+ROW_LEGACY_RENAMED_INPUT_FIELDS = {"script": "guidance"}
 
 # Feature 009: the desired-outcome text belongs in the top-level `result`, never inside `input`
 # (where it would leak the answer key to the simulated-user driver). `input.expected_behavior` is a
@@ -81,6 +96,18 @@ def validate_rows(bank_path: Path, rows: list[dict],
                 f"{bank} row {i}: field 'input.{field}' is forbidden — the desired outcome / pass "
                 f"criterion belongs in the top-level 'result' (scenario_result), not in "
                 f"'input' (scenario_input) where it would leak to the driver")
+        # Feature 016: a renamed field. MUST be checked before the required-field loop below —
+        # reversed, a legacy row reports "missing 'input.guidance'" while visibly carrying its
+        # behavioral arc. Fires whether or not the new key is also present: two arcs in one row is
+        # an authoring error, not a merge to resolve.
+        legacy = ROW_LEGACY_RENAMED_INPUT_FIELDS.keys() & inp.keys()
+        if legacy:
+            old = sorted(legacy)[0]
+            new = ROW_LEGACY_RENAMED_INPUT_FIELDS[old]
+            raise RowValidationError(
+                f"{bank} row {i}: field 'input.{old}' was renamed to 'input.{new}' (feature 016) "
+                f"— rename the key. If this is a tuned overlay under results/, re-run reps-profile "
+                f"to regenerate it.")
         for field in ROW_REQUIRED_INPUT_FIELDS:
             val = inp.get(field)
             if not isinstance(val, str) or not val.strip():

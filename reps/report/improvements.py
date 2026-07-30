@@ -7,7 +7,7 @@ like pillar findings records), and rendered by gen_reps_report.py as report sect
 renderer reads ONLY this record for that section, keeping the report regenerable from captured
 state (Constitution VIII). Pure stdlib — no okareo import, no key.
 
-Schema & validation contract: specs/013-report-remediations/contracts/improvements-record.md.
+Schema & validation are defined in this module and enforced by tests/test_report.py.
 """
 from __future__ import annotations
 

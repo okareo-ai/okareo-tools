@@ -8,7 +8,7 @@ modality: both
 severity: medium
 artifact_type: driver
 status: active
-version: 0.3.0
+version: 0.4.0
 voice_profile: neutral
 language: en
 ---
@@ -26,7 +26,7 @@ language: en
 ## Scenario Details
 
 Demeanor: {scenario_input.persona}
-Behavior arc: {scenario_input.script}
+Behavior arc: {scenario_input.guidance}
 
 ## Objectives
 

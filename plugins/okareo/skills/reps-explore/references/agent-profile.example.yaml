@@ -105,7 +105,7 @@ language: en
 # ---------------------------------------------------------------------------
 # Feature 010 (reps-explore) — provenance + exploration audit. Both blocks are written by
 # reps-explore and PRESERVED by reps-profile when it applies the draft. Secret-free, like
-# everything else in this file. Contract: specs/010-reps-explore/contracts/draft-profile.md
+# everything else in this file. This example is the reference shape.
 # ---------------------------------------------------------------------------
 
 # Per-fact provenance: one entry per populated top-level field (SC-005 — 100% coverage).

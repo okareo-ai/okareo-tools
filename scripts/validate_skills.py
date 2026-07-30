@@ -64,8 +64,8 @@ KNOWN_TOOLS = {
     "list_tenants", "switch_tenant",
     # documentation
     "get_docs", "get_templates",
-    # REPS baseline serving (okareo-mcp-dev feature 033) — discovery + fetch
-    # of the released reps/ tree; contract: contracts/get_reps_baseline.md
+    # REPS baseline serving — discovery + fetch of the released reps/ tree;
+    # contract: contracts/get_reps_baseline.md
     "get_reps_baseline",
 }
 
@@ -81,8 +81,7 @@ NON_TOOL_TOKENS = {
     # Voice target config field names (not MCP tools).
     "account_sid", "auth_token", "to_phone_number", "from_phone_number",
     "output_voice", "edge_type",
-    # run_simulation kwargs (peer simulation_params knobs added by
-    # specs/023-tool-fixes in okareo-mcp-beta).
+    # run_simulation kwargs (peer simulation_params knobs on the MCP server).
     "max_turns", "turn_transition_time", "silence_timeout_ms",
     "checks_at_every_turn", "stop_check",
     # Augmentation strategy keys and field names (under the `augmentation`
@@ -106,7 +105,7 @@ NON_TOOL_TOKENS = {
     "trace_discrepancy", "trace_gaps", "trace_status", "transcript_link",
     "updated_at", "verbalization_values", "voice_profile", "write_record",
     # Improvements-record fields + writer (feature 013, reps-run transcript-review
-    # step; specs/013-report-remediations/contracts/improvements-record.md).
+    # step; see reps/report/improvements.py for the schema).
     # JSON field identifiers and a local capture helper, not MCP tools.
     "based_on", "coverage_gap_notes", "effective_picture", "held_up",
     "review_coverage", "run_timestamp", "write_improvements",

@@ -7,7 +7,7 @@ the committed reps/ files stay the content source of truth. Standard blocks reus
 canonical name; tuned blocks are keyed to the agent by a `-tuned` name (+ tags for
 scenarios/checks; name only for drivers, which accept no tags).
 
-Design docs: specs/003-artifact-upload-reuse/ (plan.md, data-model.md, contracts/).
+Behavior is pinned by tests/test_reuse_decision.py and tests/test_reuse_fingerprint.py.
 
 `fingerprint`, `naming`, and `decision` are DELIBERATELY okareo-free pure modules
 (mirroring reps.rows / reps.slug) so they are unit-testable without SDK credentials

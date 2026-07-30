@@ -1,9 +1,8 @@
 # Tool Contract: `get_reps_baseline`
 
-> **Mirrored contract.** The normative source lives in the okareo-mcp-dev repo
-> (`specs/033-serve-reps-baseline/contracts/get_reps_baseline.md`); this copy ships with the
-> plugin so the reps skills and server stay reviewable side-by-side. Update it by re-copying,
-> not by editing here.
+> **Mirrored contract.** This is a published copy of the normative MCP server contract, shipped
+> with the plugin so the reps skills and the server stay reviewable side-by-side. It is maintained
+> at the source and re-copied here — do not edit this copy.
 
 **Feature**: 033-serve-reps-baseline | **Status**: v1 (envelope is stable and additive-only from this version)
 

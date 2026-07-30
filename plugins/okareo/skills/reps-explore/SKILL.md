@@ -249,7 +249,7 @@ and low confidence are stated, never padded over.
   probes policy. If the target declines something, that is *data* (an **intents_refused** /
   `guardrails` observation), not an obstacle to push on.
 - **Committed baseline is read-only**: never edit `reps/explore/…` (or anything under `reps/`)
-  during exploration. To improve the discovery script itself, that is a baseline change — a
+  during exploration. To improve the discovery guidance itself, that is a baseline change — a
   committed edit outside any exploration run.
 - **Per-agent isolation**: everything you write lands under `results/<agent_slug>/`; one agent's
   exploration never touches another's overlay.

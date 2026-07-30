@@ -65,8 +65,8 @@ The report is regenerable any time by re-running the committed `reps/` artifacts
 prioritized, root-cause fixes derived from reading the transcripts of the failing conversations —
 with verbatim quotes, run IDs, discounted judging artifacts, and test-side coverage gaps kept
 separate from real defects. It renders solely from the latest `improvements_<stamp>.json` in the
-agent's findings dir, authored by the `reps-run` co-pilot's transcript-review step (schema:
-`specs/013-report-remediations/contracts/improvements-record.md`). CLI/SDK runs don't author it —
+agent's findings dir, authored by the `reps-run` co-pilot's transcript-review step (schema
+validated by `reps.report.improvements`). CLI/SDK runs don't author it —
 the report then shows an explicit "no transcript review captured" note, and a stale banner appears
 if new pillar runs land after the last review. Discounts never change recorded scores.
 
@@ -146,13 +146,13 @@ reps/
 
 - **Scenarios (row banks)** — `.jsonl` + `<stem>_meta.md`. Since feature 002, a pillar's
   judge-graded probes are consolidated into a **standardized row bank**: each row carries its own
-  `sub_capability`, `persona`, `script` (+ optional `driver` routing /
+  `sub_capability`, `persona`, `guidance` (+ optional `driver` routing /
   `security_category` / `severity_on_fail`) and a top-level `result` pass criterion. One bank runs
   as one simulation (split by `driver` when a bank feeds more than one voice). Schema +
-  validation: `specs/002-consolidate-reps-artifacts/contracts/scenario-row.md`.
+  validation live in `reps/rows.py` (`ROW_REQUIRED_INPUT_FIELDS`, `validate_rows`).
 - **Drivers (voice personas)** — `.md` with `## Persona Prompt Template`, **one per distinct
   voice/manner of speech**, a condition-free shell that renders only `{scenario_input.persona}`
-  and `{scenario_input.script}`. All probe-specific behavior lives in rows, none in driver prose.
+  and `{scenario_input.guidance}`. All probe-specific behavior lives in rows, none in driver prose.
   R uses 2 (confused / assertive), E and P use 1 each.
   Under the prompt heading a driver authors exactly the platform's four canonical sections —
   `## Persona`, `## Scenario Details` (the two tokens, immediately before objectives),
@@ -161,15 +161,14 @@ reps/
   `Conversation Behavior` blocks on every save, replacing any authored variant. Those blocks are
   captured verbatim in `reps/shared/driver-canonical-blocks.md` (platform-owned, do not edit) and
   appended by the SDK path in `run_suite.py` so both run paths store the same effective prompt.
-  Enforced by `tests/test_driver_conformance.py`; contract:
-  `specs/014-driver-conformance/contracts/driver-file-format.md`.
+  Enforced by `tests/test_driver_conformance.py`, which is the executable statement of the format.
 - **Checks** — one per-pillar **rubric judge** (`<pillar>-expectation-met`) grades a conversation
   against the row's `result` (pass criterion); deterministic/metric checks (`.py`:
   latency, error-rate, tool-arg-schema) stay separate (Constitution V).
 - **Tuning** — add or edit a probe by editing rows in the bank file only (`reps-profile`);
   drivers and checks are agent-agnostic.
-- Metadata schema: `specs/001-reps-voice-workbench/contracts/artifact-metadata.md`;
-  row/driver/findings contracts: `specs/002-consolidate-reps-artifacts/contracts/`.
+- Metadata schema: every artifact carries the front-matter keys listed above; `reps/common.py`
+  reads them and `tests/test_metadata.py` enforces them.
 - **Security** uses the same consolidated structure: 4 voice-grouped attack banks
   (confident-authority, calm-covert, frustrated-goal, agitated-rogue), 4 adversarial voice
   drivers, and one `security-boundary-held` rubric. Every row carries its OWASP Agentic-Security

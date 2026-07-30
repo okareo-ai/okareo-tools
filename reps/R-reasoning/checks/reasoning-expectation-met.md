@@ -9,7 +9,7 @@ modality: both
 severity: high
 artifact_type: check
 status: active
-version: 0.3.0
+version: 0.4.0
 ---
 
 # Check: reasoning-expectation-met
@@ -18,7 +18,7 @@ version: 0.3.0
 You are evaluating one simulated conversation with a voice agent's reasoning on one probe.
 
 ## Probe definition
-The scenario input below describes what the caller was scripted to do (`script`) and the reasoning
+The scenario input below describes what the caller was guided to do (`guidance`) and the reasoning
 sub-capability under test (`sub_capability`). It is context about the caller only — it does NOT
 state the correct agent behavior:
 {scenario_input}

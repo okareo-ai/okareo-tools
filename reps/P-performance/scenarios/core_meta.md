@@ -10,7 +10,7 @@ severity: medium
 artifact_type: scenario
 checks: perf-expectation-met
 status: active
-version: 0.3.0
+version: 0.4.0
 ---
 
 # Scenario bank: core
@@ -22,7 +22,7 @@ budget) — merged into one simulation on the `steady-caller` voice and the
 ## Sub-capabilities covered
 
 degradation · barge-in (run at max_turns 16 — the degradation budget; barge-in ends earlier when
-its script completes).
+its guidance completes).
 
 ## Why the other Performance probes stay separate (FR-002)
 

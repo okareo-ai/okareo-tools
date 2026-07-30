@@ -9,7 +9,7 @@ the modality.** Voice never exposes a trace; a text agent may or may not. So che
 two independent axes — modality AND trace availability — and every Execution finding records the
 substrate that produced it (`evidence_basis`).
 
-Contracts: specs/004-reps-text-agents/contracts/trace-model.md · check-selection.md.
+The trace model and check-selection rules are implemented in this module.
 """
 from __future__ import annotations
 

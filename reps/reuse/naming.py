@@ -1,7 +1,7 @@
 """
 Canonical + tuned naming and the tag vocabulary (feature 003).
 
-Authoritative rules: specs/003-artifact-upload-reuse/contracts/naming-and-tags.md.
+The functions below are the authoritative naming/tagging rules.
 Both execution paths MUST build identical names/tags for identical committed state — this
 module is that single source, and is keyless/pure so it can be unit-tested and called from
 the MCP path and the SDK runner alike.

@@ -10,7 +10,7 @@ severity: high
 artifact_type: scenario
 checks: execution-expectation-met, execution-tool-arg-schema
 status: active
-version: 0.3.0
+version: 0.4.0
 ---
 
 # Scenario bank: core
@@ -41,7 +41,7 @@ finding is labelled its **evidence basis**: `trace-verified` (judged against the
 trace) or `conversation-inferred` (judged from the transcript). A trace-less text Execution assessment
 has the same confidence ceiling as voice (black-box); with a trace it is higher-fidelity. The report
 renders the Execution confidence tier and marks trace-dependent checks that could not run as `no-trace`
-gaps. See `specs/004-reps-text-agents/contracts/`.
+gaps. Trace handling and check selection live in `reps/trace.py`.
 
 ## Interpreting results (Constitution II)
 

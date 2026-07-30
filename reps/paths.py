@@ -14,7 +14,7 @@ runner (`reps/run_suite.py`) and the report layer (`reps/report/*`) can never di
 Keyless and dependency-light (no `okareo` import), like `reps/slug.py`, so it is importable from
 both paths and unit-testable without credentials.
 
-Contracts: specs/006-agent-scoped-tuning/contracts/{per-agent-layout,artifact-override-resolution,
+Layout and override-resolution rules are implemented here and enforced by tests/ (see also
 profile-resolution}.md
 """
 from __future__ import annotations

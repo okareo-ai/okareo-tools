@@ -1,14 +1,12 @@
 # Contributing — authoring Okareo skills
 
-> **How contributions work here**: this repository is published automatically from Okareo's
-> private `okareo-tools-dev` repository — the single source of truth for every skill, command,
-> and script you see here. You are welcome to open **issues** and **pull requests** in this
-> repo, but merged changes are not final until an Okareo maintainer reconciles them into the
-> upstream repo (the automation detects direct changes as drift and pauses publishing until
-> reconciliation). Practically: open an issue or PR describing the change; a maintainer ports
-> it upstream, credits you in the sync, and the published copy updates on the next sync. The
-> authoring guidance below still applies — it describes the shape your proposed skill or
-> command should have.
+> **How contributions work here**: this repository is generated — Okareo publishes it
+> automatically, so commits landed directly here are replaced on the next sync. You are very
+> welcome to open **issues** and **pull requests**: a maintainer picks up the change, lands it at
+> the source, credits you, and the published copy updates on the next sync. Practically, open an
+> issue or PR describing what you want changed and it will be handled from there. The authoring
+> guidance below still applies — it describes the shape your proposed skill or command should
+> have.
 
 This repo packages the Okareo MCP server, a set of **Agent Skills**, and a
 set of **slash commands** as one Claude Code plugin. The MCP server gives

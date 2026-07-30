@@ -12,7 +12,7 @@ Requires:
     - OKAREO_API_KEY in environment or .env
     - reps/target.json configured (copy from reps/target.json.voice-example)
 
-Contract: specs/001-reps-voice-workbench/contracts/cli-runner.md
+The argument parser at the bottom of this module is the CLI contract.
 """
 from __future__ import annotations
 
@@ -73,7 +73,7 @@ def modality_matches(artifact_modality: str | None, selected: str) -> bool:
 
 def resolve_on_draft(status: str | None, on_draft: str,
                      interactive: bool) -> tuple[str, str | None]:
-    """Draft gate (feature 010, specs/010-reps-explore/contracts/draft-gating.md).
+    """Draft gate (feature 010).
 
     Returns `(action, message)` with action ∈ {'proceed', 'stop', 'prompt'}. Only a `draft`
     profile status gates; `applied` and None (absent profile / no field) always proceed

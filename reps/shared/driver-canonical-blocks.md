@@ -14,7 +14,7 @@ do_not_edit: true
 
 Everything below the marker is appended by the platform after the authored four-section core
 (Persona / Scenario Details / Objectives / Soft Tactics). Baseline driver files MUST NOT contain
-these sections (see `specs/014-driver-conformance/contracts/driver-file-format.md`); the SDK upload
+these sections (enforced by `tests/test_driver_conformance.py`); the SDK upload
 path in `reps/run_suite.py` appends the body below to `prompt_template` for parity with MCP saves.
 The language rule reflects `language: en` — all shipped drivers are English.
 

@@ -1,10 +1,9 @@
 # okareo-tools
 
-> **Where development happens**: this repository's content is developed in Okareo's private
-> `okareo-tools-dev` repository and published here automatically on every change — the
-> `.sync-state.json` file at the repo root fingerprints each sync. Direct edits here will be
-> flagged as drift and reconciled upstream rather than kept in place; see
-> [CONTRIBUTING.md](CONTRIBUTING.md) for how to propose a change.
+> **This repository is generated.** Its content is published automatically by Okareo on every
+> change — the `.sync-state.json` file at the repo root fingerprints each sync. Direct commits here
+> are replaced on the next sync rather than kept in place, so please propose changes as issues or
+> pull requests; see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 Official Okareo tooling for Claude: the Okareo **MCP server** plus a set of
 **Agent Skills** that teach Claude how to simulate, evaluate, and monitor
@@ -32,7 +31,7 @@ Start at [`reps/README.md`](reps/README.md). Operator-local outputs land in the 
 
 ## What's in the box
 
-Eight skills and six slash commands, one MCP server, bundled as a single
+Eleven skills and seven slash commands, one MCP server, bundled as a single
 installable plugin:
 
 | Skill                   | What it does                                             |
@@ -45,6 +44,9 @@ installable plugin:
 | `agent-improvement-loop`| Iteratively improve an agent over N cycles; track the trend |
 | `evaluation`            | Score a model or prompt against a scenario set            |
 | `monitoring`            | Monitor live text or voice traffic; catch drift           |
+| `reps-explore`          | Hold one benign discovery conversation; draft an agent profile |
+| `reps-profile`          | Apply the profile; generate rows tuned to your agent      |
+| `reps-run`              | Execute a REPS pillar and regenerate the report           |
 
 The commands — `/okareo:quickstart`, `/okareo:scenario`, `/okareo:simulate`,
 `/okareo:improve`, `/okareo:monitor`, `/okareo:update`, `/okareo:reps` — are thin
@@ -141,7 +143,7 @@ install path. `scripts/install.sh` automates the scriptable ones.
 
 ### Claude Code (recommended)
 
-The plugin bundles the MCP server, all eight skills, and the commands as
+The plugin bundles the MCP server, all eleven skills, and the commands as
 one unit:
 
 ```
@@ -177,6 +179,36 @@ tools. Skills still confirm in-chat before steps that cost money or are
 hard to undo (placing a real test call, deleting a resource), so a
 server-wide allow rule does not mean silent billed actions.
 
+### Cursor
+
+Cursor consumes the **MCP server** natively. Add it to `.cursor/mcp.json` in your
+project (or `~/.cursor/mcp.json` to enable it everywhere):
+
+```json
+{
+  "mcpServers": {
+    "okareo": {
+      "url": "https://tools.okareo.com/mcp"
+    }
+  }
+}
+```
+
+Reload Cursor, then confirm the server is connected and its tools are enabled
+under **Cursor Settings → MCP**. The first tool call opens a browser for the same
+one-time sign-in.
+
+> Cursor's MCP config schema has changed across versions (some accept an explicit
+> `"type": "http"`). If the server does not appear, check
+> [Cursor's MCP docs](https://docs.cursor.com/context/model-context-protocol) for
+> the form your version expects.
+
+**On the skills**: `.skill` packages are installers for the Claude surfaces, so
+there is no equivalent one-click install in Cursor. The MCP tools work fully; to
+give Cursor the *method* as well, copy the relevant `SKILL.md` bodies into your
+project as Cursor rules (`.cursor/rules/`) or into `AGENTS.md`. Native skill
+support in Cursor is not something this plugin provides today.
+
 ### Claude API
 
 Each skill is uploaded to your workspace via the Skills API and is then
@@ -200,8 +232,10 @@ MCP server under Settings → Connectors.
 
 ## Updating
 
-Plugin updates are pulled explicitly — none of the three surfaces
-auto-upgrade by default.
+Plugin updates are pulled explicitly — none of the Claude surfaces
+auto-upgrade by default. (Cursor needs no update: it consumes the hosted MCP
+server, which is updated server-side. If you copied skill bodies into
+`.cursor/rules/` or `AGENTS.md`, re-copy them to pick up changes.)
 
 ### Claude Code
 

@@ -10,7 +10,7 @@ severity: critical
 artifact_type: scenario
 checks: security-boundary-held
 status: active
-version: 0.3.0
+version: 0.4.0
 ---
 
 # Scenario bank: confident-authority-attacks

@@ -9,7 +9,7 @@ modality: both
 severity: medium
 artifact_type: check
 status: active
-version: 0.3.0
+version: 0.4.0
 ---
 
 # Check: perf-expectation-met
@@ -18,7 +18,7 @@ version: 0.3.0
 You are evaluating a voice agent's performance behavior on one probe, from the conversation.
 
 ## Probe definition
-The scenario input below describes what the caller was scripted to do (`script`) and the performance
+The scenario input below describes what the caller was guided to do (`guidance`) and the performance
 sub-capability under test (`sub_capability`). It is context about the caller only — it does NOT
 state the correct agent behavior:
 {scenario_input}

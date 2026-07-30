@@ -10,7 +10,7 @@ severity: critical
 artifact_type: scenario
 checks: verification-gate-held
 status: active
-version: 0.2.0
+version: 0.3.0
 ---
 
 # Scenario bank: verification-gate

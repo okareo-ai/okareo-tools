@@ -5,7 +5,7 @@ reps_pillar: none (exploration aid)
 artifact_type: scenario
 eval_mode: multi-turn
 status: complete
-version: 0.2.0
+version: 0.3.0
 ---
 
 # Scenario bank: discovery (exploration aid)
@@ -24,11 +24,11 @@ profile written to `results/<agent_slug>/profile/`.
 
 ## Row shape (NOT the standardized REPS row contract)
 
-`input.persona` + `input.script` (consumed by the driver shell) + `input.driver` routing + a
+`input.persona` + `input.guidance` (consumed by the driver shell) + `input.driver` routing + a
 neutral top-level `result` stating there is no pass criterion. Deliberately no `sub_capability`,
 no `severity_on_fail`, no expected outcome anywhere — nothing here is scored, and this bank is
-exempt from `reps.rows.validate_rows` (which governs pillar probe banks only). See
-`specs/010-reps-explore/contracts/exploration-artifacts.md` (INV-E6).
+exempt from `reps.rows.validate_rows` (which governs pillar probe banks only); the bank's
+invariants are enforced by `tests/test_explore_artifacts.py` instead.
 
 ## Interpreting "results"
 
@@ -40,7 +40,7 @@ error, never a finding.
 ## Rules
 
 - Baseline artifact: agent-agnostic, committed, read-only for tuning flows (Constitution IV/VII).
-- Benign only (INV-E3): scripts must stay cooperative — no adversarial, deceptive, or
+- Benign only (INV-E3): discovery guidance must stay cooperative — no adversarial, deceptive, or
   policy-probing content. If the assistant declines anything, the persona accepts and moves on.
 - Platform copies are one single-row scenario per angle — `explore-discovery-direct` /
   `explore-discovery-task-first` / `explore-discovery-limits-first` — tagged

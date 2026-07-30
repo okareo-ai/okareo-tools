@@ -4,7 +4,7 @@ Capture normalized REPS findings to results/<agent_slug>/findings/<pillar>_<date
 The report generator reads ONLY these files (never the live platform), so the report is
 reproducible from committed state (Constitution VIII).
 
-Record schema: specs/001-reps-voice-workbench/contracts/report-results.md.
+Record schema: defined and validated by write_record() below.
 """
 from __future__ import annotations
 
@@ -302,7 +302,7 @@ def write_improvements(*, record: dict, results_dir: Path) -> Path:
     Sole writer for results/<agent_slug>/findings/improvements_<stamp>.json — the source the
     report's "Suggested Agent Improvements" section renders from. Key-free and callable via
     `python -c` from the MCP co-pilot path, exactly like `write_record`. Validates the record
-    (specs/013-report-remediations/contracts/improvements-record.md) including that the
+    (schema in reps/report/improvements.py) including that the
     companion `analysis_doc` already exists under the agent's results tree; raises ValueError
     on any violation. Never touches pillar findings records.
     """

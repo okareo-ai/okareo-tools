@@ -176,8 +176,8 @@ run unprefixed exactly as written.
    scenario → driver → checks → `max_turns` / `first_turn` / `repeats`). **Report the plan's
    simulation count to the operator before running** (FR-009) so the run cost is visible.
 3. **Validate row banks first (FR-007, fail-fast)** — consolidated scenario files are
-   standardized row banks (`specs/002-consolidate-reps-artifacts/contracts/scenario-row.md`):
-   every row's `input` needs non-empty `sub_capability`, `persona`, `script`
+   standardized row banks (schema enforced by `reps.rows.validate_rows`):
+   every row's `input` needs non-empty `sub_capability`, `persona`, `guidance`
    (+ `driver` routing when the bank feeds >1 driver) and a top-level `result`; `input` must NOT
    carry `expected_behavior` (feature 009 — the outcome belongs in `result`, out of the driver's view). Validate key-free before ANY upload:
    Validate the **resolved** bank (the overlay when tuned, else the baseline) — in MCP mode,
@@ -190,6 +190,12 @@ run unprefixed exactly as written.
    ```
    Abort and tell the operator the exact bank/row/field on failure. (Pre-002 banks — no
    `sub_capability` anywhere — skip validation with a notice.)
+
+   **Tuned overlay generated before feature 016?** It will fail here: the behavioral-arc field was
+   renamed to `guidance` and the old key is now a hard error (clean cut, no alias). The validator
+   names both keys and the remedy. Do NOT hand-edit the overlay — re-run **reps-profile** for that
+   agent to regenerate its rows in the current shape, then re-run this step. The committed baseline
+   under `reps/` is already current.
 4. **For each simulation**, from the resolved files (overlay-first). **Bias to reuse (feature 003): the
    platform is the record of what already exists — discover first, upload only when new or
    superseded.** For every building block below, before uploading:
@@ -246,7 +252,7 @@ run unprefixed exactly as written.
      `get_conversation_transcript` if you need the transcript link/excerpt.
 5. **Assemble the results record** — build a `simulations` list in the
    `contracts/report-results.md` shape, plus the v2 row-level fields
-   (`specs/002-consolidate-reps-artifacts/contracts/findings-record-v2.md`):
+   (validated by `reps.report.capture.write_record`):
    - **Join rows to verdicts semantically — NEVER by index.** ⚠️ Verified live: the aggregate
      `scores_by_row` array is NOT positionally aligned to `data_points`, and it carries no
      `test_id`/scenario key. Read each datapoint's `sub_capability` from
@@ -339,8 +345,8 @@ run unprefixed exactly as written.
      with the longer excerpts and reasoning, ending with `## Verdicts discounted` when any.
      Overwrite (or extend with a dated section) on each review pass. **Secret-free** — quote
      transcript excerpts only; the whole tree stays gitignored and uncommitted.
-   - **Write the record** (schema + validation:
-     `specs/013-report-remediations/contracts/improvements-record.md`; `based_on` = the exact
+   - **Write the record** (schema + validation in `reps.report.improvements`;
+     `based_on` = the exact
      `run_timestamp` + filename of each pillar record you reviewed — it drives the stale banner):
    ```bash
    python -c "import json; from reps.report.capture import write_improvements; \
