@@ -245,14 +245,13 @@ okareo-tools/
 │   ├── S-security/
 │   ├── explore/                      Discovery driver and scenario for reps-explore.
 │   ├── profile/                      Profiling aids for reps-profile.
-│   ├── report/                       Capture, scoring, and report generation.
+│   ├── report/                       Capture, scoring, report generation, brand assets.
 │   ├── shared/                       Canonical driver blocks shared across pillars.
 │   └── targets/                      Target configuration examples.
 │
 ├── contracts/                        Public contracts (e.g. get_reps_baseline).
 ├── dist/                             Built .skill packages, one per skill.
 ├── docs/                             Supporting design notes.
-├── media/                            Okareo logo assets.
 ├── scripts/
 │   ├── build.sh                      Packages each skill into a .skill file.
 │   ├── release.sh                    Builds, then publishes to all 3 surfaces.

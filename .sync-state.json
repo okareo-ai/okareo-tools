@@ -1,20 +1,18 @@
 {
-  "content_hash": "sha256:a2997d1100daa5adefa4ac3c8d7223861596491e7c67e742805ba5f4f7884dd4",
-  "dev_revision": "29626af",
+  "content_hash": "sha256:9782f741d5de13c6222939e1fa0119c888686d1ef5785f01dbfbbc1f29052b12",
+  "dev_revision": "aebd6f5",
   "file_hashes": {
-    ".claude-plugin/marketplace.json": "sha256:226891d48087e3d774767e16fc6418f608f132db689f7dc7134d101f01604490",
+    ".claude-plugin/marketplace.json": "sha256:028d8a408d4b2d9b430fdba8e336131232c718a82d3cd61ba13ced34bffc850d",
     ".github/workflows/release.yml": "sha256:b5559eacfcfd953e927346d798f0636ae204f09c5cbf8ecfdfe1c2a7b2ba80d5",
     ".gitignore": "sha256:1cf2e848bd76aeb8c662c1219439553870697b5d48c267c7db014b84c2c8a0c1",
     "CLAUDE.md.snippet": "sha256:78d16844c62f2596aa19a8973e8507aecc4c5acc60535eff8d8abda01621be92",
     "CONTRIBUTING.md": "sha256:d89fb5fbbe10da57aa29f6f646e96afbc21011372db2178fa4c41297e366c85a",
     "LICENSE": "sha256:b302b6664234e1ab7e287b7511c0fd5fa065c3f15b49285f97f94ee71d3ad607",
-    "README.md": "sha256:d81119f74cb5a4f3d5c5537d5b836f15e3dbca44f7857fbbf70cad6c95d8a589",
+    "README.md": "sha256:a3c60cbeb183dc1a4b6808700f87ec659ac537d0df9a5c767ad5884686d12dd3",
     "ROADMAP.md": "sha256:347b9cf777ba39aeeb87713e48f1d9aa3cf4683952402c46174c442370fbe4da",
     "command-template.md": "sha256:f98e47a21303ba6eac5b03cdbcad51f999b4d2a6fff86429c115f6e575e0244b",
     "contracts/get_reps_baseline.md": "sha256:15f339a3a72db62732e035dce05d5b5d1dfcc331e49bf03f4b3c80a447873610",
-    "media/okareo_logo.svg": "sha256:d75d2c056b57b2a91e5a1535f2f9d5f1dc11512daec08bc7657bd6ac5b0665ae",
-    "media/okareo_logo_color.svg": "sha256:2beb8f7bf82cb7b3337167a5c657c9bafb8c21667a09620e1c76ba5d1fc9e5ce",
-    "plugins/okareo/.claude-plugin/plugin.json": "sha256:5e6d570a9293f46f6b4f85504b630a08f1cd95445de24e0702f3b26f61628b55",
+    "plugins/okareo/.claude-plugin/plugin.json": "sha256:17bfe09001d05e6513e173af7318f2780ee05f41f9e5a8e5836a7108f6b7b500",
     "plugins/okareo/.mcp.json": "sha256:04589eb4da16fab369aebe561eb2a4b22bd9a765e3b0a549445a896b8ae285ae",
     "plugins/okareo/commands/improve.md": "sha256:16cc4209b04d78683e574a2937fd6b2acba80f6b1d87cb21016712ffc954d03e",
     "plugins/okareo/commands/monitor.md": "sha256:f6210ad5e9522891cb7682c607f62f9ae5cb76f18eb7b0e2c09996eb35c262f8",
@@ -50,7 +48,7 @@
     "plugins/okareo/skills/reps-profile/references/agent-profile.example.yaml": "sha256:db84f081561d013b616ebbdd182d59d83a7c35f4b269f309aa3259a0bb22e772",
     "plugins/okareo/skills/reps-profile/references/execution-scenario.template.jsonl": "sha256:c06035b3cf54c5da9e51aa40425a389349c0abf7337bc65c5d076bbe53268747",
     "plugins/okareo/skills/reps-profile/references/reasoning-scenario.template.jsonl": "sha256:882534abdb5a2304a4442ab9107fa7b59779476b28a4214334248d0c865100a0",
-    "plugins/okareo/skills/reps-run/SKILL.md": "sha256:e38b45ad6f7db7bf1a6571f52cee34935d039956f705df17a06cbc2fd9d2ace1",
+    "plugins/okareo/skills/reps-run/SKILL.md": "sha256:875872b553c4a99d9d8922bd3f1659d2a1a3f8f2c96aee05e11a9dc1f0e9c20c",
     "plugins/okareo/skills/scenario-design/SKILL.md": "sha256:d1e2caca5f1994f57d3506376b34533e515b85082572e9aedbd3b90f3688d8d8",
     "plugins/okareo/skills/scenario-design/references/coverage.md": "sha256:2c5ac8363e2282700bb6675c0ceef88864441eb4bf954390ce7dd64020299f0c",
     "plugins/okareo/skills/scenario-from-traces/SKILL.md": "sha256:fc9bb62249763558defa7f507f2ccdf58f1bf49f7ad0a71069c5801ad4561a70",
@@ -126,8 +124,10 @@
     "reps/profile/agent-profile.example.yaml": "sha256:db84f081561d013b616ebbdd182d59d83a7c35f4b269f309aa3259a0bb22e772",
     "reps/report/__init__.py": "sha256:5ee2d944f52e3bb293582b70784b80782ec86b7369a91a1bd4635e600955e6a1",
     "reps/report/capture.py": "sha256:7d47852a241b3bf3821073257f32d58b52e2303adff7df7c53060c78a87093d0",
-    "reps/report/gen_reps_report.py": "sha256:d206a16efe90da03045bfc45297493f4fd2e0bbe037ced4748da11e0457cc1c7",
+    "reps/report/gen_reps_report.py": "sha256:fd0ca7490aeb9c43256300e2a0e47b6ff935bd42ba655acedb4e22b8bbb26639",
     "reps/report/improvements.py": "sha256:6c29c9213ac098a7d26eb3258f87f518c77d4e144c970ef948363f497a60d0b4",
+    "reps/report/okareo_logo.svg": "sha256:d75d2c056b57b2a91e5a1535f2f9d5f1dc11512daec08bc7657bd6ac5b0665ae",
+    "reps/report/okareo_logo_color.svg": "sha256:2beb8f7bf82cb7b3337167a5c657c9bafb8c21667a09620e1c76ba5d1fc9e5ce",
     "reps/report/scoring.py": "sha256:3a6294b75201d6b70f669199813a0747e33d5b1c2c6da7729ae03cd779c9d226",
     "reps/reuse/__init__.py": "sha256:1fa1e013ade3da31c1ccdbec102797cadc4a884d1244d53d2a1c443c30cc1798",
     "reps/reuse/decision.py": "sha256:e5b08dc6ab0f4ed9e0b8aa8d499f14b937a4906ffc38a667dad3c66faf97080d",
@@ -155,5 +155,5 @@
     "skill-template/references/example-reference.md": "sha256:4542b912bd674664a44d6751fb9a058467b3580f6fbbb194a86778e6be43b8e3"
   },
   "pipeline": "ci",
-  "synced_at": "2026-07-30T19:40:27Z"
+  "synced_at": "2026-07-31T19:52:56Z"
 }

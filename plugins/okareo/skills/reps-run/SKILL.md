@@ -116,7 +116,7 @@ re-implemented by hand. In MCP mode, fetch that tooling first — DO materialize
 set through `get_reps_baseline`; it is stdlib-only and runs on bare `python3`:
 
 1. **Discover once** — call `get_reps_baseline` with no `pillar`/`path`. The envelope's `files[]`
-   must list all 17 tooling paths below; record the serving `tag` (it is the run's baseline
+   must list all 19 tooling paths below; record the serving `tag` (it is the run's baseline
    version AND the tooling version — one tag for everything this run fetches). Surface
    `stale: true` + `stale_reason` per the envelope rule above.
 2. **Fetch the set** — for each path below, call `get_reps_baseline` with that `path` and write
@@ -134,7 +134,16 @@ set through `get_reps_baseline`; it is stdlib-only and runs on bare `python3`:
    reps/coverage.py            reps/report/gen_reps_report.py  reps/reuse/decision.py
                                                                reps/reuse/orchestrate.py
                                                                reps/reuse/platform.py
+
+   reps/report/okareo_logo.svg        (brand asset — non-blocking)
+   reps/report/okareo_logo_color.svg  (brand asset — non-blocking)
    ```
+
+   The last two are the report's **brand assets**. Fetch them with the rest — the same "write the
+   envelope's `content` verbatim, never re-author" rule and the same prohibition on writing under
+   the project tree apply. They are **non-blocking**: if one cannot be obtained, do NOT stop the
+   run. The report still renders, with the plain-text Okareo mark instead of the logo and a
+   warning on stderr naming the asset; only the ten core files in step 5 trigger the STOP path.
 
 3. **Smoke-import** — `PYTHONPATH="$TOOLING_ROOT" python3 -c "import reps.report.capture,
    reps.report.gen_reps_report"` (catches a truncated or missing fetch before anything runs).

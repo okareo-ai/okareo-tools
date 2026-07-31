@@ -30,6 +30,13 @@ _REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
+# Feature 017 — brand assets live BESIDE this module, inside the `reps/` workbench tree, because
+# that tree is the only unit that reaches operators in every mode (dev checkout, vendored install,
+# keyless MCP). Contract 017 Invariant C: asset resolution must never anchor to `_REPO_ROOT`, a
+# parent directory, the CWD, or an environment variable — it resolves inside the distributed tree
+# or not at all. Invariant D: no CLI flag or function argument may be added to locate them.
+_ASSET_DIR = Path(__file__).resolve().parent
+
 from reps.report.scoring import (
     IMPORTANCE,
     band,
@@ -123,32 +130,58 @@ def _pick_aggregate_summary(records: dict) -> str | None:
     return best
 
 
+def _inline_asset(filename: str, span_class: str) -> str | None:
+    """Inline a brand asset from `_ASSET_DIR` as `<span class=...><svg>…</svg></span>`.
+
+    Returns None when the asset is unusable, having warned once on stderr (feature 017,
+    contract §3-§5). All three failure modes are treated identically (Invariant G):
+
+      U1  unreadable            -> OSError
+      U2  not valid UTF-8       -> UnicodeDecodeError, which is NOT an OSError and would
+                                   otherwise crash the render
+      U3  no <svg>…</svg> pair  -> truncated or malformed fetch; never inline a partial asset
+
+    Never raises and never touches the exit status (Invariant E): a brand asset is non-blocking,
+    so the report is still written — only its mark degrades. But never silently (Invariant F):
+    the silent `except OSError: pass` this replaces is what hid the defect for a full feature
+    cycle, so every degradation names the asset, the path searched, the consequence, and the
+    remedy.
+    """
+    path = _ASSET_DIR / filename
+    try:
+        svg = path.read_text(encoding="utf-8")
+    except OSError as exc:
+        reason = f"could not be read ({exc.__class__.__name__}: {exc.strerror or exc})"
+    except UnicodeDecodeError:
+        reason = "is not valid UTF-8 (truncated or corrupt fetch)"
+    else:
+        i, j = svg.find("<svg"), svg.rfind("</svg>")
+        if i != -1 and j > i:
+            return f'<span class="{span_class}">{svg[i:j + len("</svg>")]}</span>'
+        reason = "contains no usable <svg>…</svg> markup (truncated or corrupt fetch)"
+
+    print(
+        f"warning: brand asset {filename} {reason}. Looked in: {path}. "
+        f"The report was rendered with the plain-text Okareo mark instead of the logo. "
+        f"To restore it, update or re-fetch the workbench tree "
+        f"(run /okareo:reps to refresh a local install, or re-run the tooling fetch).",
+        file=sys.stderr,
+    )
+    return None
+
+
 def _brand_logo() -> str:
     """Inline the Okareo logo SVG for the cover header (recoloured white on the dark cover);
-    fall back to the text mark if the asset is missing."""
-    logo = _REPO_ROOT / "media" / "okareo_logo.svg"
-    try:
-        svg = logo.read_text(encoding="utf-8")
-        i, j = svg.find("<svg"), svg.rfind("</svg>")
-        if i != -1 and j != -1:
-            return f'<span class="brand-logo">{svg[i:j + len("</svg>")]}</span>'
-    except OSError:
-        pass
-    return '<span class="brand"><span class="brand-mark">◎</span> okareo</span>'
+    fall back to the text mark — with a warning — if the asset is unusable."""
+    return _inline_asset("okareo_logo.svg", "brand-logo") or (
+        '<span class="brand"><span class="brand-mark">◎</span> okareo</span>'
+    )
 
 
 def _endmark_logo() -> str:
     """Inline the color Okareo logo for the footer endmark (feature 005, FR-011), sized small via
-    the `.endmark-logo` CSS; fall back to the text mark if the asset is missing."""
-    logo = _REPO_ROOT / "media" / "okareo_logo_color.svg"
-    try:
-        svg = logo.read_text(encoding="utf-8")
-        i, j = svg.find("<svg"), svg.rfind("</svg>")
-        if i != -1 and j != -1:
-            return f'<span class="endmark-logo">{svg[i:j + len("</svg>")]}</span>'
-    except OSError:
-        pass
-    return '◎ okareo'
+    the `.endmark-logo` CSS; fall back to the text mark — with a warning — if unusable."""
+    return _inline_asset("okareo_logo_color.svg", "endmark-logo") or "◎ okareo"
 
 
 def _human(scenario: str) -> str:
