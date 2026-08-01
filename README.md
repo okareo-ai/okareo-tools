@@ -1,10 +1,5 @@
 # okareo-tools
 
-> **This repository is generated.** Its content is published automatically by Okareo on every
-> change — the `.sync-state.json` file at the repo root fingerprints each sync. Direct commits here
-> are replaced on the next sync rather than kept in place, so please propose changes as issues or
-> pull requests; see [CONTRIBUTING.md](CONTRIBUTING.md).
-
 Official Okareo tooling for coding agents: the Okareo **MCP server** plus a set of **Agent Skills**
 that teach an agent how to simulate, evaluate, and monitor LLM apps and agents with
 [Okareo](https://okareo.com) — including the **REPS workbench**, a forkable harness that assesses an
@@ -265,7 +260,6 @@ okareo-tools/
 ├── .github/workflows/release.yml     CI: validate + build + publish on a v* tag.
 ├── skill-template/                   Copy-to-author scaffold for a new skill.
 ├── skill-ids.json                    Claude API skill ids.
-├── .sync-state.json                  Sync fingerprint (see the note at the top).
 ├── CONTRIBUTING.md                   How to propose a change.
 ├── ROADMAP.md                        Shipping and planned skills.
 ├── CLAUDE.md.snippet                 Drop-in dependency hint for consuming repos.
@@ -275,5 +269,5 @@ okareo-tools/
 
 ## Contributing
 
-This repository is generated, so changes are made upstream and published here. See
-[CONTRIBUTING.md](CONTRIBUTING.md) for the shape of a skill and how to propose a change.
+Issues and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for the shape of a
+skill and how to propose a change.

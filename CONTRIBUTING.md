@@ -1,19 +1,13 @@
 # Contributing — authoring Okareo skills
 
-> **How contributions work here**: this repository is generated — Okareo publishes it
-> automatically, so commits landed directly here are replaced on the next sync. You are very
-> welcome to open **issues** and **pull requests**: a maintainer picks up the change, lands it at
-> the source, credits you, and the published copy updates on the next sync. Practically, open an
-> issue or PR describing what you want changed and it will be handled from there. The authoring
-> guidance below still applies — it describes the shape your proposed skill or command should
-> have.
+> **How contributions work here**: open an **issue** or a **pull request** describing what you
+> want changed. A maintainer picks it up, lands the change, and credits you. The authoring
+> guidance below describes the shape your proposed skill should have.
 
-This repo packages the Okareo MCP server, a set of **Agent Skills**, and a
-set of **slash commands** as one Claude Code plugin. The MCP server gives
-Claude the *tools*; a skill gives Claude the *method* — when to reach for
-those tools and how to run a real workflow with them; a command is a thin
-entry point that frames a task and routes to a skill. This guide is for
-adding or changing a skill or a command.
+This repo packages the Okareo MCP server and a set of **Agent Skills** as one
+Claude Code plugin. The MCP server gives Claude the *tools*; a skill gives
+Claude the *method* — when to reach for those tools and how to run a real
+workflow with them. This guide is for adding or changing a skill.
 
 ## The shape of a skill
 
@@ -125,8 +119,7 @@ directory under `plugins/okareo/skills/<name>/` with a `SKILL.md`.
    (matching the directory), `description`, and optional `argument-hint`.
 2. Keep the body thin: the branching question and the handoff. It never
    teaches the workflow itself.
-3. Register it in the publish manifest's `skills[]`.
-4. Validate: `python3 scripts/validate_skills.py`.
+3. Validate: `python3 scripts/validate_skills.py`.
 
 Accept an argument where it is natural (`/okareo:simulate voice`) via
 `argument-hint`, and otherwise ask. A router earns its place only when it
@@ -134,11 +127,11 @@ disambiguates between **two or more** targets; if it dispatches to exactly
 one skill it adds a menu entry and no decision — point people at the target
 directly instead.
 
-> **Commands were retired** in feature 018. Claude Desktop installs the plugin
-> and surfaces its **skills** but not its **commands**, so a command-only
-> capability is unreachable there. Everything ships as a skill, which works on
-> every surface *and* can be selected from a free-form request — something a
-> command could never do. Do not reintroduce `plugins/okareo/commands/`.
+> **Commands are retired.** Claude Desktop installs the plugin and surfaces its
+> **skills** but not its **commands**, so a command-only capability is
+> unreachable there. Everything ships as a skill, which works on every surface
+> *and* can be selected from a free-form request — something a command could
+> never do. Do not reintroduce `plugins/okareo/commands/`.
 
 ## How skills compose
 
