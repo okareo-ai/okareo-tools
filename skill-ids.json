@@ -2,12 +2,17 @@
   "agent-improvement-loop": "skill_01LJzzsCd75CurNB6YsPnYdd",
   "agent-simulation": "skill_01AWmfj5c9jzmKCTc5m8o8F2",
   "evaluation": "skill_01X7XNav2aHq4dNA2hV7guPW",
+  "get-reps": "skill_0185sYdMV91e6PYiByC9zM4X",
+  "improve": "skill_01JRwgF3CLhYLgKBMjRjd6gZ",
   "monitoring": "skill_01NC95uSF3c1xkDvqKKoSek7",
   "quickstart": "skill_01ECRjkDaqdmqi923a2ZPB9m",
   "reps-explore": "skill_01ANj9aeqYd3SVMewY2C8Ppo",
   "reps-profile": "skill_01Qd7HQMU3ecbkVYjNn7JTUq",
   "reps-run": "skill_0125qCnQ2GmMifYFzr4Gq2J3",
+  "scenario": "skill_01N4qa2EgUbsaKEr7Cfwrh5R",
   "scenario-design": "skill_01UrABMYub7d7q8XjztifwAe",
   "scenario-from-traces": "skill_01K4K9bnUCuiRAXJFNPzFQjq",
+  "simulate": "skill_01JjKdfxAH1EQCabVJ7wBJNQ",
+  "update": "skill_01PKUdbfhzWoRQDJzgb3Fje5",
   "voice-simulation": "skill_01GoqqSJ36GFUVPC79RNXcuA"
 }
