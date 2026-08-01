@@ -23,7 +23,8 @@ exists, the skills prefer it.
 - **No argument** — detect and act: if `reps/` is absent, offer to install; if present, report
   installed vs latest version and offer to update when behind.
 - **`status`** — report only: installed version (`reps/.workbench-version`), latest release tag, and
-  whether the local baseline has uncommitted modifications. Writes nothing.
+  whether the local baseline has uncommitted modifications — reported as **unknown** where there is
+  no repository to ask, never as clean. Writes nothing.
 - **`install`** — vendor the latest release's `reps/` tree into the repo root.
 - **`update`** — refresh an existing `reps/` to the latest release (guardrails below).
 
@@ -43,16 +44,15 @@ Determine both by **observed behavior, never the surface** you think you are run
 identity is not a reliable signal; what matters is what the environment actually does.
 
 1. **A writable working directory** — attempt the write. If it fails, stop and say so.
-2. **Persistence** — `git rev-parse --is-inside-work-tree`. Inside a work tree ⇒ the copy persists;
-   proceed silently.
-3. **Bulk retrieval** — determined by the fetch's own exit status. No separate pre-flight probe: one
+2. **Bulk retrieval** — determined by the fetch's own exit status. No separate pre-flight probe: one
    network operation, and the failure reported is the real one.
 
-**If the working directory cannot be confirmed to persist** — outside a git work tree, or
-undeterminable — **warn and proceed**. Tell the operator the copy **will not survive the session**,
-and that any agent-specific tuning stored alongside it under `results/` is lost with it. Then carry
-on. Never refuse on this basis alone, and never install silently as though the copy were durable: a
-false assurance of durability is the costlier error. Undeterminable is treated as non-persistent.
+**Durability is not a precondition, and is never warned about.** A write that succeeds has persisted
+— that is the whole of the available evidence, and there is no further check to run. Do **not** test
+whether the directory is under version control and do not infer durability from the answer: version
+control governs *recoverability*, not durability, and a directory outside a repository persists
+exactly as well as one inside it. On success, **report the absolute path** the workbench was written
+to, and claim nothing beyond it.
 
 **If a precondition is genuinely unavailable**, stop and state plainly **which mechanism failed**,
 what it means, and the alternative — the reps skills run with no local copy at all, reading the
@@ -81,15 +81,26 @@ baseline through `get_reps_baseline`. Never silently fall back to a per-file cra
    indistinguishable from a complete one to every later session, and it silently changes which
    material an evaluation scores against.
 
-   Then: ensure `results/` is in the repo's `.gitignore` (append if missing), and suggest committing
-   `reps/` — it is the agent-agnostic baseline and belongs in the operator's history. Tuning never
-   touches it (overlays live in the gitignored `results/`), so `git status --porcelain reps/` stays a
-   valid cleanliness check.
+   On success, **report the absolute path** the workbench was written to — a fact the operator can
+   act on, and the only claim made about the copy.
+
+   Then, **best-effort**: where the working directory is under version control, ensure `results/` is
+   in the repo's `.gitignore` (append if missing) and suggest committing `reps/` — it is the
+   agent-agnostic baseline and belongs in the operator's history. Tuning never touches it (overlays
+   live in the gitignored `results/`), so `git status --porcelain reps/` stays a valid cleanliness
+   check. Where there is no repository, **skip this silently**: acquisition succeeded either way, and
+   housekeeping that cannot apply is not a failure to report.
 4. **Update** (only when installed): first check the local baseline is clean —
    `git status --porcelain reps/` must print nothing. If it is dirty, STOP and show the modified
    files; **never discard** local edits by overwriting them. Baseline customization belongs in
    `results/<agent_slug>/tuned/` overlays anyway. When clean, re-run the install extraction with the
    newer tag — same all-or-nothing rule — and rewrite `reps/.workbench-version`.
+
+   **If that check cannot be run** — no repository, or it errors — the baseline's modification state
+   **cannot be verified**. Say so, and require the operator's **explicit confirmation** before
+   overwriting. Do not treat the check's silence as a pass: with no repository it prints nothing,
+   which is identical to what a clean tree prints, so proceeding on that basis would discard operator
+   edits precisely where there is no version history to recover them from.
 5. **Route onward.** After install/update, point the operator at the skills that use the material:
    `reps-explore` (draft a profile from one discovery conversation), `reps-profile` (tune the suite
    to their agent), `reps-run` (run a pillar and produce the report).

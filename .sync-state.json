@@ -1,8 +1,8 @@
 {
-  "content_hash": "sha256:1a482037e4f2c7d2b17afe6cb2138ba9af7b8a52a920f3e2f202727420a0e1da",
-  "dev_revision": "d43cc8d",
+  "content_hash": "sha256:2b2170d5d94e415da16bf8421691b2e33ea4fa6ea003d8a19af85414404de0de",
+  "dev_revision": "e64aa1a",
   "file_hashes": {
-    ".claude-plugin/marketplace.json": "sha256:458abbaef9865aea0a1e8de8e126e86efc9fe23b0a3e63df6dc1836b1003e897",
+    ".claude-plugin/marketplace.json": "sha256:c90e74c6ec3759f0806b1fd5ab32bb8618f7d4d96cb71be0bfff73d696488aa6",
     ".github/workflows/release.yml": "sha256:b5559eacfcfd953e927346d798f0636ae204f09c5cbf8ecfdfe1c2a7b2ba80d5",
     ".gitignore": "sha256:1cf2e848bd76aeb8c662c1219439553870697b5d48c267c7db014b84c2c8a0c1",
     "CLAUDE.md.snippet": "sha256:78d16844c62f2596aa19a8973e8507aecc4c5acc60535eff8d8abda01621be92",
@@ -11,14 +11,14 @@
     "README.md": "sha256:0b27942be7f15fc08348e05274e05b0c368f4fdcc44b52229ab80c220ca7ac3c",
     "ROADMAP.md": "sha256:76cc42331b35171ba6c7c1bb69d675f88f44d26d6bb951d5af90cebe116d1057",
     "contracts/get_reps_baseline.md": "sha256:15f339a3a72db62732e035dce05d5b5d1dfcc331e49bf03f4b3c80a447873610",
-    "plugins/okareo/.claude-plugin/plugin.json": "sha256:6c02058115f0ea54ff7d6414f304f1c502c3cd464ca39039dc738ebaaefc1530",
+    "plugins/okareo/.claude-plugin/plugin.json": "sha256:41b024a88bf1e08b6b3b537558372c81848ad3a4005918ab148469bd60cf29df",
     "plugins/okareo/.mcp.json": "sha256:04589eb4da16fab369aebe561eb2a4b22bd9a765e3b0a549445a896b8ae285ae",
     "plugins/okareo/skills/agent-simulation/SKILL.md": "sha256:99a5849aed7d164824c387a0de080fc6830004e31a5e2a6c11174bfa270a01a4",
     "plugins/okareo/skills/agent-simulation/references/persona-design.md": "sha256:1262564ec01f4f39cfce0c836e89839932c6d3067fc73a5e940e77b2690f820e",
     "plugins/okareo/skills/agent-simulation/references/targets.md": "sha256:6505d79683146e6328b12c9477f3e75b66d44d30ec59ad1182286613e6222523",
     "plugins/okareo/skills/evaluation/SKILL.md": "sha256:1ab05ade7d8b9ad3992e68fff685fe53e4dfb5b7afd4f790bb93c5585ef55271",
     "plugins/okareo/skills/evaluation/references/interpreting-results.md": "sha256:3784ab6796dc2efe3077be436cd34eaec438442757b2c42a189fdc04d3d756bf",
-    "plugins/okareo/skills/get-reps/SKILL.md": "sha256:da7ac3a0e75269a64a594d0174df0d622eb282df93f5497f7a41472058dbb91e",
+    "plugins/okareo/skills/get-reps/SKILL.md": "sha256:96021e07e55aaae8308e1923613d572373cb9110341a8011dabed7cfc640d856",
     "plugins/okareo/skills/improve/SKILL.md": "sha256:a51acb5fa8607da4796a225d6645e423f44757fd87c7ec08cced0e009336a8bf",
     "plugins/okareo/skills/improve/references/analysis-framework.md": "sha256:a170759b5292335fbf0b3d38146fd687d35cab952023da1eb14ee95500f04593",
     "plugins/okareo/skills/improve/references/check-cookbook.md": "sha256:875eee07864c7ec0225092e676ba57a56ae6dc84c747977b9529898c27035e16",
@@ -151,5 +151,5 @@
     "skill-template/references/example-reference.md": "sha256:4542b912bd674664a44d6751fb9a058467b3580f6fbbb194a86778e6be43b8e3"
   },
   "pipeline": "ci",
-  "synced_at": "2026-08-01T20:17:06Z"
+  "synced_at": "2026-08-01T21:32:21Z"
 }
