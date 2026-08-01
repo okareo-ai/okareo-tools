@@ -1,18 +1,11 @@
 ---
-name: agent-improvement-loop
+name: improve
 description: >-
-  Iteratively improve an AI agent (voice or text) over a set number of
-  cycles by running a simulation, analyzing where it fails, editing the
-  agent, and re-running to verify — tracking before/after metrics across
-  runs so progress is legible. Use this skill whenever the user wants to
-  make an agent measurably better over several rounds, fix what a simulation
-  found and prove it improved, or tune an agent until it meets a goal —
-  including requests like "make my voice agent better", "fix what the sim
-  found and show it's improved", "tune my agent over 3 cycles", or "close
-  the loop on agent quality". Use it even when the user does not say
-  "Okareo" but is clearly describing a diagnose-fix-verify cycle against an
-  agent. For a one-off simulation use `voice-simulation` or
-  `agent-simulation`; for watching live production traffic use `monitoring`.
+  Iteratively improve a voice or text agent over N cycles — simulate, analyze failures, edit,
+  re-verify, and track before/after metrics so progress is legible. Use for "make my agent
+  better", "fix what the sim found and prove it improved", "tune my agent over 3 cycles". For a
+  one-off run use agent-simulation or voice-simulation; for live traffic use monitoring.
+
 ---
 
 > **Canonical source**: this skill is developed in the private [`okareo-tools-dev`](https://github.com/okareo-ai/okareo-tools-dev) repository and published here by its publish pipeline. To propose a change, open an issue on okareo-tools — direct edits to this copy will be flagged as drift and blocked at the next publish.

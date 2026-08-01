@@ -1,6 +1,11 @@
 ---
 name: reps-explore
-description: Rapidly explore a registered target agent to learn what it is for, and write a DRAFT agent profile for REPS tuning. Holds 1 (max 3) benign, recorded discovery conversation via an Okareo simulation (predefined exploration driver + scenario, created on the platform if needed), infers domain/persona/intents/tools/guardrails with per-fact provenance (observed/inferred/assumed), and writes the draft profile + a reviewable exploration summary into the agent's gitignored profile folder under results/. Writes the draft ONLY — run reps-profile to apply it (generates tuned rows) and reps-run to execute. Use when onboarding an unknown agent, before any profiling Q&A.
+description: >-
+  Explore a registered target agent and write a DRAFT REPS agent profile. Holds 1 (max 3) benign
+  recorded discovery conversations, infers domain, persona, intents, tools, and guardrails with
+  per-fact provenance, and writes the draft under results/. Draft only — run reps-profile to apply
+  it, then reps-run. Use when onboarding an unknown agent, before any profiling Q&A.
+
 ---
 
 > **Canonical source**: this skill is developed in the private [`okareo-tools-dev`](https://github.com/okareo-ai/okareo-tools-dev) repository and published here by its publish pipeline. To propose a change, open an issue on okareo-tools — direct edits to this copy will be flagged as drift and blocked at the next publish.

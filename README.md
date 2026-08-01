@@ -19,7 +19,7 @@ designed to be installed together.
 
 ## What's in the box
 
-Eleven skills and seven slash commands, one MCP server, bundled as a single installable plugin.
+Fifteen skills, one MCP server, bundled as a single installable plugin.
 
 ### Skills
 
@@ -31,30 +31,24 @@ Eleven skills and seven slash commands, one MCP server, bundled as a single inst
 | `agent-simulation` | Stress-test a text agent with simulated multi-turn users |
 | `voice-simulation` | Run simulated calls against a voice agent |
 | `evaluation` | Score a model or prompt against a scenario set |
-| `agent-improvement-loop` | Iteratively improve an agent over N cycles; track the trend |
+| `improve` | Iteratively improve an agent over N cycles; track the trend |
 | `monitoring` | Monitor live text or voice traffic; catch regressions and drift |
 | `reps-explore` | Hold one benign discovery conversation; draft an agent profile |
 | `reps-profile` | Apply the profile; generate scenario rows tuned to your agent |
 | `reps-run` | Execute a REPS pillar against a target and regenerate the report |
+| `get-reps` | Install or refresh a local copy of the REPS baseline in your repo |
+| `scenario` | Pick a scenario source and route to the right builder |
+| `simulate` | Pick text vs voice and route to the right simulator |
+| `update` | Check for a newer version and explain how to install it |
 
-### Commands
-
-Thin entry points that frame a task and route to the skill that does the work.
-
-| Command | Routes to |
-|---|---|
-| `/okareo:quickstart` | `quickstart` — verify the connection and walk a first run |
-| `/okareo:scenario` | `scenario-design` or `scenario-from-traces` |
-| `/okareo:simulate` | `agent-simulation` or `voice-simulation` |
-| `/okareo:improve` | `agent-improvement-loop` |
-| `/okareo:monitor` | `monitoring` |
-| `/okareo:reps` | Installs or refreshes a local copy of the REPS baseline in your repo |
-| `/okareo:update` | Checks for a newer version and explains how to install it |
+Every capability is a skill, invoked as `/okareo:<name>` — and available on **every** surface,
+including Claude Desktop. (Through v0.6.5 some shipped as plugin *commands*, which Claude Desktop
+does not surface; they were converted in v0.6.6.)
 
 `quickstart` is the on-ramp. The rest compose into a lifecycle: build a scenario set
 (`scenario-design` or `scenario-from-traces`), exercise an agent before release
 (`agent-simulation`, `voice-simulation`), score it (`evaluation`), iteratively improve it until it
-meets the bar (`agent-improvement-loop`), and watch it in production (`monitoring`) — where any
+meets the bar (`improve`), and watch it in production (`monitoring`) — where any
 failure flows back into a scenario set that is re-run on every change. More skills and commands are
 planned — see [ROADMAP.md](ROADMAP.md).
 
@@ -73,7 +67,7 @@ what is working and what is not, with transcript evidence behind every finding.
 ### Quick start
 
 REPS runs from **your own repo**, not from a clone of this one. Register a target in Okareo, install
-the plugin, then run `/okareo:reps` from your agent's workspace — it vendors the `reps/` baseline
+the plugin, then run `/okareo:get-reps` from your agent's workspace — it vendors the `reps/` baseline
 into your repo (no clone, no nested git; commit it as your baseline). Then:
 
 1. `reps-explore` — one benign discovery conversation; drafts an agent profile
@@ -100,7 +94,7 @@ installs on all three Claude surfaces. `scripts/install.sh` automates the script
 
 ### Claude Code (recommended)
 
-The plugin bundles the MCP server, all eleven skills, and the commands as one unit:
+The plugin bundles the MCP server and all fifteen skills as one unit:
 
 ```
 /plugin marketplace add okareo-ai/okareo-tools
@@ -129,6 +123,12 @@ project instead of setting it per-developer:
 A plugin cannot grant this for you — Claude Code requires the user to allow an MCP server's tools.
 Skills still confirm in-chat before steps that cost money or are hard to undo (placing a real test
 call, deleting a resource), so a server-wide allow rule does not mean silent billed actions.
+
+### Claude Desktop
+
+Claude Desktop installs the plugin the same way, from its **Code** surface — the marketplace
+commands above work unchanged. Every Okareo capability ships as a skill, so all fifteen appear in
+the slash menu once the plugin is installed. There is no separate per-skill installation step.
 
 ### Cursor
 
@@ -160,9 +160,13 @@ into `AGENTS.md`. Native skill support in Cursor is not something this plugin pr
 
 ### claude.ai
 
-Per-user, through the web UI: download the `.skill` files from the
+Install the Okareo plugin if the surface offers it — that is the shortest path and keeps
+every skill in step. Otherwise, per-user through the web UI: download the `.skill` files from the
 [latest GitHub Release](https://github.com/okareo-ai/okareo-tools/releases/latest), add them under
 **Settings → Capabilities → Skills**, and add the Okareo MCP server under **Settings → Connectors**.
+
+Manual per-skill installation is the fallback, not the norm. Where the plugin installs directly —
+Claude Code and Claude Desktop — use it.
 
 ### Claude API
 
@@ -225,7 +229,7 @@ okareo-tools/
 │       ├── commands/                 Slash commands (/okareo:<name>).
 │       └── skills/                   One folder per skill; each has a SKILL.md at
 │           │                         its top level, plus optional references/.
-│           ├── agent-improvement-loop/
+│           ├── improve/
 │           ├── agent-simulation/
 │           ├── evaluation/
 │           ├── monitoring/
@@ -238,7 +242,7 @@ okareo-tools/
 │           └── voice-simulation/
 │
 ├── reps/                             The agent-agnostic REPS baseline. Vendored into
-│   │                                 your repo by /okareo:reps — start at reps/README.md.
+│   │                                 your repo by /okareo:get-reps — start at reps/README.md.
 │   ├── R-reasoning/                  One folder per pillar: drivers, scenario rows,
 │   ├── E-execution/                  checks, and templates.
 │   ├── P-performance/
@@ -260,7 +264,6 @@ okareo-tools/
 │
 ├── .github/workflows/release.yml     CI: validate + build + publish on a v* tag.
 ├── skill-template/                   Copy-to-author scaffold for a new skill.
-├── command-template.md               Copy-to-author scaffold for a new slash command.
 ├── skill-ids.json                    Claude API skill ids.
 ├── .sync-state.json                  Sync fingerprint (see the note at the top).
 ├── CONTRIBUTING.md                   How to propose a change.

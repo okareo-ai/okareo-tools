@@ -1,16 +1,11 @@
 ---
 name: quickstart
 description: >-
-  Onboard a developer to Okareo — verify the MCP connection works, explain
-  the Target / Driver / Scenario model, and walk through a first simulation
-  or evaluation. Use this skill whenever the user is new to Okareo, asks how
-  to get started or set up, or asks what Okareo can do — including requests
-  like "get me started with Okareo", "how do I set up Okareo", "what can
-  Okareo do", "I want to try Okareo", or "help me run my first test". Use it
-  even when the user does not say "Okareo" but is clearly new to AI
-  evaluation and trying to test an agent or model for the first time. Not for
-  a user who already has a configured target and a specific task — route
-  straight to the matching skill instead.
+  Onboard a developer to Okareo — verify the MCP connection, explain the Target / Driver /
+  Scenario model, and walk through a first simulation or evaluation. Use for "get me started with
+  Okareo", "how do I set up Okareo", "what can Okareo do", "help me run my first test". Not for a
+  user who already has a configured target — route to the matching skill instead.
+
 ---
 
 > **Canonical source**: this skill is developed in the private [`okareo-tools-dev`](https://github.com/okareo-ai/okareo-tools-dev) repository and published here by its publish pipeline. To propose a change, open an issue on okareo-tools — direct edits to this copy will be flagged as drift and blocked at the next publish.

@@ -1,17 +1,11 @@
 ---
 name: voice-simulation
 description: >-
-  Run voice-first multi-turn simulations against a voice agent with Okareo —
-  turn-by-turn spoken conversations between a simulated caller and the agent.
-  Use this skill whenever the user wants to test a voice or phone agent,
-  simulate callers, or evaluate spoken conversations before real users do —
-  including requests like "test my voice agent", "simulate a phone call to
-  my bot", "place test calls to my agent", "how does my voice assistant
-  handle an angry caller", or "evaluate my voice agent across personas". Use
-  it even when the user does not say "Okareo" but is clearly trying to
-  exercise a voice or phone agent with simulated callers. For text-only
-  agents use `agent-simulation`; for watching live production calls use
-  `monitoring`.
+  Run voice-first multi-turn simulations against a voice or phone agent in Okareo — spoken
+  turn-by-turn calls from a simulated caller. Use for "test my voice agent", "simulate a phone
+  call to my bot", "place test calls", "how does my voice assistant handle an angry caller". For
+  text agents use agent-simulation; for live calls use monitoring.
+
 ---
 
 > **Canonical source**: this skill is developed in the private [`okareo-tools-dev`](https://github.com/okareo-ai/okareo-tools-dev) repository and published here by its publish pipeline. To propose a change, open an issue on okareo-tools — direct edits to this copy will be flagged as drift and blocked at the next publish.

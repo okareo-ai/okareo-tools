@@ -1,15 +1,11 @@
 ---
 name: agent-simulation
 description: >-
-  Stress-test an agent or chatbot before production by running simulated
-  multi-turn conversations against it with Okareo. Use this skill whenever
-  the user wants to simulate users, run synthetic conversations, red-team an
-  agent, probe for failure modes, or check how an agent behaves across many
-  personas — including requests like "simulate users talking to my agent",
-  "how does the bot handle an angry customer", "find where the agent breaks",
-  or "run conversations before we ship". Use it even when the user does not
-  say "Okareo" but is clearly trying to exercise an agent with synthetic
-  conversations.
+  Stress-test a text agent or chatbot with simulated multi-turn conversations in Okareo. Use for
+  "simulate users talking to my agent", "red-team the chatbot", "how does the bot handle an angry
+  customer", "find where the agent breaks". For voice or phone agents use voice-simulation; for
+  live production traffic use monitoring.
+
 ---
 
 > **Canonical source**: this skill is developed in the private [`okareo-tools-dev`](https://github.com/okareo-ai/okareo-tools-dev) repository and published here by its publish pipeline. To propose a change, open an issue on okareo-tools — direct edits to this copy will be flagged as drift and blocked at the next publish.

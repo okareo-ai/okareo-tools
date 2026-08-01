@@ -17,13 +17,18 @@ evaluate, and monitor.
 | `voice-simulation`     | Shipping |
 | `evaluation`           | Shipping |
 | `monitoring`           | Shipping |
+| `improve`              | Shipping |
+| `reps-explore`         | Shipping |
+| `reps-profile`         | Shipping |
+| `reps-run`             | Shipping |
+| `get-reps`             | Shipping |
+| `scenario`             | Shipping |
+| `simulate`             | Shipping |
+| `update`               | Shipping |
 
-| Command              | Status   |
-| -------------------- | -------- |
-| `/okareo:quickstart` | Shipping |
-| `/okareo:scenario`   | Shipping |
-| `/okareo:simulate`   | Shipping |
-| `/okareo:monitor`    | Shipping |
+Every capability ships as a skill, invoked as `/okareo:<name>`. Plugin *commands* were retired in
+v0.6.6 — Claude Desktop surfaces a plugin's skills but not its commands, so a command-only
+capability was unreachable there.
 
 ## Planned (Phase 2) — depth and hardening
 

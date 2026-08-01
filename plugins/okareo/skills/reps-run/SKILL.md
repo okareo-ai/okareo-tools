@@ -1,6 +1,11 @@
 ---
 name: reps-run
-description: Run a REPS pillar against a registered Okareo target and regenerate the assessment report. Give it a target name and a pillar letter (R/E/P/S) or dir name. Default (keyless) path drives Okareo through the Okareo MCP tools — no local OKAREO_API_KEY needed; a CLI/SDK fallback uses run_suite.py when a local key is present. Use to evaluate a voice agent without any setup Q&A — the first-run entry point. For tailoring scenarios to a specific agent first, use reps-profile (optional).
+description: >-
+  Run a REPS pillar (R/E/P/S) against a registered Okareo target and regenerate the assessment
+  report. Keyless by default — drives Okareo through the MCP tools with no local API key; a
+  CLI/SDK fallback uses run_suite.py when a key is present. The zero-setup entry point. To tailor
+  scenarios to the agent first, use reps-profile (optional).
+
 ---
 
 > **Canonical source**: this skill is developed in the private [`okareo-tools-dev`](https://github.com/okareo-ai/okareo-tools-dev) repository and published here by its publish pipeline. To propose a change, open an issue on okareo-tools — direct edits to this copy will be flagged as drift and blocked at the next publish.
@@ -39,7 +44,7 @@ current project root:
     it and the `stale_reason` to the operator, then proceed). Ignore unknown extra fields. On
     errors branch on `error.code`, never message text: `rate_limited` → wait
     `retry_after_seconds` and retry; `baseline_unavailable` → STOP and tell the operator the
-    baseline cannot be served right now (offer `/okareo:reps` local install as the workaround);
+    baseline cannot be served right now (offer `/okareo:get-reps` local install as the workaround);
     `unknown_path` → re-discover (the tree may have changed between calls); others → surface
     `message` verbatim.
   - **Helper scripts** run from the materialized MCP tooling set (see Path A) — every `python -c`
@@ -51,9 +56,18 @@ current project root:
     `results/<agent_slug>/tuned/<pillar-dir>/…` (no local filesystem at all ⇒ no overlay — run
     pure baseline and say so). The CLI/SDK fallback (Path B) is unavailable in MCP mode.
 
-Local mode is the deliberate opt-in for operators who want to iterate on the material, work
-offline, or pin a version — `/okareo:reps` installs and updates it. Mention it when relevant;
-never require it.
+**What MCP mode writes to disk — the 19-vs-91 boundary.** Exactly **19** files are materialized: the
+pure-Python MCP tooling set (17 modules + 2 brand assets), listed verbatim under "Materialize the MCP
+tooling set" below, written to a temporary directory outside the project. Baseline evaluation
+material — scenario banks, drivers, checks, eval configs, roughly **91** files in all — is read
+through `get_reps_baseline` and **never baseline material written to disk**. The tooling set is a
+strict subset of the workbench and must never be mistaken for it: materializing the whole baseline is
+what `get-reps` is for, and it is not what a run needs.
+
+Local mode is **optional** — the deliberate opt-in for operators who want to iterate on the material,
+work offline, or pin a version. `/okareo:get-reps` installs and updates it. The no-local-copy MCP
+path above remains the zero-setup default on every surface; mention local mode when relevant, never
+require it.
 
 ## Inputs
 
@@ -289,7 +303,7 @@ run unprefixed exactly as written.
    framing (another skill's "standalone mode" grants no exception here). If the core tooling
    cannot be obtained or smoke-imported — **STOP: do not write records or a report by hand.**
    Tell the operator which step is blocked and why, that completed simulations are safely
-   captured on the Okareo platform, and the recovery: run `/okareo:reps` to install the local
+   captured on the Okareo platform, and the recovery: run `/okareo:get-reps` to install the local
    tree, then re-invoke reps-run — its standalone re-review (step 7) captures and renders from
    the existing platform runs without re-running simulations.
    Now call the shared writer; findings go to

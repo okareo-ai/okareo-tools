@@ -1,17 +1,11 @@
 ---
 name: evaluation
 description: >-
-  Design, run, and analyze evaluations of an LLM app's generated output with
-  Okareo — scoring a model or prompt against a scenario set with checks. Use
-  this skill whenever the user wants to test or benchmark output quality,
-  catch regressions, or compare prompt or model versions — including requests
-  like "evaluate my model", "benchmark output quality", "did this prompt
-  change make things worse", "compare GPT-4 and Claude on our test set", or
-  "run our evals". Use it even when the user does not say "Okareo" but is
-  clearly trying to score an LLM's output against expected results. For
-  generating synthetic conversations against an agent use `agent-simulation`;
-  to build the scenario set first use `scenario-design` or
-  `scenario-from-traces`.
+  Score an LLM app's generated output against a scenario set with checks in Okareo. Use for
+  "evaluate my model", "benchmark output quality", "did this prompt change make things worse",
+  "compare models on our test set", "run our evals". For multi-turn agent conversations use
+  agent-simulation; to build the set first use scenario-design or scenario-from-traces.
+
 ---
 
 > **Canonical source**: this skill is developed in the private [`okareo-tools-dev`](https://github.com/okareo-ai/okareo-tools-dev) repository and published here by its publish pipeline. To propose a change, open an issue on okareo-tools — direct edits to this copy will be flagged as drift and blocked at the next publish.

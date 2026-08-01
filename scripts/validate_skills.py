@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""validate_skills.py — check every skill and command before it is packaged.
+"""validate_skills.py — check every skill before it is packaged.
 
 Run by scripts/build.sh (and CI) before producing any .skill file. A skill
 that fails here must not ship. Stdlib only — no third-party YAML parser.
@@ -12,12 +12,12 @@ Checks, per directory under plugins/okareo/skills/:
   5. every snake_case `tool` token (backtick-quoted) is a real Okareo MCP
      tool — see KNOWN_TOOLS. Unknown names are the contract bug this catches.
 
-Checks, per command file under plugins/okareo/commands/*.md:
-  1. has a YAML frontmatter block with a non-empty `description`.
-  2. every backtick-quoted snake_case tool token is a real Okareo MCP tool.
+Commands were retired in feature 018 — Claude Desktop surfaces a plugin's
+skills but not its commands, so every capability now ships as a skill. There
+is no command tier to validate.
 
 Usage:  python3 scripts/validate_skills.py
-Exit:   0 = all skills and commands valid, 1 = one or more problems found.
+Exit:   0 = all skills valid, 1 = one or more problems found.
 """
 
 from __future__ import annotations
@@ -28,10 +28,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 SKILLS_DIR = ROOT / "plugins" / "okareo" / "skills"
-COMMANDS_DIR = ROOT / "plugins" / "okareo" / "commands"
 
-# Anthropic skills cap the frontmatter `description`; stay well under it.
-DESCRIPTION_MAX_CHARS = 1024
+# The Skills API hard-caps the frontmatter `description` at 1024 chars. This is the
+# self-imposed budget beneath that ceiling: descriptions load in EVERY session whether
+# the skill is used or not, so the set is a standing token tax. Feature 018 cut it from
+# ~2210 to ~1300 tokens across 15 skills. Routing accuracy binds; length is the outcome.
+DESCRIPTION_MAX_CHARS = 400
 
 # The canonical Okareo MCP tool surface. A tool table in any SKILL.md may
 # only reference names from this set. Update this list when the MCP server's
@@ -109,8 +111,8 @@ NON_TOOL_TOKENS = {
     # JSON field identifiers and a local capture helper, not MCP tools.
     "based_on", "coverage_gap_notes", "effective_picture", "held_up",
     "review_coverage", "run_timestamp", "write_improvements",
-    # GitHub Releases API field, referenced by the /okareo:reps command and
-    # the reps skills' vendor pre-flight. Not an MCP tool.
+    # GitHub Releases API field, referenced by the get-reps skill and the
+    # reps skills' vendor pre-flight. Not an MCP tool.
     "tag_name",
     # get_reps_baseline envelope fields and error codes (see
     # contracts/get_reps_baseline.md). Contract identifiers, not MCP tools.
@@ -208,41 +210,6 @@ def validate_skill(skill_dir: Path) -> list[str]:
     return problems
 
 
-def validate_command(command_md: Path) -> list[str]:
-    """Return a list of problem strings for one command file (empty == valid).
-
-    Commands are thin Markdown files; the name comes from the filename. They
-    must carry a `description` and may only reference real MCP tool names.
-    """
-    name = command_md.name
-    problems: list[str] = []
-
-    text = command_md.read_text(encoding="utf-8")
-    fm = split_frontmatter(text)
-    if fm is None:
-        return [f"{name}: command has no YAML frontmatter block"]
-
-    description = fm.get("description", "")
-    if not description:
-        problems.append(f"{name}: frontmatter has no description")
-    elif len(description) > DESCRIPTION_MAX_CHARS:
-        problems.append(
-            f"{name}: description is {len(description)} chars "
-            f"(max {DESCRIPTION_MAX_CHARS})"
-        )
-
-    for token in sorted(set(TOOL_TOKEN.findall(text))):
-        if token in NON_TOOL_TOKENS:
-            continue
-        if token not in KNOWN_TOOLS:
-            problems.append(
-                f"{name}: `{token}` is not a known Okareo MCP tool "
-                f"(see KNOWN_TOOLS in scripts/validate_skills.py)"
-            )
-
-    return problems
-
-
 def main() -> int:
     if not SKILLS_DIR.is_dir():
         print(f"No skills directory at {SKILLS_DIR}", file=sys.stderr)
@@ -262,16 +229,6 @@ def main() -> int:
         status = "ok" if not problems else f"{len(problems)} problem(s)"
         print(f"  {skill_dir.name}: {status}")
 
-    command_files = (
-        sorted(COMMANDS_DIR.glob("*.md")) if COMMANDS_DIR.is_dir() else []
-    )
-    if command_files:
-        print("Commands:")
-        for command_md in command_files:
-            problems = validate_command(command_md)
-            all_problems.extend(problems)
-            status = "ok" if not problems else f"{len(problems)} problem(s)"
-            print(f"  {command_md.name}: {status}")
 
     if all_problems:
         print(f"\nValidation failed — {len(all_problems)} problem(s):",
@@ -280,8 +237,7 @@ def main() -> int:
             print(f"  - {p}", file=sys.stderr)
         return 1
 
-    print(f"\nAll {len(skill_dirs)} skill(s) and "
-          f"{len(command_files)} command(s) valid.")
+    print(f"\nAll {len(skill_dirs)} skill(s) valid.")
     return 0
 
 

@@ -1,15 +1,11 @@
 ---
 name: monitoring
 description: >-
-  Set up and interpret production monitoring of an LLM app, agent, or voice
-  agent with Okareo — checks running on live traffic, quality baselines, and
-  alerts on regressions or drift. Use this skill whenever the user wants to
-  monitor production, watch live quality, catch regressions in the wild, set
-  up alerts, or investigate a drift in behavior — including requests like
-  "monitor my agent in production", "watch my voice agent's live calls",
-  "alert me when quality drops", "why did responses get worse this week", or
-  "track our model in the wild". Use it even when the user does not say
-  "Okareo" but is clearly trying to observe a live LLM or voice system.
+  Set up and interpret Okareo production monitoring — checks on live traffic, quality baselines,
+  and alerts on regressions or drift. Use for "monitor my agent in production", "watch my voice
+  agent's live calls", "alert me when quality drops", "why did responses get worse this week". For
+  pre-release testing use agent-simulation or voice-simulation.
+
 ---
 
 > **Canonical source**: this skill is developed in the private [`okareo-tools-dev`](https://github.com/okareo-ai/okareo-tools-dev) repository and published here by its publish pipeline. To propose a change, open an issue on okareo-tools — direct edits to this copy will be flagged as drift and blocked at the next publish.

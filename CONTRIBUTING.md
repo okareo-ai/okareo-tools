@@ -114,24 +114,31 @@ needs it. The agent loads a reference file only when it reaches that step,
 which keeps `SKILL.md` short and focused. If a reference file is needed on
 every run, fold it back into `SKILL.md`.
 
-## Authoring a command
+## Authoring a thin entry-point skill
 
-A command lives at `plugins/okareo/commands/<name>.md` and is invoked as
-`/okareo:<name>` — the filename is the command name, and the `okareo`
-namespace comes from the plugin. Commands in that directory are
-auto-discovered; no `plugin.json` change is needed.
+Some skills do no work themselves: they frame a task, ask the one branching
+question they need, and route to the skill that does the real work
+(`scenario`, `simulate`). Author these exactly like any other skill — a
+directory under `plugins/okareo/skills/<name>/` with a `SKILL.md`.
 
-1. Copy the scaffold: `cp command-template.md plugins/okareo/commands/<name>.md`.
-2. Fill in the frontmatter (`description`, optional `argument-hint`) and the
-   thin body.
-3. Validate: `python3 scripts/validate_skills.py` checks commands too.
+1. Create `plugins/okareo/skills/<name>/SKILL.md` with frontmatter `name`
+   (matching the directory), `description`, and optional `argument-hint`.
+2. Keep the body thin: the branching question and the handoff. It never
+   teaches the workflow itself.
+3. Register it in the publish manifest's `skills[]`.
+4. Validate: `python3 scripts/validate_skills.py`.
 
-A command is **thin**: it frames the task, asks the one branching question
-it needs, and routes to the skill that does the real work. It never teaches
-the workflow itself. The user's argument is available as `$ARGUMENTS` (or
-`$1`, `$2`); accept one where it is natural (`/okareo:simulate voice`) and
-otherwise ask. Commands are not packaged into `.skill` files — they ship
-with the plugin through the marketplace.
+Accept an argument where it is natural (`/okareo:simulate voice`) via
+`argument-hint`, and otherwise ask. A router earns its place only when it
+disambiguates between **two or more** targets; if it dispatches to exactly
+one skill it adds a menu entry and no decision — point people at the target
+directly instead.
+
+> **Commands were retired** in feature 018. Claude Desktop installs the plugin
+> and surfaces its **skills** but not its **commands**, so a command-only
+> capability is unreachable there. Everything ships as a skill, which works on
+> every surface *and* can be selected from a free-form request — something a
+> command could never do. Do not reintroduce `plugins/okareo/commands/`.
 
 ## How skills compose
 

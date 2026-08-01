@@ -1,6 +1,11 @@
 ---
 name: reps-profile
-description: Interactively profile the target voice agent and tune the REPS suite to it. Interviews the operator about their agent (domain, intents, tools, authority limits, guardrails, latency), writes a secret-free agent profile and tuned scenario rows into that agent's gitignored per-agent folder under results/ — the committed reps/ baseline is never modified. Tunable per pillar (commonly Reasoning + Execution); drivers and checks stay agent-agnostic. Re-invoke to add detail and grow the row banks. Use when setting up the REPS workbench for a specific agent or when the agent's intents/tools/guardrails change.
+description: >-
+  Interview the operator about their agent and tune the REPS suite to it — writes a secret-free
+  profile and tuned scenario rows to the gitignored results/ overlay; the committed reps/ baseline
+  is never modified. Use when setting up REPS for a specific agent, or when its intents, tools, or
+  guardrails change. To run a pillar afterwards, use reps-run.
+
 ---
 
 > **Canonical source**: this skill is developed in the private [`okareo-tools-dev`](https://github.com/okareo-ai/okareo-tools-dev) repository and published here by its publish pipeline. To propose a change, open an issue on okareo-tools — direct edits to this copy will be flagged as drift and blocked at the next publish.
@@ -45,12 +50,21 @@ resolve by source; check `test -d reps/R-reasoning` in the current project root 
   non-`[a-z0-9_]` runs collapsed to `_`; profile status = the `status:` field of
   `results/<agent_slug>/profile/agent-profile.yaml` if present, else no profile. On tool errors
   branch on `error.code` (`rate_limited` → wait `retry_after_seconds` and retry;
-  `baseline_unavailable` → tell the operator and offer `/okareo:reps` local install as the
+  `baseline_unavailable` → tell the operator and offer `/okareo:get-reps` local install as the
   workaround).
 
-Local mode is the deliberate opt-in for operators who want to edit material, work offline, or pin
-a version — `/okareo:reps` installs and updates it; mention it when relevant, never require it.
-Either way, tuned output goes ONLY to the gitignored `results/` overlay.
+**What MCP mode writes to disk — the 19-vs-91 boundary.** Nothing from the baseline. Templates and
+row banks are read through `get_reps_baseline` and **never baseline material written to disk**; only
+this agent's own profile and tuned rows are written, and only under `results/<agent_slug>/`. Where a
+run needs Python on disk it materializes exactly the **19**-file MCP tooling set (17 modules + 2
+brand assets) to a temporary directory outside the project — a strict subset of the roughly **91**
+files in the workbench. Materializing the whole baseline is what `get-reps` is for, and it is not
+what profiling needs.
+
+Local mode is **optional** — the deliberate opt-in for operators who want to edit material, work
+offline, or pin a version. `/okareo:get-reps` installs and updates it; the no-local-copy MCP path
+remains the zero-setup default. Mention it when relevant, never require it. Either way, tuned output
+goes ONLY to the gitignored `results/` overlay.
 
 **Draft check first (feature 010):** before anything else, read the profile status:
 ```bash

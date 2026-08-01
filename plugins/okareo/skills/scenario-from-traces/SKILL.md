@@ -1,15 +1,11 @@
 ---
 name: scenario-from-traces
 description: >-
-  Turn production traces, logs, incidents, and issue reports into a reusable
-  Okareo scenario set for evaluation. Use this skill whenever the user wants
-  to build a test set from real traffic — including requests like "turn
-  these logs into evals", "we had an incident, make a regression test",
-  "convert these traces into a scenario set", "build a test set from
-  production", "these support tickets show a bug", or any time real-world
-  failures need to become repeatable test cases. Use it even when the user
-  does not say "Okareo" but is clearly trying to capture observed behavior
-  as a test set.
+  Turn production traces, logs, incidents, and support tickets into a reusable Okareo scenario
+  set. Use for "turn these logs into evals", "we had an incident, make a regression test", "build
+  a test set from production", "these tickets show a bug". To compose from scratch use
+  scenario-design; to run the set use evaluation.
+
 ---
 
 > **Canonical source**: this skill is developed in the private [`okareo-tools-dev`](https://github.com/okareo-ai/okareo-tools-dev) repository and published here by its publish pipeline. To propose a change, open an issue on okareo-tools — direct edits to this copy will be flagged as drift and blocked at the next publish.

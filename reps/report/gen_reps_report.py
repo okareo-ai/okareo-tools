@@ -164,7 +164,7 @@ def _inline_asset(filename: str, span_class: str) -> str | None:
         f"warning: brand asset {filename} {reason}. Looked in: {path}. "
         f"The report was rendered with the plain-text Okareo mark instead of the logo. "
         f"To restore it, update or re-fetch the workbench tree "
-        f"(run /okareo:reps to refresh a local install, or re-run the tooling fetch).",
+        f"(run /okareo:get-reps to refresh a local install, or re-run the tooling fetch).",
         file=sys.stderr,
     )
     return None

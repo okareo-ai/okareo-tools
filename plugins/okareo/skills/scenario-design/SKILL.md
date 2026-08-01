@@ -1,16 +1,11 @@
 ---
 name: scenario-design
 description: >-
-  Design a synthetic test scenario set from scratch with Okareo — diverse,
-  edge-case inputs covering real workflows, user roles, and stress
-  conditions. Use this skill whenever the user wants to create a test set
-  from scratch, expand coverage, or generate scenarios — including requests
-  like "create a test set for my agent", "generate scenarios to test this",
-  "we need more test coverage", "build evals from scratch", or "what cases
-  should I test". Use it even when the user does not say "Okareo" but is
-  clearly trying to build synthetic test cases for an LLM app or agent. Not
-  for converting production traffic into a test set (use
-  `scenario-from-traces`) and not for running the set (use `evaluation`).
+  Design a synthetic Okareo scenario set from scratch — diverse edge-case inputs across real
+  workflows, user roles, and stress conditions. Use for "create a test set for my agent",
+  "generate scenarios to test this", "we need more test coverage", "what cases should I test". For
+  production traffic use scenario-from-traces; to run the set use evaluation.
+
 ---
 
 > **Canonical source**: this skill is developed in the private [`okareo-tools-dev`](https://github.com/okareo-ai/okareo-tools-dev) repository and published here by its publish pipeline. To propose a change, open an issue on okareo-tools — direct edits to this copy will be flagged as drift and blocked at the next publish.
