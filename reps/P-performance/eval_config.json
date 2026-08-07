@@ -24,7 +24,7 @@
       "scenario": "P-turn-latency-budget",
       "driver": "steady-caller",
       "checks": [
-        "perf-turn-latency"
+        "perf-expectation-met"
       ],
       "max_turns": 6,
       "first_turn": "target",

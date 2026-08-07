@@ -245,34 +245,195 @@ def _percentile(values: list[float], pct: float) -> float | None:
     return round(s[k], 2)
 
 
-def extract_performance_metrics(record: dict, latency_budget_ms: float | None = None) -> dict:
-    """Compute Performance signals from captured timing (research R5).
+# --- Latency budget (feature 019, contracts/performance-signal.md invariants F/G) ----------------
+# Documented defaults, used ONLY when the agent's profile carries no `latency_budget`. These are a
+# stated judgment about acceptable conversational responsiveness — NOT a measured population
+# statistic, and deliberately NOT derived from any agent this workbench has assessed. They exist so
+# the probe is assessable on the zero-setup path; an operator with real SLOs should state them in
+# the profile, where they are reported as operator-supplied rather than as a default.
+#
+# Voice is tighter than text because a silent phone line reads as a dropped call within about a
+# second, while a text client shows a pending state the user tolerates for longer.
+DEFAULT_LATENCY_BUDGET_MS = {"voice": 1500.0, "text": 3000.0}
+_DEFAULT_LATENCY_BUDGET_FALLBACK_MS = 3000.0
 
-    v0 captures one elapsed time per simulation (not per turn), so p50/p95 here are a coarse
-    session-level proxy; true per-turn latency / time-to-first-audio is reported as
-    present-but-unverifiable unless a datapoint carries a latency signal — never silently passed.
+# Which profile budget field pairs with which returned metric, per modality. CONFIRMED twice over
+# (research R1): three text-target runs returned avg_turn_taking_latency NULL, and Okareo's own docs
+# name avg_turn_taking_latency as the Time To First Audio field.
+#
+#   voice  PRIMARY   time_to_first_audio_ms <- avg_turn_taking_latency  (TTFA: the felt bound)
+#          secondary p95_turn_ms            <- avg_turn_latency
+#   text   PRIMARY   p95_turn_ms            <- avg_turn_latency         (no audio stage exists)
+#
+# Voice leads on TTFA because that is what a caller experiences: dead air on the line is the failure
+# a responsiveness SLO is written against. Full turn latency still matters and is still judged, as
+# the secondary bound.
+_TTFA_BUDGET_FIELD = "time_to_first_audio_ms"
+_TURN_BUDGET_FIELD = "p95_turn_ms"
+_PRIMARY_BUDGET_FIELD = {"voice": _TTFA_BUDGET_FIELD, "text": _TURN_BUDGET_FIELD}
+_SECONDARY_BUDGET_FIELD = {"voice": _TURN_BUDGET_FIELD}
+
+
+def read_latency_budget_profile(profile_path: str | Path | None) -> dict:
+    """Read `latency_budget` and its provenance from an agent-profile.yaml.
+
+    A targeted line reader, not a YAML parser: this module is part of the pure-stdlib MCP tooling
+    set (contracts/mcp-tooling-set.md), so it may not import PyYAML. Matches the existing
+    best-effort profile reads elsewhere in the report.
+
+    Returns `{"latency_budget": {...}, "provenance": {"latency_budget": ...}}` — the shape
+    `resolve_latency_budget` consumes. Missing/unreadable ⇒ empty dict ⇒ the documented default.
     """
-    elapsed = [s["elapsed_s"] for s in record.get("simulations", [])
-               if s.get("status") == "complete" and isinstance(s.get("elapsed_s"), (int, float))]
-    has_turn_latency = any(
-        isinstance(dp, dict) and (dp.get("latency_ms") or dp.get("turn_latency_ms"))
-        for s in record.get("simulations", []) for dp in s.get("datapoints", []))
+    import re
 
-    unverifiable = []
-    if not has_turn_latency:
-        unverifiable.append("per-turn latency / time-to-first-audio not surfaced by the run — "
-                            "session elapsed shown as a proxy; instrument the target to verify the budget")
-    if not any(s.get("sub_capability") == "barge-in" and s.get("datapoints")
-               for s in record.get("simulations", [])):
-        # barge-in observability note is emitted by the check itself; keep list honest
-        pass
+    if not profile_path:
+        return {}
+    path = Path(profile_path)
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except (OSError, UnicodeDecodeError):
+        return {}
+
+    budget: dict[str, Any] = {}
+    provenance: dict[str, Any] = {}
+    section = None
+    for line in lines:
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        top = re.match(r"(\S[^:]*):\s*(.*)$", line)          # zero-indent key starts a section
+        if top:
+            section = top.group(1).strip()
+            continue
+        nested = re.match(r"\s+([A-Za-z0-9_]+):\s*(.*)$", line)
+        if not nested or section not in ("latency_budget", "provenance"):
+            continue
+        key = nested.group(1)
+        raw = nested.group(2).split("#", 1)[0].strip().strip('"').strip("'")
+        if section == "provenance":
+            if key == "latency_budget" and raw:
+                provenance["latency_budget"] = raw
+            continue
+        if raw in ("", "null", "~", "None"):
+            budget[key] = None
+            continue
+        try:
+            budget[key] = float(raw)
+        except ValueError:
+            budget[key] = None
+
+    out: dict[str, Any] = {}
+    if budget:
+        out["latency_budget"] = budget
+    if provenance:
+        out["provenance"] = provenance
+    return out
+
+
+def resolve_latency_budget(profile: dict | None, modality: str | None,
+                           budget_field: str | None = None) -> dict:
+    """Resolve the latency budget: profile first, documented default second. No third tier.
+
+    Returns `{"budget_ms", "field", "provenance", "source"}`. `provenance` is the profile's own
+    per-field provenance (`operator` / `assumed` / `inferred`) or `"default"`. A threshold embedded
+    in check logic is NOT a tier — it is the unattributed constant this feature removed.
+    """
+    mode = (modality or "").strip().lower()
+    field = _PRIMARY_BUDGET_FIELD.get(mode, _TURN_BUDGET_FIELD) if budget_field is None \
+        else budget_field
+    budgets = (profile or {}).get("latency_budget")
+    if isinstance(budgets, dict):
+        value = budgets.get(field)
+        if not isinstance(value, bool) and isinstance(value, (int, float)) and value > 0:
+            prov = ((profile or {}).get("provenance") or {}).get("latency_budget")
+            return {"budget_ms": float(value), "field": field,
+                    "provenance": prov if isinstance(prov, str) and prov else "unstated",
+                    "source": "profile"}
+    return {"budget_ms": DEFAULT_LATENCY_BUDGET_MS.get(mode, _DEFAULT_LATENCY_BUDGET_FALLBACK_MS),
+            "field": field, "provenance": "default", "source": "default"}
+
+
+def extract_performance_metrics(record: dict, latency_budget_ms: float | None = None,
+                                profile: dict | None = None) -> dict:
+    """Compute Performance signals from what the run returned.
+
+    Run-level agent-side latency (`avg_turn_taking_latency_ms`) is captured per simulation and
+    compared against the resolved budget. Session elapsed remains a separate, coarse wall-clock
+    figure and renders regardless of the verdict (invariant K).
+
+    Aggregation across a probe's repeats uses the **worst (highest)** figure: a budget is a bound,
+    and averaging averages hides the breach a bound exists to catch (invariant I).
+    """
+    from reps.trace import (LATENCY_TTFA_FIELD, LATENCY_TURN_FIELD, latency_figure,
+                            primary_latency_field)
+
+    sims = record.get("simulations", [])
+    elapsed = [s["elapsed_s"] for s in sims
+               if s.get("status") == "complete" and isinstance(s.get("elapsed_s"), (int, float))]
+
+    modality = record.get("modality")
+    mode = (modality or "").strip().lower()
+    primary_metric = primary_latency_field(modality)
+    figures = [f for f in (latency_figure(s, primary_metric) for s in sims) if f is not None]
+    has_turn_latency = bool(figures)
+
+    resolved = resolve_latency_budget(profile, modality)
+    if latency_budget_ms is not None:            # explicit override wins (callers/tests)
+        resolved = dict(resolved, budget_ms=float(latency_budget_ms))
+
+    label = ("time to first audio" if primary_metric == LATENCY_TTFA_FIELD
+             else "mean turn latency")
+    latency: dict[str, Any] = {
+        "assessed": has_turn_latency,
+        "metric": primary_metric,
+        "label": label,
+        "budget_ms": resolved["budget_ms"],
+        "budget_field": resolved["field"],
+        "budget_provenance": resolved["provenance"],
+        "budget_source": resolved["source"],
+        # Invariant H: the budget is a p95, the measurement is a mean. Disclosed, never conflated.
+        "comparison_basis": "mean compared against a p95 bound — a mean cannot establish a percentile",
+        "contributing_runs": len(figures),
+        "total_runs": len(sims),
+    }
+    if has_turn_latency:
+        latency.update(worst_ms=max(figures), best_ms=min(figures),
+                       within_budget=max(figures) <= resolved["budget_ms"])
+    else:
+        # Invariant L: the reason names the observed condition, not a route. It carries no
+        # "not assessed" prefix — the status label is the renderer's job, and duplicating it here
+        # produced "not assessed — not assessed — …" in the report.
+        latency["reason"] = (f"observed: the run returned no {label} figure in its results")
+
+    # Secondary bound (voice only today): full turn latency alongside the felt TTFA bound.
+    second_metric = LATENCY_TURN_FIELD if primary_metric == LATENCY_TTFA_FIELD else None
+    if second_metric:
+        seconds = [f for f in (latency_figure(s, second_metric) for s in sims) if f is not None]
+        sec_budget = resolve_latency_budget(profile, modality,
+                                            _SECONDARY_BUDGET_FIELD.get(mode, _TURN_BUDGET_FIELD))
+        if seconds:
+            latency["secondary"] = {
+                "metric": second_metric,
+                "label": "mean turn latency",
+                "worst_ms": max(seconds),
+                "budget_ms": sec_budget["budget_ms"],
+                "budget_field": sec_budget["field"],
+                "budget_provenance": sec_budget["provenance"],
+                "within_budget": max(seconds) <= sec_budget["budget_ms"],
+            }
+
+    unverifiable = [
+        # True and narrow: the mean IS returned; the per-turn distribution is not.
+        "per-turn distribution is not returned by the run, so a percentile cannot be established — "
+        "the mean is measured and reported above"
+    ]
 
     return {
-        "sim_count": len(record.get("simulations", [])),
+        "sim_count": len(sims),
         "session_elapsed_p50_s": _percentile(elapsed, 50),
         "session_elapsed_p95_s": _percentile(elapsed, 95),
-        "latency_budget_ms": latency_budget_ms,
+        "latency_budget_ms": resolved["budget_ms"],
         "turn_latency_verified": has_turn_latency,
+        "latency": latency,
         "unverifiable": unverifiable,
     }
 

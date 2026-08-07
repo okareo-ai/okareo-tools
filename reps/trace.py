@@ -107,8 +107,12 @@ CHECK_NOT_ASSESSED = "not-assessed"          # right modality, required signal a
 
 _SIGNAL_REASON = {
     SIGNAL_TRACE: "not assessed — no tool-call trace",
-    SIGNAL_LATENCY: ("not assessed — no instrumented per-turn latency; "
-                     "run via SDK for the deterministic metric"),
+    # Feature 019: names the OBSERVED condition (invariant L) and offers no remedy that cannot
+    # change the outcome (invariant M). The prior text sent operators to the SDK/key route for a
+    # "deterministic metric" that route never produced — the runner has no latency instrumentation
+    # and never consulted this gate, so following the advice changed nothing.
+    SIGNAL_LATENCY: ("not assessed — observed: the run returned no agent-side turn latency "
+                     "in its results"),
 }
 
 
@@ -142,6 +146,96 @@ def check_selection(check_modality: str | None, selected_modality: str, *,
     if sig != SIGNAL_NONE and sig not in set(available_signals):
         return CHECK_NOT_ASSESSED, _SIGNAL_REASON.get(sig, f"not assessed — no '{sig}' signal")
     return CHECK_RUN, None
+
+
+# --- Latency signal derivation (feature 019, contracts/performance-signal.md) -------------------
+# Invariants A/B/C: a signal is available IFF the run's returned results carry it. Route, surface,
+# credential and target type MUST NOT participate in the determination — that was the feature-008
+# defect (availability defined as "SDK-instrumented", so `latency` was unsatisfiable everywhere).
+# This is the SINGLE definition of "latency is available"; the report imports it rather than keeping
+# a second one, so the gate and the report cannot disagree (invariant C).
+
+# Metric-to-budget mapping, CONFIRMED empirically (research R1) — not inferred from field names.
+# Three text-target runs returned `avg_turn_latency` populated and `avg_turn_taking_latency` NULL,
+# which settles it: turn-taking latency is the voice-only TTS figure, and turn latency is the
+# general per-turn response time present in both modalities.
+#
+#   avg_turn_latency_ms       <-> profile latency_budget.p95_turn_ms            (voice AND text)
+#   avg_turn_taking_latency_ms <-> profile latency_budget.time_to_first_audio_ms (voice only)
+#
+# The provisional mapping was the reverse of this, and the two figures differ by ~9x on voice, so
+# guessing would have shipped confidently wrong verdicts in both directions.
+LATENCY_TURN_FIELD = "avg_turn_latency_ms"             # model response time; voice AND text
+LATENCY_TTFA_FIELD = "avg_turn_taking_latency_ms"      # Time To First Audio; voice only, null on text
+LATENCY_REPORTED_FIELDS = (LATENCY_TURN_FIELD, LATENCY_TTFA_FIELD)
+
+# Which figure carries the PRIMARY verdict, per modality — the bound the user actually experiences.
+# For a voice caller that is Time To First Audio: silence on the line is the felt failure, and it is
+# what a responsiveness SLO is written against. For text it is turn latency, since there is no audio
+# stage at all (the platform returns TTFA as null there).
+PRIMARY_LATENCY_FIELD = {"voice": LATENCY_TTFA_FIELD, "text": LATENCY_TURN_FIELD}
+SECONDARY_LATENCY_FIELD = {"voice": LATENCY_TURN_FIELD}     # full turn latency still reported/judged
+
+# Back-compat alias: the default `latency_figure` field when no modality is in hand.
+LATENCY_VERDICT_FIELD = LATENCY_TURN_FIELD
+LATENCY_VOICE_FIELD = LATENCY_TTFA_FIELD
+
+
+def primary_latency_field(modality: str | None) -> str:
+    """The verdict-bearing figure for a run's modality (voice → TTFA, text → turn latency)."""
+    return PRIMARY_LATENCY_FIELD.get((modality or "").strip().lower(), LATENCY_TURN_FIELD)
+
+
+def latency_figure(simulation: object, field: str = LATENCY_TURN_FIELD) -> float | None:
+    """A latency figure a simulation returned, or None when it returned none.
+
+    None means *absent*, and absence is the honest signal that drives not-assessed — never a
+    substituted zero or default (data-model §1). A null `avg_turn_taking_latency_ms` is the normal,
+    correct state for a text target, not a defect.
+    """
+    if not isinstance(simulation, dict):
+        return None
+    block = simulation.get("latency")
+    if not isinstance(block, dict):
+        return None
+    value = block.get(field)
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    return float(value) if value > 0 else None
+
+
+def latency_available(simulations: object, modality: str | None = None) -> bool:
+    """True iff at least one simulation carries the modality's verdict-bearing figure (invariant B).
+
+    With no modality in hand, either figure counts — the run demonstrably returned agent-side
+    latency, and scoring picks the right one once the modality is known.
+    """
+    if isinstance(simulations, dict):          # accept a single simulation for convenience
+        simulations = [simulations]
+    if not isinstance(simulations, (list, tuple)):
+        return False
+    fields = ((primary_latency_field(modality),) if modality else LATENCY_REPORTED_FIELDS)
+    return any(latency_figure(s, f) is not None for s in simulations for f in fields)
+
+
+def derive_available_signals(simulations: object = None, *, trace_available: bool = False,
+                             modality: str | None = None) -> frozenset[str]:
+    """Derive a run's available-signal set from what the run RETURNED.
+
+    `simulations` is a findings record's `simulations` list (or one entry). `trace_available` keeps
+    the existing feature-004 trace determination, which is already observation-based. `modality`
+    selects WHICH figure must be present (voice → TTFA, text → turn latency); it is a property of
+    the run under test, not of how the run was invoked.
+
+    Deliberately takes no route, credential or surface argument — there is no way to pass one,
+    which is the point (invariant A).
+    """
+    signals: set[str] = set()
+    if trace_available:
+        signals.add(SIGNAL_TRACE)
+    if latency_available(simulations, modality):
+        signals.add(SIGNAL_LATENCY)
+    return frozenset(signals)
 
 
 def check_runs(check_modality: str | None, requires_trace: bool,

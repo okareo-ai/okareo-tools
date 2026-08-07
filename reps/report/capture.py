@@ -208,6 +208,49 @@ def _sim_record(scenario: str, res: dict, plan_entry: dict, pillar: str = "") ->
     return rec
 
 
+# --- Run-level latency block (feature 019, contracts/performance-signal.md, data-model §1) -------
+# Captured from the run's agent-side baseline metrics. Absence is meaningful and must survive:
+# absent ⇒ the latency signal is absent ⇒ not-assessed with an observed reason.
+LATENCY_NUMERIC_KEYS = ("avg_turn_taking_latency_ms", "avg_turn_latency_ms")
+LATENCY_ALLOWED_KEYS = frozenset(LATENCY_NUMERIC_KEYS + ("source",))
+# Invariant E: the judge model's latency sits adjacent to the agent's in the same response and lands
+# in a plausible millisecond range, making it the single most likely mis-wiring. Name it so a wrong
+# capture fails loudly here instead of silently producing confident, false latency findings.
+LATENCY_FORBIDDEN_SOURCE = "aggregate_check_metadata"
+
+
+def validate_latency_block(block: object, *, scenario: str | None = None) -> None:
+    """Raise ValueError unless `block` is a well-formed run-level latency block."""
+    where = f" (simulation {scenario!r})" if scenario else ""
+    if not isinstance(block, dict):
+        raise ValueError(f"latency block must be an object, got {type(block).__name__}{where}")
+    unknown = sorted(set(block) - LATENCY_ALLOWED_KEYS)
+    if unknown:
+        raise ValueError(f"latency block has unknown key(s) {unknown}{where}; allowed: "
+                         f"{sorted(LATENCY_ALLOWED_KEYS)}")
+    for key in LATENCY_NUMERIC_KEYS:
+        if key not in block:
+            continue
+        value = block[key]
+        if value is None:
+            continue
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or value <= 0:
+            raise ValueError(f"latency block {key} must be a positive number or null, "
+                             f"got {value!r}{where}")
+    if not any(isinstance(block.get(k), (int, float)) and not isinstance(block.get(k), bool)
+               for k in LATENCY_NUMERIC_KEYS):
+        raise ValueError(f"latency block carries no numeric figure{where}; omit the block entirely "
+                         f"when the run returned no latency — absence is the honest signal")
+    source = block.get("source")
+    if source is not None and not isinstance(source, str):
+        raise ValueError(f"latency block source must be a string{where}")
+    if isinstance(source, str) and LATENCY_FORBIDDEN_SOURCE in source:
+        raise ValueError(
+            f"latency block source {source!r} is the judge model's latency, not the agent's"
+            f"{where} — capture model_metrics.aggregate_baseline_metrics instead "
+            f"(contracts/performance-signal.md invariant E)")
+
+
 def write_record(
     *,
     pillar: str,
@@ -254,6 +297,13 @@ def write_record(
                     dp["modality_applicable"] = False
                     dp.setdefault("modality_na_reason",
                                   f"{sub} is not applicable to a {modality} run")
+
+    # Feature 019: validate any captured run-level latency block BEFORE writing. A malformed block
+    # must raise, never be silently dropped — a dropped block becomes an unexplained not-assessed,
+    # which is exactly the failure class this feature removes (data-model §1).
+    for sim in simulations or []:
+        if isinstance(sim, dict) and "latency" in sim:
+            validate_latency_block(sim.get("latency"), scenario=sim.get("scenario"))
 
     if profile_path is None:
         # Feature 006: resolve this agent's profile first (results/<slug>/profile/…), falling back

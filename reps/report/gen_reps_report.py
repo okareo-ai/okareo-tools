@@ -80,8 +80,9 @@ REMEDIATION = {
                  "number, read-back detail, or — when available — the tool-call trace); refuse to "
                  "claim an action the conversation or trace cannot substantiate; handle compound "
                  "requests as an explicit checklist.",
-    "Performance": "Instrument turn latency / consumption so bounds are observable in the transcript; "
-                   "assert p95 against the stated budget.",
+    "Performance": "Bring turn-taking latency within the profile's stated budget; where the budget "
+                   "itself is a placeholder, confirm it against real SLOs so the bound means "
+                   "something.",
 }
 # Clean-pillar remediation (no findings).
 REMEDIATION_CLEAN = {
@@ -808,14 +809,67 @@ def _pillar_heading(pillar: str, rec: dict, s: dict, modality: str, cont: bool =
         if block:
             h.append(block)
     if pillar == "Performance":
-        pm = extract_performance_metrics(rec)
+        # Feature 019: the budget comes from THIS agent's profile (never a constant in check logic),
+        # and is reported with its provenance. This call previously omitted the budget entirely, so
+        # every report ever generated compared against `None`.
+        from reps.paths import resolve_profile
+        from reps.report.scoring import read_latency_budget_profile
+        _slug = rec.get("target_name")
+        _profile = read_latency_budget_profile(resolve_profile(_slug) if _slug else None)
+        pm = extract_performance_metrics(rec, profile=_profile)
         p50, p95 = pm["session_elapsed_p50_s"], pm["session_elapsed_p95_s"]
-        h.append(f'<p class="sm"><b>Timing.</b> session elapsed p50 '
+        h.append(_latency_block_html(pm["latency"]))
+        h.append(f'<p class="sm"><b>Session timing.</b> elapsed p50 '
                  f'{("%.1fs" % p50) if p50 is not None else "—"} · p95 '
-                 f'{("%.1fs" % p95) if p95 is not None else "—"} across {pm["sim_count"]} run(s).</p>')
+                 f'{("%.1fs" % p95) if p95 is not None else "—"} across {pm["sim_count"]} run(s) '
+                 f'— wall clock, shown alongside the agent-side figure above.</p>')
         for note in pm["unverifiable"]:
             h.append(f'<div class="errline">⚠ {esc(note)}</div>')
     return "\n".join(h)
+
+
+def _latency_block_html(lat: dict) -> str:
+    """Render the turn-latency verdict (feature 019, contracts/performance-signal.md invariant G).
+
+    Always states: the measured figure and which metric it is, the budget and which profile field it
+    came from, that budget's provenance, the basis of the comparison, and how many runs contributed.
+    A verdict resting on an unattributed threshold is the defect this feature removed.
+    """
+    prov = {"operator": "from the agent profile, operator-supplied",
+            "assumed": "from the agent profile, assumed placeholder — confirm against real SLOs",
+            "inferred": "from the agent profile, inferred during exploration",
+            "unstated": "from the agent profile, provenance unstated",
+            "default": "documented default — no budget in the agent profile"}.get(
+                lat.get("budget_provenance", "default"), "from the agent profile")
+    budget = f'{lat["budget_ms"]:,.0f} ms'
+    field = esc(str(lat.get("budget_field", "")))
+
+    # Heading names the bound this modality is actually judged on (voice → TTFA, text → turn latency).
+    heading = "Responsiveness" if lat.get("metric") == "avg_turn_taking_latency_ms" else "Turn latency"
+    label = esc(lat.get("label", "mean turn latency"))
+
+    if not lat.get("assessed"):
+        # Invariant L/M: name the observed condition; offer no remedy that cannot change it.
+        return (f'<p class="sm"><b>{heading}.</b> <span class="mono">not assessed</span> — '
+                f'{esc(lat.get("reason", "the run returned no agent-side latency"))}. Budget that '
+                f'would have applied: {budget} (<span class="mono">{field}</span>, {esc(prov)}).</p>')
+
+    worst, best = lat["worst_ms"], lat["best_ms"]
+    verdict = "within budget" if lat["within_budget"] else "OVER budget"
+    cls = "good" if lat["within_budget"] else "warning"
+    spread = "" if worst == best else f' (range {best:,.0f}–{worst:,.0f} ms)'
+    extra = ""
+    sec = lat.get("secondary")
+    if sec:
+        sv = "within budget" if sec["within_budget"] else "OVER budget"
+        extra = (f' Also measured — {esc(sec["label"])}: <b>{sec["worst_ms"]:,.0f} ms</b> vs '
+                 f'{sec["budget_ms"]:,.0f} ms '
+                 f'(<span class="mono">{esc(sec["budget_field"])}</span>) — {sv}.')
+    return (f'<p class="sm"><b>{heading}.</b> {label} '
+            f'<b>{worst:,.0f} ms</b>{spread} vs {budget} '
+            f'(<span class="mono">{field}</span>, {esc(prov)}) — '
+            f'<span class="{cls}">{verdict}</span>. Worst of {lat["contributing_runs"]} of '
+            f'{lat["total_runs"]} run(s); {esc(lat["comparison_basis"])}.{extra}</p>')
 
 
 def _detailed_pages(ordered: list[str], records: dict, sc_by_pillar: dict, modality: str) -> list[str]:
@@ -871,7 +925,7 @@ def _roadmap_rows(ordered, sc) -> list[tuple]:
             "Security": "Harden the failing security guardrail",
             "Reasoning": "Fix reasoning gaps (clarify-before-act + constraint retention)",
             "Execution": "Gate confirmations on verifiable outcome evidence (trace or read-back)",
-            "Performance": "Instrument & verify latency / consumption bounds",
+            "Performance": "Bring latency / consumption within the stated budget",
         }[p]
         effort = "Med" if p in ("Security", "Execution", "Performance") else "Low"
         rows.append((pri, pcol, action, REMEDIATION[p], p, sev if sev != "None" else "Low", effort))

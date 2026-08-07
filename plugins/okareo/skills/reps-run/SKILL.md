@@ -248,17 +248,17 @@ run unprefixed exactly as written.
      `<canonical>-tuned-<agent_slug>[-vN]`. Fingerprint the resolved file, so a tuned bank supersedes
      on its overlay content.
    - **Checks** — read each referenced check via `resolve_artifact(..., 'checks', ...)`. **Apply the
-     combined modality × required-signal gate (features 004+008,
-     `reps.trace.check_selection(check.modality, modality, requires_signal=check.requires_signal,
-     requires_trace=check.requires_trace, available_signals=<{'trace'} if trace_available else set()>)`)**:
-     a `modality-excluded` outcome ⇒ skip (do not upload/score); a `not-assessed` outcome ⇒ do NOT
-     record a pass — record it **not-assessed with the returned reason** (a deterministic code check
-     like `perf-turn-latency`/`perf-error-rate` declares `requires_signal: latency`; the hosted MCP
-     cannot create code checks and provides no latency signal, so it is `not-assessed` — "run via SDK
-     for the deterministic metric" — never a silent pass or a coverage gap). `run` ⇒ score normally.
+     modality gate now** (`reps.trace.check_selection(check.modality, modality)`): a
+     `modality-excluded` outcome ⇒ skip (do not upload/score). **Required-signal gating happens in
+     step 5, not here** — a signal's availability is a property of what the run *returned*, so it
+     cannot be known before the run (feature 019, FR-008).
+     **Deterministic (code-based) checks work on this keyless path exactly like model-graded ones** —
+     upload them the same way and score them the same way. Every check declaring
+     `requires_signal: none`, which includes `perf-error-rate`, is assessed on every run in a
+     compatible modality.
      On **reuse**, keep the existing check version. On **upload**,
-     `create_or_update_check` (model-based → prompt template; code-based → code contents) with the
-     same standard/tuned tag set as scenarios.
+     `create_or_update_check` (model-based → prompt template; code-based → check type "code" with
+     code contents) with the same standard/tuned tag set as scenarios.
    - **Driver** — read the resolved `drivers/<name>.md` (`resolve_artifact(..., 'drivers', ...)`).
      **The standard driver is usually sufficient** — reuse it by canonical name whenever its
      persona/config is unchanged. Only `create_or_update_driver` (pass
@@ -271,6 +271,19 @@ run unprefixed exactly as written.
      repeats)`. It returns promptly with a `test_run_id` (and may finish inline).
    - **Fetch** — `get_test_run_results(test_run_id)` for per-datapoint pass/fail + judge rationale;
      `get_conversation_transcript` if you need the transcript link/excerpt.
+   - **Capture run-level latency (feature 019)** — read
+     `model_metrics.aggregate_baseline_metrics` from the results. When it carries
+     `model_metrics.aggregate_baseline_metrics.avg_turn_taking_latency` and/or
+     `model_metrics.aggregate_baseline_metrics.avg_turn_latency`, attach a `latency` block to
+     **this simulation's** record entry (step 5), with the keys
+     `latency.avg_turn_taking_latency_ms` / `latency.avg_turn_latency_ms` (milliseconds, verbatim
+     from those two fields) and `latency.source` set to the string "aggregate_baseline_metrics".
+     ⚠️ **Do NOT read `aggregate_check_metadata.average_latency`.** That is the **judge model's**
+     latency, not the agent's. It sits adjacent in the same response and lands in a plausible
+     millisecond range, which makes it the single most likely wrong wiring — `write_record`
+     rejects it outright. If the response carries no baseline-metric figures, **omit the block
+     entirely**: absence is the honest signal, and a substituted zero or default would manufacture
+     a verdict.
 5. **Assemble the results record** — build a `simulations` list in the
    `contracts/report-results.md` shape, plus the v2 row-level fields
    (validated by `reps.report.capture.write_record`):
@@ -291,6 +304,15 @@ run unprefixed exactly as written.
      read the trace at the target's `trace.path` from the result; set `trace: <the tool-call
      structure>` on the datapoint when present. Do NOT set `evidence_basis` by hand — step 6 assigns
      it and computes the run-level `trace_status`.
+   - **Required-signal gate (features 004+008+019) — apply it HERE, on the assembled record.**
+     A signal is available **iff the run returned it**; route, credential and surface never
+     participate. Derive the set from the evidence and gate each check against it:
+     `reps.trace.check_selection(check.modality, modality, requires_signal=check.requires_signal,
+     requires_trace=check.requires_trace,
+     available_signals=reps.trace.derive_available_signals(simulations, trace_available=<bool>))`.
+     A `not-assessed` outcome ⇒ do NOT record a pass — record it **not-assessed with the returned
+     reason**, which names the observed condition. Never a silent pass, and never a coverage gap
+     (a missing signal and an unexercised probe are different statuses).
    - **Coverage gaps, one per row (FR-006)**: if the run errored, or returned fewer datapoints
      than the rows uploaded, add a `coverage_gaps` list to that simulation — one entry
      `{scenario, sub_capability, reason}` per row that produced no result, read from the

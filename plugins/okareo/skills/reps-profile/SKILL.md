@@ -82,7 +82,10 @@ Ask the operator this bounded set of questions (one message, numbered; accept br
 5. **Tools/actions** it can take — for each: name, expected arguments, and authority scope.
 6. **Authority limits** — what it may do, and for whom (identity/verification rules).
 7. **Guardrails / prohibited topics.**
-8. **Latency budget** — p95 turn (ms) and time-to-first-audio (ms).
+8. **Latency budget** — p95 turn (ms) and time-to-first-audio (ms). This is the bound the
+   Performance turn-latency probe is judged against, so state real SLOs if you have them. If left
+   unset, a **documented default** applies (1500 ms voice / 3000 ms text) and the report labels the
+   verdict as resting on that default rather than on your number — never a silent threshold.
 9. **Preferred caller voice + language** — a voice id from Okareo `list_driver_voices` (optional).
 10. **Modality** — `voice` or `text`. (feature 004)
 11. **Trace availability** *(ask only for a `text` target)* — Does the agent expose a **tool-call
