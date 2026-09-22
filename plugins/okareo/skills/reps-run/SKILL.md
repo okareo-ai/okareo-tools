@@ -269,8 +269,10 @@ run unprefixed exactly as written.
      overwritten with agent-specific content.
    - **Run** — `run_simulation(target=<name>, driver, scenario, checks, max_turns, first_turn,
      repeats)`. It returns promptly with a `test_run_id` (and may finish inline).
-   - **Fetch** — `get_test_run_results(test_run_id)` for per-datapoint pass/fail + judge rationale;
-     `get_conversation_transcript` if you need the transcript link/excerpt.
+   - **Fetch** — `get_test_run_results(test_run_id, include_transcripts=true)`. Each
+     `data_points` entry then carries its own `checks`: the Check values plus the judge's written
+     rationale (`<check>__explanation`), already attached to the right conversation. Use
+     `get_conversation_transcript` if you need a single transcript link/excerpt.
    - **Capture run-level latency (feature 019)** — read
      `model_metrics.aggregate_baseline_metrics` from the results. When it carries
      `model_metrics.aggregate_baseline_metrics.avg_turn_taking_latency` and/or
@@ -287,14 +289,13 @@ run unprefixed exactly as written.
 5. **Assemble the results record** — build a `simulations` list in the
    `contracts/report-results.md` shape, plus the v2 row-level fields
    (validated by `reps.report.capture.write_record`):
-   - **Join rows to verdicts semantically — NEVER by index.** ⚠️ Verified live: the aggregate
-     `scores_by_row` array is NOT positionally aligned to `data_points`, and it carries no
-     `test_id`/scenario key. Read each datapoint's `sub_capability` from
-     `data_points[i].scenario_input.sub_capability`, then match each `scores_by_row` verdict to
-     the datapoint it describes by reading the judge's `__explanation` against that datapoint's
-     `scenario_input` / transcript (call `get_test_run_results(..., include_transcripts=true)` or
-     `get_conversation_transcript(test_id)` to disambiguate when explanations are similar). Do NOT
-     assume `scores_by_row[i]` corresponds to `data_points[i]`.
+   - **Read each row's verdict and evidence from the row itself.** Every `data_points` entry
+     carries `checks` (fetched with `include_transcripts=true`): the Check's value is the verdict
+     and `<check>__explanation` is the judge's rationale, already paired to that conversation.
+     Read each datapoint's `sub_capability` from `data_points[i].scenario_input.sub_capability`.
+     ⚠️ Do NOT read verdicts or evidence out of the run-level `scores_by_row` — it is not
+     positionally aligned to `data_points`, carries no key to join on, and no longer carries
+     explanations at all (the server strips them from the Run record).
    - Per datapoint: `passed`; `sub_capability` (from the row, above); `finding_severity` = `None`
      when passed, else the row's `severity_on_fail` (fallback: High for R/E/S, Medium for P);
      `evidence` = the judge rationale (condensed); `safe_refusal` = true when the agent

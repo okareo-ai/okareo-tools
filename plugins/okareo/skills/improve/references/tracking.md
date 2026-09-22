@@ -43,9 +43,10 @@ Notes on the fields:
 - The metric blocks mirror the run record's aggregate scores, keyed by check
   name plus the latency/turn aggregates — the real shape returned by
   `get_test_run_results`.
-- **Record `analysis_verdict` (read from the analysis explanation text)
-  separately from the numeric check score.** They disagree; the text is the
-  honest verdict and is what the trend should show.
+- **Record `analysis_verdict` (read from the analysis explanation text, each
+  data point's `checks["<check>__explanation"]`) separately from the numeric
+  check score.** They disagree; the text is the honest verdict and is what the
+  trend should show.
 - `verdict` is the loop's call: `fixed` / `partial` / `regressed` / `no-change`.
 
 The ledger also makes the loop resumable — a later session can read it to see

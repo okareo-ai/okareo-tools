@@ -13,6 +13,10 @@ opened with "Outcome — Partially" and listed seven unmet objectives. Always
 read the outcome verdict — Yes / Partially / No — from the explanation against
 the written success definition, never from the bare score.
 
+The explanation is on each conversation's `checks` as `<check>__explanation`,
+returned by `get_test_run_results(..., include_transcripts=true)` — see
+[run-and-poll.md](run-and-poll.md) for paging it.
+
 ## Objective-coverage matrix
 
 One row per objective from the success definition, scored with a quoted

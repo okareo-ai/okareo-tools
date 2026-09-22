@@ -46,6 +46,21 @@ Poll `get_test_run_results` with the run id. Read:
   progress together, not on data-point count alone.
 - **failure_message** — non-null means the run failed; report it and stop.
 
+The status poll needs no transcripts — keep it on the default response.
+
+## Reading the verdicts once the run finishes
+
+The judge's explanations live on each conversation, not on the run. Once the
+run is `FINISHED`, fetch
+`get_test_run_results(test_run_id, include_transcripts=true, limit=10)` and page
+through with `offset` until `has_more` is false. Each `data_points` entry then
+carries its own `checks`: the Check values plus `<check>__explanation`, already
+paired to that conversation. Page rather than fetching everything at once — each
+entry carries its full transcript.
+
+Do **not** read explanations from the run-level `model_metrics.scores_by_row`:
+it no longer carries them, and it is not aligned to `data_points`.
+
 ### Finalization lag is real
 
 A run can sit near `progress: 99` / non-terminal for a noticeable stretch after

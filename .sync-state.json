@@ -1,8 +1,8 @@
 {
-  "content_hash": "sha256:d10fad8309afee7bbe834d5289ee660f06cf1eee1e8b925f8f646200125c8550",
-  "dev_revision": "6e9ce8e",
+  "content_hash": "sha256:4955d46dc2557de5b9ce8ed80943c2e5339726f3bdb2ee5a02c2dd39d9cb8fc9",
+  "dev_revision": "5012d22",
   "file_hashes": {
-    ".claude-plugin/marketplace.json": "sha256:9074d807ad3c874f393f683650000ec4abd4df84b34225ca585baa616c0c02b7",
+    ".claude-plugin/marketplace.json": "sha256:9619298c6838d60df8d8efef4eca2bdcf66ca052e9945fc2474a50060b4b70bf",
     ".github/workflows/release.yml": "sha256:b5559eacfcfd953e927346d798f0636ae204f09c5cbf8ecfdfe1c2a7b2ba80d5",
     ".gitignore": "sha256:1cf2e848bd76aeb8c662c1219439553870697b5d48c267c7db014b84c2c8a0c1",
     "CLAUDE.md.snippet": "sha256:78d16844c62f2596aa19a8973e8507aecc4c5acc60535eff8d8abda01621be92",
@@ -11,7 +11,7 @@
     "README.md": "sha256:0b27942be7f15fc08348e05274e05b0c368f4fdcc44b52229ab80c220ca7ac3c",
     "ROADMAP.md": "sha256:76cc42331b35171ba6c7c1bb69d675f88f44d26d6bb951d5af90cebe116d1057",
     "contracts/get_reps_baseline.md": "sha256:15f339a3a72db62732e035dce05d5b5d1dfcc331e49bf03f4b3c80a447873610",
-    "plugins/okareo/.claude-plugin/plugin.json": "sha256:863a630da5f15e6058a926b85ba7b1eb594084dd9de769a75c4e3ae5a1314862",
+    "plugins/okareo/.claude-plugin/plugin.json": "sha256:45936e0f068d36ee24314008892c4ddb1694e657616ca2bc769211a0f9c9e455",
     "plugins/okareo/.mcp.json": "sha256:04589eb4da16fab369aebe561eb2a4b22bd9a765e3b0a549445a896b8ae285ae",
     "plugins/okareo/skills/agent-simulation/SKILL.md": "sha256:99a5849aed7d164824c387a0de080fc6830004e31a5e2a6c11174bfa270a01a4",
     "plugins/okareo/skills/agent-simulation/references/persona-design.md": "sha256:1262564ec01f4f39cfce0c836e89839932c6d3067fc73a5e940e77b2690f820e",
@@ -19,13 +19,13 @@
     "plugins/okareo/skills/evaluation/SKILL.md": "sha256:1ab05ade7d8b9ad3992e68fff685fe53e4dfb5b7afd4f790bb93c5585ef55271",
     "plugins/okareo/skills/evaluation/references/interpreting-results.md": "sha256:3784ab6796dc2efe3077be436cd34eaec438442757b2c42a189fdc04d3d756bf",
     "plugins/okareo/skills/get-reps/SKILL.md": "sha256:96021e07e55aaae8308e1923613d572373cb9110341a8011dabed7cfc640d856",
-    "plugins/okareo/skills/improve/SKILL.md": "sha256:a51acb5fa8607da4796a225d6645e423f44757fd87c7ec08cced0e009336a8bf",
-    "plugins/okareo/skills/improve/references/analysis-framework.md": "sha256:a170759b5292335fbf0b3d38146fd687d35cab952023da1eb14ee95500f04593",
+    "plugins/okareo/skills/improve/SKILL.md": "sha256:ab1ec4d3ee17129f32dcebf414d06ad076b9012e6633e4e5e8aef5611ac94c55",
+    "plugins/okareo/skills/improve/references/analysis-framework.md": "sha256:4e97dc0bdcc3dd5646bb7b7546880eb9fda5ad21fb2d47b0c15dd0ae3119e809",
     "plugins/okareo/skills/improve/references/check-cookbook.md": "sha256:875eee07864c7ec0225092e676ba57a56ae6dc84c747977b9529898c27035e16",
     "plugins/okareo/skills/improve/references/edit-delegation.md": "sha256:4aec3ac9d145c38ad0ac2559b39398beafd599e82a38a72bf71b216773f3dd0e",
     "plugins/okareo/skills/improve/references/lessons.md": "sha256:e36e1e20e27ea3af3531fbc99ef0bf2044211613c38a9d9ceda00b0721c193ff",
-    "plugins/okareo/skills/improve/references/run-and-poll.md": "sha256:8a545ade88d139992527987116c193443f193577dbcbf41c65a1db60f93e57ee",
-    "plugins/okareo/skills/improve/references/tracking.md": "sha256:d302511689c68edad20903be15fe7ac441bc898ef61faa8bb622101a13f6bb85",
+    "plugins/okareo/skills/improve/references/run-and-poll.md": "sha256:25ddebd58317825e5c8ecf44c858d9d8f46a1e025a0922d4ce5c916c1becf65e",
+    "plugins/okareo/skills/improve/references/tracking.md": "sha256:6680af0d1995f82cda866f11077b75884e74ffad21b7ae26edc23f3af974e171",
     "plugins/okareo/skills/monitoring/SKILL.md": "sha256:c521c5fec5f8fb8d85bba4922f804ac7ac2195538834ab4871f88af789edf66b",
     "plugins/okareo/skills/monitoring/references/alert-design.md": "sha256:01737aa0205c2434b09393981cda12673df9bb925a19dfa61857dd80c07f7963",
     "plugins/okareo/skills/monitoring/references/drift.md": "sha256:efc7da1e63b2e6c04b2d4865bb1cc0cdf544cb3e03f5a2911b807dd65cf6b79e",
@@ -41,7 +41,7 @@
     "plugins/okareo/skills/reps-profile/references/agent-profile.example.yaml": "sha256:db84f081561d013b616ebbdd182d59d83a7c35f4b269f309aa3259a0bb22e772",
     "plugins/okareo/skills/reps-profile/references/execution-scenario.template.jsonl": "sha256:c06035b3cf54c5da9e51aa40425a389349c0abf7337bc65c5d076bbe53268747",
     "plugins/okareo/skills/reps-profile/references/reasoning-scenario.template.jsonl": "sha256:882534abdb5a2304a4442ab9107fa7b59779476b28a4214334248d0c865100a0",
-    "plugins/okareo/skills/reps-run/SKILL.md": "sha256:6b63794ec8a7b3d2a64573a18cc85332f34c33efdca61deef38d4c53b368aebd",
+    "plugins/okareo/skills/reps-run/SKILL.md": "sha256:9f0abc12398f6c935063cbbe116b30d98d7278c67a270cbd5b43e4538bed27dd",
     "plugins/okareo/skills/scenario-design/SKILL.md": "sha256:55eef7cb3ea6a5502ce34e894e0daad9f1673c0d327dffd2e3db52fb90626785",
     "plugins/okareo/skills/scenario-design/references/coverage.md": "sha256:2c5ac8363e2282700bb6675c0ceef88864441eb4bf954390ce7dd64020299f0c",
     "plugins/okareo/skills/scenario-from-traces/SKILL.md": "sha256:9adefc8369190d95743ebf3b0018d2dde3b05aba6d0d05345dd00414995b3d82",
@@ -150,5 +150,5 @@
     "skill-template/references/example-reference.md": "sha256:4542b912bd674664a44d6751fb9a058467b3580f6fbbb194a86778e6be43b8e3"
   },
   "pipeline": "ci",
-  "synced_at": "2026-08-07T20:56:35Z"
+  "synced_at": "2026-09-22T21:43:53Z"
 }

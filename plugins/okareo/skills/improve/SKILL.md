@@ -56,6 +56,7 @@ outcome — if a needed tool is unavailable, say so and stop.
 | Reuse the harness     | `list_simulations`             | Find the prior run to replay the same setup from      |
 | Run a cycle           | `run_simulation`               | Place the simulated call(s) and score them            |
 | Poll to completion    | `get_test_run_results`         | Read status, progress, and per-check scores           |
+| Read the verdicts     | `get_test_run_results`         | With `include_transcripts=true`: each row's Checks + judge explanations |
 | Read a failing call   | `get_conversation_transcript`  | Inspect one conversation to diagnose root cause        |
 | Track the metric trend| `query_analytics`              | Pull metrics across runs for the trend                |
 | Save the dashboard    | `save_dashboard`               | Mirror the trend as a shareable Okareo dashboard       |
@@ -105,7 +106,10 @@ slow poll is not a failure. See [references/run-and-poll.md](references/run-and-
 Apply [references/analysis-framework.md](references/analysis-framework.md):
 an outcome verdict, a per-objective coverage matrix, and a single named root
 cause. Read the verdict from the analysis check's **explanation text**, not its
-numeric score — they can disagree, and the text is the honest one. Separate
+numeric score — they can disagree, and the text is the honest one. The text
+lives on each conversation: fetch `get_test_run_results(test_run_id,
+include_transcripts=true, limit=10)` and page with `offset`; each `data_points`
+entry's `checks` carries `<check>__explanation`. Separate
 true agent failures from transcription noise and caller artifacts before
 blaming the agent; read failing calls with `get_conversation_transcript`.
 
@@ -189,7 +193,8 @@ Net: <what moved across the loop — coverage, latency, regressions>
   the billed call.
 - One change per cycle and the *same* harness every cycle, or the comparison is
   meaningless.
-- Read the outcome from the analysis explanation text, not its numeric score.
+- Read the outcome from the analysis explanation text (each data point's
+  `checks`), not its numeric score.
 - The agent edit is delegated. Never hardcode a platform's edit mechanics into
   this skill, and never echo or commit a secret from the user's Edit Target.
 - If a tool errors or a run does not complete, report exactly what happened and
