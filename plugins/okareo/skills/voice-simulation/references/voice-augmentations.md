@@ -4,7 +4,7 @@ This file is loaded when the voice simulation needs to decide whether the
 default "clean line, one speaker, no interruptions" run is good enough, or
 whether the simulation should add realistic call-quality conditions on top.
 
-Okareo exposes six augmentation knobs that drop into `run_simulation`'s
+Okareo exposes seven augmentation knobs that drop into `run_simulation`'s
 `augmentation` parameter. They model conditions a real phone or microphone
 agent meets every day — and that a clean simulation never surfaces. The MCP
 template `get_templates(["voice_augmentations"])` carries the exact field
@@ -33,7 +33,7 @@ over the agent).
 
 At most **one non-noise strategy** may be active per run, optionally
 combined with **noise**. The MCP rejects any other combination with an
-error before the run starts. The five non-noise strategies are
+error before the run starts. The six non-noise strategies are
 mutually-exclusive design choices about what the *caller* is doing; `noise`
 is an additive layer about what's happening *around* them.
 
@@ -42,6 +42,7 @@ OK:   {}                                   no augmentation
 OK:   {"barge_in": {...}}                  caller interrupts
 OK:   {"noise": {...}}                     noise only
 OK:   {"barge_in": {...}, "noise": {...}}  caller interrupts in a noisy room
+OK:   {"dropout": {...}}                   caller's line cuts out
 REJECT: {"cap": {...}, "barge_in": {...}}  two non-noise — pick one
 ```
 
@@ -109,6 +110,24 @@ must stop, listen, and respond — not steamroll through to the end of its
 planned utterance. Use this for any agent that gives long answers; the
 worst version of "the bot wouldn't shut up" lives here.
 
+### `dropout` — The caller's line cuts out
+
+> *Does the agent notice dead air, or does it sit waiting forever?*
+
+With a configurable probability the caller says nothing at all for a whole
+turn — no speech reaches the agent, so it hears silence where an answer
+should be. A good agent notices and re-prompts ("are you still there?");
+a bad one waits out its own timeout, or hangs up on a caller who is still
+on the line. Use it for phone deployments, where dropped audio is a fact of
+life: bad reception, a tunnel, a caller who puts the phone down.
+
+Two things to know before reaching for it. It needs a Target whose
+connection can express silence — phone (Twilio, Vonage, Telnyx), SIP and
+WebRTC. On an OpenAI or Deepgram realtime Target the backend logs a warning
+and runs without it, so the run succeeds having tested nothing. And each
+dropped turn costs up to the silence timeout (~10s) in real time, so a high
+probability makes a run noticeably longer.
+
 ### `noise` — Ambient background (composable add-on)
 
 > *Does the agent's transcription hold up when the line isn't quiet?*
@@ -124,6 +143,24 @@ The set of profile names (`cafeteria`, `classroom`, `office_babble`,
 know, the run will fail with the current valid list. Don't memorize the
 list — pass through what the user says and surface the error if it doesn't
 take.
+
+## `start_at_turn` — let the call get going first
+
+Every strategy except `cap` and `noise` takes `start_at_turn`: the first
+caller turn it may fire on. Turn numbers are the ones in the transcript —
+the agent's greeting is turn 0, the first caller turn is turn 1 — and the
+default of 1 means the strategy is live from the start of the call.
+
+Reach for it when the failure you are probing only makes sense once the
+conversation is underway. Interrupting the agent's very first sentence tests
+little; interrupting once it is three turns into an explanation tests the
+thing the user is worried about. The same goes for a line that cuts out
+after the caller has already stated their goal — that is the case where the
+agent has something to recover.
+
+Leave it out for a resilience sweep, where you want the condition present
+throughout. Setting it beyond the run's `max_turns` is rejected: the
+strategy could never fire.
 
 ## Companion `simulation_params` knobs
 

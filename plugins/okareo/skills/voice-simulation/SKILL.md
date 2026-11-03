@@ -123,9 +123,9 @@ A voice simulation runs on a clean line by default — no noise, no second
 voice, no interruptions. That's the right setting for proving the agent's
 *conversation logic*. To prove its **resilience**, layer an augmentation on
 top: a caller who interrupts, a noisy room, a second voice nearby, off-mic
-stretches, or a "stack-two-questions" pattern. The MCP exposes six
-augmentation knobs and a composition rule (at most one non-noise strategy
-plus optionally `noise`). See
+stretches, a "stack-two-questions" pattern, or a line that cuts out
+entirely. The MCP exposes seven augmentation knobs and a composition rule
+(at most one non-noise strategy plus optionally `noise`). See
 [references/voice-augmentations.md](references/voice-augmentations.md) for
 the judgment call — *should I augment, and which one* — and call
 `get_templates(["voice_augmentations"])` for the exact field schema.

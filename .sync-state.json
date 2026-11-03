@@ -1,6 +1,6 @@
 {
-  "content_hash": "sha256:4955d46dc2557de5b9ce8ed80943c2e5339726f3bdb2ee5a02c2dd39d9cb8fc9",
-  "dev_revision": "5012d22",
+  "content_hash": "sha256:60c697e96723f33862e64f421034ef8460e10ad2c4941b12cc50ccdf59349377",
+  "dev_revision": "feca968",
   "file_hashes": {
     ".claude-plugin/marketplace.json": "sha256:9619298c6838d60df8d8efef4eca2bdcf66ca052e9945fc2474a50060b4b70bf",
     ".github/workflows/release.yml": "sha256:b5559eacfcfd953e927346d798f0636ae204f09c5cbf8ecfdfe1c2a7b2ba80d5",
@@ -49,8 +49,8 @@
     "plugins/okareo/skills/scenario/SKILL.md": "sha256:dd9af3cc9662b84d2ab83553fbd8ea4a6eadde633f442580db07a7fc474b6b37",
     "plugins/okareo/skills/simulate/SKILL.md": "sha256:22e5d1e0164dcf02f10591cf4702822914c42fe58dfdc9a11510ac84531394d6",
     "plugins/okareo/skills/update/SKILL.md": "sha256:73cd4c3f7d273487ab6d48c0725a8e8fd5071985a6c19fcb6952ad240adad13b",
-    "plugins/okareo/skills/voice-simulation/SKILL.md": "sha256:1ea33d689b3b03f3e1b8d22db6c077ae8494cefc42b0ff305bc6bc62a088c58b",
-    "plugins/okareo/skills/voice-simulation/references/voice-augmentations.md": "sha256:b69a5a631533896b87df05f0704f284be2b8221206e5981bbc1988bb32bb50f4",
+    "plugins/okareo/skills/voice-simulation/SKILL.md": "sha256:78889051e085bb2b7ee16200c72fe4cb69e87449e7cf333c64a195e531cc7a82",
+    "plugins/okareo/skills/voice-simulation/references/voice-augmentations.md": "sha256:084e8ed66933405b8d4ef6102751ed0ee562f58a117d8f4a3b76fbf1471cae11",
     "plugins/okareo/skills/voice-simulation/references/voice-personas.md": "sha256:25393d9c95aed3d8cadb98c6bb2b8bed1ea536c5ceeed05c25918979a560f49c",
     "plugins/okareo/skills/voice-simulation/references/voice-targets.md": "sha256:254b274da3e437dde3cd69ddb0abcb6cbe7392f6efd4451923d95be1957fe83f",
     "reps/E-execution/checks/execution-expectation-met.md": "sha256:b85b49e43b9eb6c3e07f24a36f58474248b2a4d2ea2a9e8155d8aa65a34505f0",
@@ -150,5 +150,5 @@
     "skill-template/references/example-reference.md": "sha256:4542b912bd674664a44d6751fb9a058467b3580f6fbbb194a86778e6be43b8e3"
   },
   "pipeline": "ci",
-  "synced_at": "2026-09-22T21:43:53Z"
+  "synced_at": "2026-11-03T23:10:30Z"
 }
