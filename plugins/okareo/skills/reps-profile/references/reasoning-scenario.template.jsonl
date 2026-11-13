@@ -2,7 +2,10 @@
 # fills the slots with the target agent's real intents/domain, then APPENDS rows to
 # scenarios/core.jsonl (never a new scenario file, never a new driver/check).
 # Route `driver` by audible demeanor: confused-caller | assertive-caller.
-# Feature 009: state the correct agent outcome ONCE, in `result` (scenario_result). NEVER put an
-# `expected_behavior` (or any answer-key text) inside `input` — it would leak to the simulated
-# caller and validation now rejects it.
-{"input": {"sub_capability": "{sub_capability}", "persona": "{caller_demeanor}", "guidance": "{behavioral_arc_guidance}", "driver": "{routed_driver}", "severity_on_fail": "High"}, "result": "{pass_criterion_ie_what_the_agent_should_do}"}
+# Feature 022: a row is AUTHORED as structure and RENDERED into `input.guidance` and the
+# `result` string. Fill `required_moves` with ORDERED moves the caller takes one per turn
+# (the opening turn covers move 1 only), `approach` with how it handles everything else, and
+# the criterion with exactly one `must` and AT MOST one `must_not` — never AND two conditions
+# into either, and never invent the clause a probe does not have. `conduct_ref` selects the
+# shared conduct block; `facts_ref` points at the profile's shared facts block.
+{"input": {"sub_capability": "{sub_capability}", "persona": "{caller_demeanor}", "required_moves": ["{move_1_the_caller_opens_with}", "{move_2_taken_in_its_own_turn}"], "approach": "{how_the_caller_handles_everything_else}", "conduct_ref": "expectation", "driver": "{routed_driver}", "severity_on_fail": "High"}, "result": {"must": "{the_one_thing_the_agent_must_do}", "must_not": "{optional_the_one_thing_it_must_not_do_or_omit_this_key}", "facts_ref": "{optional_shared_facts_block_or_omit}"}}

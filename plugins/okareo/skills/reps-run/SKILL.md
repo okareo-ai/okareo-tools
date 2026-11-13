@@ -128,7 +128,7 @@ re-implemented by hand. In MCP mode, fetch that tooling first — DO materialize
 set through `get_reps_baseline`; it is stdlib-only and runs on bare `python3`:
 
 1. **Discover once** — call `get_reps_baseline` with no `pillar`/`path`. The envelope's `files[]`
-   must list all 19 tooling paths below; record the serving `tag` (it is the run's baseline
+   must list all 30 tooling paths below; record the serving `tag` (it is the run's baseline
    version AND the tooling version — one tag for everything this run fetches). Surface
    `stale: true` + `stale_reason` per the envelope rule above.
 2. **Fetch the set** — for each path below, call `get_reps_baseline` with that `path` and write
@@ -140,16 +140,33 @@ set through `get_reps_baseline`; it is stdlib-only and runs on bare `python3`:
 
    ```text
    reps/__init__.py            reps/report/__init__.py         reps/rows.py
-   reps/slug.py                reps/report/capture.py          reps/reuse/__init__.py
-   reps/trace.py               reps/report/scoring.py          reps/reuse/fingerprint.py
-   reps/paths.py               reps/report/improvements.py     reps/reuse/naming.py
-   reps/coverage.py            reps/report/gen_reps_report.py  reps/reuse/decision.py
+   reps/slug.py                reps/report/capture.py          reps/profile.py
+   reps/trace.py               reps/report/scoring.py          reps/attacks.py
+   reps/paths.py               reps/report/improvements.py     reps/conduct.py
+   reps/coverage.py            reps/report/gen_reps_report.py  reps/judges.py
+                                                               reps/calibrate.py
+                                                               reps/runplan.py
+                                                               reps/runview.py
+                                                               reps/publish_overlay.py
+                                                               reps/grounding/__init__.py
+                                                               reps/reuse/__init__.py
+                                                               reps/reuse/fingerprint.py
+                                                               reps/reuse/naming.py
+                                                               reps/reuse/decision.py
                                                                reps/reuse/orchestrate.py
                                                                reps/reuse/platform.py
+
+   reps/shared/caller-conduct.md      (read by reps/conduct.py — blocking)
+   reps/shared/evidence-rule.md       (read by reps/conduct.py — blocking)
 
    reps/report/okareo_logo.svg        (brand asset — non-blocking)
    reps/report/okareo_logo_color.svg  (brand asset — non-blocking)
    ```
+
+   The two **shared documents** are data that `reps/conduct.py` reads, resolved relative to the
+   module's own file, so they must land at those exact paths under `TOOLING_ROOT`. They are
+   **blocking**: without them a caller gets no rules of conduct at all, and the failure surfaces
+   at registration time — after the suite has been generated.
 
    The last two are the report's **brand assets**. Fetch them with the rest — the same "write the
    envelope's `content` verbatim, never re-author" rule and the same prohibition on writing under
@@ -217,6 +234,129 @@ run unprefixed exactly as written.
    names both keys and the remedy. Do NOT hand-edit the overlay — re-run **reps-profile** for that
    agent to regenerate its rows in the current shape, then re-run this step. The committed baseline
    under `reps/` is already current.
+3z. **BULK-REGISTER a tuned overlay in ONE operator step (FR-058/059/060, overlay-registration
+   A–G).** Skip this when the run is untuned (no overlay directory). "One step" means one operator
+   action — the platform has no batch form, so it is N sequential calls that the operator approves
+   once. Registering an overlay artifact by artifact is how both reference evaluations acquired
+   hand-transcription errors: rows under the wrong name, a check saved without its description, a
+   driver re-registered with half its configuration cleared.
+
+   1. **Plan before calling anything** — `reps.publish_overlay.walk_overlay` then `reps.publish_overlay.plan_registration`
+      and `reps.publish_overlay.registration_summary`. Discover each name with the list tools first and pass what you
+      found as `existing`:
+      ```bash
+      python -c "from reps.publish_overlay import walk_overlay, plan_registration, \
+      registration_summary; a=walk_overlay('results/<agent_slug>/<pillar-dir>', '<agent_slug>'); \
+      print(registration_summary(plan_registration(a, existing={})))"
+      ```
+      The walk is deterministic, so re-running after a rate limit shows the same plan — otherwise
+      the operator cannot tell what already happened.
+   2. **A name that exists with DIFFERENT content BLOCKS the plan** (invariant B). Show the
+      operator the collision and let them choose **version** (recommended, additive, reversible) or
+      **replace** (not reversible), then pass their choice as `resolutions` so it is recorded. Do
+      not guess: guessing version would be safe and still wrong, because the operator would not
+      know a second copy now exists. And **never rely on a same-name save to update rows** — the
+      tool contract and the documentation disagree about what it does, and the safe rule is
+      identical under both readings.
+   3. **Read a driver or a target BEFORE re-registering it** (invariant D). A check versions
+      safely; a driver or target is **wholly replaced**, clearing anything you do not supply. The
+      plan marks each operation that needs this.
+   4. **Names are namespaced per kind** (invariant E). Checks and drivers are **organization-wide**
+      while scenarios are not, so a per-agent check or driver carries the agent slug.
+      `reps.publish_overlay.namespaced_name` does this and is idempotent. Getting it backwards would silently replace
+      another agent's judge in another project, and the only symptom would be that the other
+      agent's verdicts change.
+   5. **VERIFY the stored rows after registering each bank** (invariant C) — read them back and run
+      `reps.publish_overlay.verify_stored_rows`. The platform accepts nested structure; the hazard
+      is **silent double encoding**, where a field comes back as a *string containing* the encoded
+      structure. Nothing errors, the driver then addresses a JSON blob, the judge reads a quoted
+      dict as its criterion, and every verdict after that is wrong in a way the scores will not
+      show. This read-back is also the only place a resultless row becomes visible.
+   6. **Report what you created and what you reused**, from the plan — never a summary you wrote.
+
+3a. **PILOT FIRST — the full suite does not run until the gate passes (FR-046/047/048).**
+   This stage took the second reference evaluation to roughly a quarter of the first's cost: 45
+   calls instead of ~190, at 13/14 correct verdicts instead of 9/15. It is not optional and it is
+   not a dry run.
+
+   1. **Register the pilot as its own scenarios** — one to three rows per bank, each saved as a
+      **separately-named** scenario (`<bank>-pilot`), never as a flag or a row subset on the full
+      bank (FR-046b). Two reasons: the pilot's results stay independently addressable for
+      calibration once the full run also exists, and nothing you do to the pilot can touch the
+      full bank. Build the plan and show it to the operator:
+      ```bash
+      python -c "from reps.runplan import build_plan, render_plan; \
+      from reps.rows import load_rows; from pathlib import Path; \
+      d=Path('reps/<pillar-dir>'); \
+      rows={p.stem: load_rows(p)[:3] for p in sorted((d/'scenarios').glob('*.jsonl'))}; \
+      print(render_plan(build_plan(pillar_dir=d, rows_by_bank=rows, pilot=True)))"
+      ```
+   2. **Check the plan matches the run** (FR-046a) — `reps.runplan.check_plan_matches_run`, with
+      every check that will score and every environment-blocked class. Both directions bite, and
+      in the first reference evaluation **both were broken**: an untestable class sat in the plan
+      and was dropped by hand, while the most valuable check was attached by hand and never
+      appeared in the plan. A plan that does not match the run is not a plan.
+   3. **Run the pilot**, then read **every** transcript by hand. Use `reps.runview.compact` to find
+      what to read first (`only="fail"`, then `only="not-assessed"`).
+   4. **Classify each call on four axes** (FR-047): was the probe exercised · did the caller follow
+      its moves · does the judge agree · is a disagreement an **agent** fault or a **harness**
+      fault. Record each call's hand-review sense as exactly one of "agrees", "reasoning
+      corrected", "disagrees" or "not exercised" (the record's own field names are in
+      `reps.report.scoring`), and flag a changed verdict ONLY where a harness fault actually
+      produced a wrong one. Noise that did not change a verdict is noted and does not count toward
+      the gate — counting it would push every pilot over and train the operator to raise the
+      threshold.
+   5. **Write the record** — `reps.report.capture.write_pilot_review` emits the five-column table,
+      the three gate figures and the closing suite-edits section:
+      ```bash
+      python -c "from reps.report.capture import write_pilot_review; from pathlib import Path; \
+      import json; rec=json.load(open('<pilot_record.json>')); \
+      print(write_pilot_review(record=rec, results_dir=Path('results/<agent_slug>/findings')))"
+      ```
+   6. **THE GATE (FR-048).** `reps.report.scoring.harness_fault_rate` — harness faults that changed
+      a verdict ÷ verdicts reviewed, default **10%**, configurable. At or above it, **REFUSE the
+      full run**: name the failing calls, make the suite edits, and **re-pilot**. This is a refusal,
+      not a warning. The arithmetic is why: at a 20% harness-fault rate a 90-call suite buys about
+      eighteen wrong verdicts, and re-piloting costs three calls per bank.
+
+3b. **CALIBRATE the judges — inspect-only first, and say what it costs (FR-049/049a/050/055a).**
+
+   1. **Inspect-only first, and it is genuinely free.** The calibrate-check tool, in inspect-only mode,
+      saves nothing and spends no judge calls, and it reports **what each judge variable was
+      actually populated with**. For this release that is the decisive verification that the row's
+      structured fields reach the judge: if the scenario-result variable comes back without its
+      `MUST:` clause,
+      or arrives as an encoded string rather than the rendered criterion, stop — every verdict after
+      that point is worthless and no scoring pass should be spent.
+   2. **Then two scoring passes, and these are NOT free.** Calibration spends no *conversations*,
+      which is why it is cheap, but **every row it evaluates is a real judge call.** Tell the
+      operator the row count before running it.
+   3. **Report agreement as a RANGE, never a single pass** (FR-050) — `reps.calibrate.agreement_range`
+      refuses fewer than two passes. The judge varies between passes: re-scores of one reference
+      bank returned 0.33, 0.60, 0.625 and 0.67 against the same rows. One pass is a sample.
+   4. **An unlabelled row is NOT agreement** (FR-055a). `reps.calibrate.agreement` compares only
+      rows the operator labelled and reports the exclusions separately. The prototype counted
+      unlabelled rows as agreeing, so a partially labelled set reported **full agreement** — the
+      number looks best exactly when the evidence is weakest.
+   5. **Agreement is measured per agent, never inherited** (FR-039a). The reference figures tell you
+      the encoding is unchanged; they say nothing about your agent, because agreement depends on the
+      values filled into the judge.
+
+   **BEFORE ANY DELETION — these two facts are coupled (FR-051).** Calibration requires the run to
+   still exist, **and** deleting a scenario deletes its runs. So replacing a scenario destroys the
+   substrate every later calibration and re-score of it depends on. Use the preview-delete-scenario tool,
+   show the operator the blast radius with the scenario's **resolved name** (the platform's own
+   message may carry a null name), and prefer a new name over a replacement.
+
+   **If you re-score a run** (FR-052/053a/064): resolve the new run by **newest matching name**
+   against a name the library controls — a re-scored run may carry the **same name** as its
+   original, which is observed, not theoretical. Take run-level **latency from the ORIGINAL run**,
+   never from the re-score: a re-score reports the per-turn figure under a different field name
+   **and a different value** while the turn-taking figure carries over unchanged, so reading latency
+   off a re-score silently drops it. And **pin every check to the version the original was scored
+   with**, reporting any version you cannot pin rather than proceeding — observed violation: an
+   original scored against grounding check v3 while every re-score of it used v4.
+
 4. **For each simulation**, from the resolved files (overlay-first). **Bias to reuse (feature 003): the
    platform is the record of what already exists — discover first, upload only when new or
    superseded.** For every building block below, before uploading:
@@ -292,6 +432,16 @@ run unprefixed exactly as written.
    - **Read each row's verdict and evidence from the row itself.** Every `data_points` entry
      carries `checks` (fetched with `include_transcripts=true`): the Check's value is the verdict
      and `<check>__explanation` is the judge's rationale, already paired to that conversation.
+     **Read it with `reps.report.capture.read_check_verdict(checks, '<check name>')`, never with a
+     plain lookup** (feature 022). A check that produced no result for a conversation **omits its
+     key entirely** — it does not return null or false — so a plain lookup yields `None`, which is
+     falsy and **indistinguishable from a recorded failure**. Observed on a real run: one judge had
+     results on 81 of 85 rows. The helper raises `CheckNotAssessed` for an absent key so you must
+     decide explicitly: record it **not-assessed with the observed reason**, never a pass, never a
+     fail. The rationale it returns is already stripped of the platform's raw `[[…]]`/`((…))`
+     delimiters, which stored explanations keep and which must never reach the report as evidence.
+     Join on `reps.report.capture.datapoint_key(dp)` — never on position in the list, which is
+     meaningless across pages, and never on the rationale text.
      Read each datapoint's `sub_capability` from `data_points[i].scenario_input.sub_capability`.
      ⚠️ Do NOT read verdicts or evidence out of the run-level `scores_by_row` — it is not
      positionally aligned to `data_points`, carries no key to join on, and no longer carries
@@ -415,6 +565,20 @@ run unprefixed exactly as written.
    pure Python — no key, no `okareo` import.)
 
 > If the Okareo MCP is unavailable in this session (e.g. a headless/cron run), fall back to Path B.
+
+## When a response is too large (FR-075)
+
+A finished pillar's results do not fit in one response, and the remedy is to **request less**:
+
+- **page** the results, or ask for a **lower detail level**, and read the compact view with
+  `reps.runview.compact` (`only="fail"`, then `only="not-assessed"`) to decide what to fetch in
+  full;
+- **never depend on where an oversized response was spilled.** Whether a response is written to a
+  file, truncated, or summarized is a property of the surface the operator is on, not of the
+  platform — feature 018's standing lesson — so a path to a spilled response is not a thing to
+  read. Request less instead;
+- **encode no size threshold.** The real limit is token-based, so a byte constant would be wrong on
+  every surface and would quietly become the reason a page size was chosen.
 
 ## Path B — CLI/SDK mode (local key)
 

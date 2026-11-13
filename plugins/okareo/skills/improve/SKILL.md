@@ -140,6 +140,25 @@ fixed / partially fixed / regressed the targeted failure, and watch for *new*
 regressions (a fix that improves accuracy while ballooning latency is not a
 clean win).
 
+**When you correct a verdict by hand, say which way it went.** A platform score
+is never edited; the correction sits beside it. The REPS vocabulary has five
+senses and three of them were added because the earlier two could only describe
+a discounted *failure*:
+
+| Correction | Means |
+|---|---|
+| full | the failure stands |
+| partial | real, but discounted |
+| pass-to-fail | the platform passed it; your reading says it failed |
+| fail-to-pass | the platform failed it; your reading says it passed |
+| not-exercised | the probe never ran — **excluded from the rate, never counted either way** |
+
+A not-exercised entry must name its cause — the agent transferred, the caller
+quit, or the probe was never reached — because the three have different
+remedies, and "not exercised" with no cause is unactionable. Do **not** fold it
+into a pass: a probe counted as passing on a call that never tested it is how a
+dimension comes to read 100% untested.
+
 ### 9. Decide and loop
 
 Continue until N cycles are done, the success definition is met, or a change

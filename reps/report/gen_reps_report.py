@@ -115,6 +115,63 @@ IMP_OFF = "#e3e1ee"
 _SEV_RANK = {"None": 0, "Low": 1, "Medium": 2, "High": 3, "Critical": 4}
 
 
+class ReportLeakError(RuntimeError):
+    """The report would ship text naming a party other than the assessed agent's owner (FR-069).
+
+    A HARD FAILURE, not a warning. The improvements section renders prose a co-pilot wrote while
+    reading transcripts, and the report is delivered to a named recipient marked CONFIDENTIAL. A
+    warning on stderr during a render that still produced a file is no protection at all: the file
+    is what gets sent.
+    """
+
+
+# Role words that identify someone INSIDE the assessing organization rather than describing the
+# agent under test. Prose naming one of these has drifted from "what the agent did" to "what we
+# should do about this customer", which is not what the recipient is being sent.
+_LEAK_INTERNAL_ROLES = (
+    "account executive", "account manager", "sales engineer", "solutions engineer",
+    "customer success", "our rep", "the ae ", "forward deployed", "field engineer",
+)
+
+
+def _walk_strings(node, path: str = "") -> list[tuple]:
+    """Every string in a nested record, with a dotted path naming where it came from.
+
+    Paths matter: "names another party" is unactionable without saying which field to edit.
+    """
+    out: list[tuple] = []
+    if isinstance(node, str):
+        if node.strip():
+            out.append((path or "record", node))
+    elif isinstance(node, dict):
+        for key, value in node.items():
+            out.extend(_walk_strings(value, f"{path}.{key}" if path else str(key)))
+    elif isinstance(node, (list, tuple)):
+        for i, value in enumerate(node):
+            out.extend(_walk_strings(value, f"{path}[{i}]"))
+    return out
+
+
+def _leak_scan(text: str, *, owner_terms: tuple, other_parties: tuple) -> list[str]:
+    """Return the leaks found in one piece of improvements prose.
+
+    `other_parties` is the set of organization names the operator declared as NOT the owner of the
+    assessed agent — other customers, in practice. Matching is literal and case-insensitive: a
+    heuristic "does this look like a company name" check would either miss the real cases or reject
+    ordinary words, and this guard has to be trusted enough to be left switched on.
+    """
+    low = (text or "").lower()
+    hits = []
+    for party in other_parties:
+        term = str(party).strip().lower()
+        if term and term in low and not any(term in str(o).lower() for o in owner_terms):
+            hits.append(f"names another party: {party!r}")
+    for role in _LEAK_INTERNAL_ROLES:
+        if role in low:
+            hits.append(f"names an internal role: {role.strip()!r}")
+    return hits
+
+
 def esc(s) -> str:
     return html.escape(str(s))
 
@@ -318,7 +375,8 @@ def _read_profile_role(profile_path: Path) -> str | None:
 
 
 def build_html(results_dir: Path, *, agent_name: str | None = None, role: str | None = None,
-               reference: str | None = None, window: str | None = None, issued: str | None = None) -> str:
+               reference: str | None = None, window: str | None = None, issued: str | None = None,
+               other_parties: tuple = (), baseline_version: str | None = None) -> str:
     from reps.report.capture import _iso_now
 
     # Findings v2: split consolidated simulations into one view per sub-capability
@@ -336,6 +394,28 @@ def build_html(results_dir: Path, *, agent_name: str | None = None, role: str | 
     from reps.report.improvements import compute_staleness, load_latest_improvements
     imp_rec, imp_warnings = load_latest_improvements(results_dir)
     imp_stale = compute_staleness(imp_rec, list(records.values())) if imp_rec else []
+
+    # Feature 022 (FR-069) — the leak lint. Scan every piece of co-pilot prose that will be
+    # RENDERED, and FAIL the render on a hit. Scanning only at render time is deliberate: prose can
+    # be edited after it was validated, and the file is what gets sent.
+    if imp_rec:
+        owner_terms = tuple(t for t in (agent_name, imp_rec.get("target_name")) if t)
+        leaks = []
+        # Walk the whole record rather than a list of named fields. The schema nests — `headline`
+        # is an object with its own title, body and evidence list, and a suggestion carries
+        # evidence observations — so a hand-listed set of top-level fields misses most of the prose
+        # that actually renders. A guard that scans some of the text is worse than none: it reads
+        # as protection.
+        for where, text in _walk_strings(imp_rec):
+            for hit in _leak_scan(text, owner_terms=owner_terms, other_parties=other_parties):
+                leaks.append(f"{where}: {hit}")
+        if leaks:
+            raise ReportLeakError(
+                "refusing to render: the improvements prose names a party other than this agent's "
+                "owner, or an internal role.\n  " + "\n  ".join(leaks)
+                + "\n\nThis report is delivered to a named recipient and marked CONFIDENTIAL. Edit "
+                  "the improvements record, then re-render. The render FAILS rather than warning, "
+                  "because a warning still leaves a file to send.")
     sc_by_pillar = {s["pillar"]: s for s in scorecards}
     verdict = overall_verdict(scorecards)
     ordered = [p for p in DISPLAY_ORDER if p in records]
@@ -602,6 +682,17 @@ def build_html(results_dir: Path, *, agent_name: str | None = None, role: str | 
           f'(or the reps-run skill) to complete the REPS picture.</p>')
     A('</section>')
 
+    # ====== 06b WHAT WAS NOT TESTED (feature 022, FR-070) ======
+    # Its own section, and NEVER folded into a pass rate. In the first field evaluation an
+    # unexercisable class was executed anyway: the agent correctly withheld information from a
+    # caller who could never verify, and every row read as a PASS — a pillar at 100% on a dimension
+    # it had not tested. Constitution VIII: the report is the product, and overstated coverage is
+    # the one thing it may not do.
+    A(_untested_section(scorecards))
+
+    # ====== 06c THE CORRECTED PICTURE (feature 022, FR-053 / invariant L) ======
+    A(_corrected_picture_section(imp_rec, results_dir))
+
     # ============== 07 SUGGESTED AGENT IMPROVEMENTS (feature 013) ==============
     from reps.slug import agent_slug as _slug
     for pg in _improvements_pages(imp_rec, imp_warnings, imp_stale, _slug(agent)):
@@ -616,6 +707,14 @@ def build_html(results_dir: Path, *, agent_name: str | None = None, role: str | 
       'Performance ×1). A pillar can score high in aggregate yet carry a serious finding when a single '
       'failure is high-impact — severity, not just rate, drives prioritisation, and an open Critical Security '
       'finding fails the release regardless of aggregate.</p>')
+    if baseline_version:
+        A(f'<h3>Baseline version</h3><p class="sm">Scenario banks, drivers and checks came from '
+          f'REPS baseline <b>{esc(baseline_version)}</b>. Quote this when comparing two reports: a '
+          f'score shift between baseline versions is not necessarily a change in the agent.</p>')
+    else:
+        A('<h3>Baseline version</h3><p class="sm">The baseline version was not recorded for this '
+          'run. Two reports cannot be compared without it — a score shift may be a change in the '
+          'suite rather than in the agent.</p>')
     A('<h3>Reproducibility</h3>'
       '<p class="sm">Every scenario, adversarial driver and check is version-controlled under <code>reps/</code> '
       'and re-runnable on Okareo. Each datapoint carries a written judge rationale, so any finding in this '
@@ -629,6 +728,15 @@ def build_html(results_dir: Path, *, agent_name: str | None = None, role: str | 
     if any_untuned:
         A('<li>Reasoning / Execution suites ran untuned (no agent profile); a subset of "failures" are '
           'out-of-domain scenario artifacts, not confirmed defects — treat classification as a review item.</li>')
+    # Feature 022 (FR-067 / grounding-snapshot O, N3): where a grounding check scored this run,
+    # the report MUST state that the class varies between passes and on what basis its figure
+    # rests. A bare number reads as a measurement — re-scores of one bank against identical rows
+    # returned 0.33, 0.60, 0.625 and 0.67 for the same check.
+    if _grounded_pillars(records):
+        from reps.grounding import GROUNDING_VARIANCE_NOTE
+        A(f'<li><b>Grounding variance:</b> {esc(GROUNDING_VARIANCE_NOTE)} The figure shown here '
+          f'rests on the scoring pass recorded in the findings record; where it was established by '
+          f'hand count instead, that is stated beside it.</li>')
     if verdict["coverage_gap_count"]:
         A(f'<li>{verdict["coverage_gap_count"]} scenario(s) errored or lacked datapoint detail and are excluded '
           'from the score pending re-run.</li>')
@@ -1245,6 +1353,177 @@ def _wrap(body: str) -> str:
             f'<title>REPS Agent Assessment</title><style>{CSS}</style></head><body>{body}</body></html>')
 
 
+# =================================================================================================
+# Feature 022 — what was not tested, and the corrected picture
+# =================================================================================================
+
+_UNTESTED_LABEL = {
+    "requires-environment": ("The test environment could not exercise these",
+                             "A property of the test setup, not of the agent. Make the capability "
+                             "available and the probe runs."),
+    "held": ("Withheld — would have ended in a handoff",
+             "Each matches an escalation this agent was observed to make, so the call would have "
+             "measured the handoff rather than the boundary the probe was written to test."),
+    "requires-tuning": ("Not tuned to this agent",
+                        "Running these generically produces refusals of something the agent was "
+                        "never asked, and such a refusal reads as a pass. Run discovery."),
+    "not-exercised": ("Ran, but the probe was never reached",
+                      "The hand review found the conversation never arrived at the probe."),
+    "no-trace": ("Not assessed — no usable tool-call trace", "The signal the check needs was absent."),
+}
+
+
+def _grounded_pillars(records: dict) -> list[str]:
+    """Pillars whose run was scored by a grounding check.
+
+    Matched on the check name carried in the findings record rather than on a pillar, because a
+    grounding check is scenario-independent and may be attached anywhere.
+    """
+    out = []
+    for pillar, rec in (records or {}).items():
+        for sim in rec.get("simulations", []) or []:
+            names = [str(c) for c in (sim.get("checks") or [])]
+            if any("grounding" in n.lower() for n in names):
+                out.append(pillar)
+                break
+    return out
+
+
+def _untested_section(scorecards: list[dict]) -> str:
+    """Section 06b — every untested probe class, by cause, outside every pass rate (FR-070)."""
+    from reps.coverage import GAP_KINDS_UNTESTED
+
+    by_kind: dict[str, list[tuple[str, str]]] = {}
+    for sc in scorecards:
+        for gap in sc.get("coverage_gaps", []) or []:
+            kind = gap.get("gap_kind")
+            if kind not in GAP_KINDS_UNTESTED:
+                continue
+            name = gap.get("sub_capability") or gap.get("probe_class_id") or gap.get("scenario") or "—"
+            by_kind.setdefault(kind, []).append(
+                (f'{sc["pillar"]} · {name}', gap.get("reason") or gap.get("note") or ""))
+
+    P = ['<section class="page"><div class="secnum">06b</div><h2>What was not tested</h2>']
+    if not by_kind:
+        P.append('<p class="clean">✓ Every declared probe class was exercised. Nothing was '
+                 'withheld, skipped or blocked by the test environment.</p>')
+        P.append('</section>')
+        return "".join(P)
+
+    total = sum(len(v) for v in by_kind.values())
+    P.append(f'<p class="lead">{total} probe class(es) were <b>not tested</b>. None of them appears '
+             f'in any pass rate, in either direction.</p>')
+    P.append('<p class="sm">This is the section that keeps the headline honest. An untested probe '
+             'counted as a pass is how a pillar comes to read 100% on a dimension it never '
+             'exercised — which is what happened in the field evaluation this release is built on, '
+             'and the reason the gap kinds below are tracked separately from failures.</p>')
+    for kind in _UNTESTED_LABEL:
+        items = by_kind.get(kind)
+        if not items:
+            continue
+        heading, why = _UNTESTED_LABEL[kind]
+        P.append(f'<h3>{esc(heading)} <span class="sm">({len(items)})</span></h3>')
+        P.append(f'<p class="sm">{esc(why)}</p>')
+        P.append('<table class="tbl"><thead><tr><th>Probe class</th><th>Reason</th></tr></thead>'
+                 '<tbody>')
+        for name, reason in items:
+            P.append(f'<tr><td class="mono">{esc(name)}</td><td class="sm">{esc(reason)}</td></tr>')
+        P.append('</tbody></table>')
+    P.append('</section>')
+    return "".join(P)
+
+
+def _corrected_picture_section(imp: dict | None, results_dir: Path) -> str:
+    """Section 06c — hand corrections and the harness-fault rate BESIDE the platform scores.
+
+    Invariant L: a platform score is **never edited**. Reconciliation is narrative and sits next to
+    the original, so a reader can see both pictures and tell which is which. Editing the platform
+    score would destroy the only independently verifiable number in the report.
+    """
+    P = ['<section class="page"><div class="secnum">06c</div><h2>The corrected picture</h2>']
+    pilot = _latest_pilot_review(results_dir)
+    corrections = [d for d in ((imp or {}).get("discounted") or [])
+                   if d.get("disposition") in ("pass_to_fail", "fail_to_pass", "not_exercised")]
+
+    if not pilot and not corrections:
+        P.append('<p class="sm">No pilot review and no hand-corrected verdicts were captured for '
+                 'this run set. The scores in this report are the platform\'s own, unreviewed. '
+                 'That is not the same as verified — the pilot stage of the <b>reps-run</b> skill '
+                 'is what establishes whether this agent\'s judges agree with a human reading, and '
+                 'agreement is measured per agent and never inherited from another.</p>')
+        P.append('</section>')
+        return "".join(P)
+
+    if pilot:
+        from reps.report.scoring import (harness_fault_rate,
+                                         judge_agreement_on_probes_that_ran)
+        calls = pilot.get("calls") or []
+        gate = harness_fault_rate(calls, pilot.get("gate_threshold", 0.10))
+        agree = judge_agreement_on_probes_that_ran(calls)
+        P.append('<h3>Trust audit</h3>')
+        P.append('<table class="tbl"><tbody>')
+        P.append(f'<tr><td>Judge agreement on the probes that ran</td>'
+                 f'<td class="mono">{agree["agreed"]}/{agree["ran"]}'
+                 + (f' ({agree["rate"]:.0%})' if agree["ran"] else "") + '</td></tr>')
+        P.append(f'<tr><td>Harness faults that changed a verdict</td>'
+                 f'<td class="mono">{gate["faults"]}/{gate["reviewed"]}'
+                 + (f' ({gate["rate"]:.0%}, gate {gate["threshold"]:.0%})'
+                    if gate["reviewed"] else "") + '</td></tr>')
+        P.append(f'<tr><td>Probes not exercised (excluded from every rate)</td>'
+                 f'<td class="mono">{agree["not_exercised"]}</td></tr>')
+        P.append('</tbody></table>')
+        P.append('<p class="sm">A harness fault is a fault in the <i>test</i>, not in the agent: a '
+                 'caller that did not follow its moves, or a judge that read a clause it was not '
+                 'asked to judge. The rate counts only faults that actually changed a verdict.</p>')
+
+    if corrections:
+        P.append('<h3>Hand-corrected verdicts</h3>')
+        P.append('<table class="tbl"><thead><tr><th>Pillar</th><th>Scenario</th>'
+                 '<th>Correction</th><th>Why</th></tr></thead><tbody>')
+        _label = {"pass_to_fail": "platform PASS → hand FAIL",
+                  "fail_to_pass": "platform FAIL → hand PASS",
+                  "not_exercised": "not exercised — excluded"}
+        for d in corrections:
+            why = esc(d.get("reason") or "")
+            if d.get("not_exercised_cause"):
+                why = f'{esc(d["not_exercised_cause"])} — {why}'
+            P.append(f'<tr><td>{esc(d.get("pillar", ""))}</td>'
+                     f'<td class="mono">{esc(d.get("scenario", ""))}</td>'
+                     f'<td>{esc(_label.get(d.get("disposition"), d.get("disposition", "")))}</td>'
+                     f'<td class="sm">{why}</td></tr>')
+        P.append('</tbody></table>')
+
+    P.append('<p class="fn">The platform scores elsewhere in this report are <b>unedited</b>. The '
+             'corrections above sit beside them, never in place of them: the platform score is the '
+             'only number in this report that can be independently re-derived from the run, and '
+             'overwriting it would remove the reader\'s ability to check the correction.</p>')
+    P.append('</section>')
+    return "".join(P)
+
+
+def _latest_pilot_review(results_dir: Path) -> dict | None:
+    """The newest pilot review record beside the findings, or None.
+
+    Best-effort by design: a malformed or absent record must not stop a render. The section says
+    plainly that no pilot was captured, which is more useful than a traceback.
+    """
+    import json as _json
+
+    from reps.report.capture import PILOT_FILENAME_PREFIX
+
+    try:
+        candidates = sorted(Path(results_dir).glob(f"{PILOT_FILENAME_PREFIX}*.json"))
+    except OSError:
+        return None
+    for path in reversed(candidates):
+        try:
+            rec = _json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        if isinstance(rec, dict) and rec.get("calls"):
+            return rec
+    return None
+
 def main():
     from reps.report.capture import _iso_now, fs_stamp
     from reps.slug import agent_slug
@@ -1260,6 +1539,21 @@ def main():
     parser.add_argument("--out", default=None, help="Override: output HTML path")
     parser.add_argument("--role", default=None, help="Agent role/description shown on the cover & scope")
     parser.add_argument("--reference", default=None, help="Report reference id (default derived)")
+    # Feature 022 (FR-068) — a short, unambiguous name for the OUTPUT FILE. The default put every
+    # agent's report at results/<slug>/report_<stamp>.html, and a reader with two reports open has
+    # the filename and nothing else to tell them apart. The slug is derived from the target name,
+    # which may be long, whitespace-padded or near-identical to another target's.
+    parser.add_argument("--agent-short", default=None,
+                        help="Short name used in the output filename (e.g. 'ticketing'). Defaults "
+                             "to the agent slug.")
+    # Feature 022 (FR-069) — names that must never appear in the rendered improvements prose. The
+    # render FAILS on a hit. Internal role words are always checked and need no configuration.
+    parser.add_argument("--other-parties", default=None,
+                        help="Comma-separated organization names that must NOT appear in this "
+                             "report (other customers). The render fails if one does.")
+    parser.add_argument("--baseline-version", default=None,
+                        help="REPS baseline version the suite came from, rendered in the appendix "
+                             "(FR-071). Two reports cannot be compared without it.")
     args = parser.parse_args()
 
     results_root = repo_root / "results"
@@ -1288,11 +1582,19 @@ def main():
     from reps.paths import resolve_profile
     profile_path = resolve_profile(slug) if slug else resolve_profile(None)
     role = args.role or (_read_profile_role(profile_path) if profile_path else None)
-    html_doc = build_html(findings_dir, agent_name=args.agent, role=role, reference=args.reference)
+    other_parties = tuple(
+        p.strip() for p in (args.other_parties or "").split(",") if p.strip())
+    html_doc = build_html(findings_dir, agent_name=args.agent, role=role,
+                          reference=args.reference, other_parties=other_parties,
+                          baseline_version=args.baseline_version)
     if args.out:
         out = Path(args.out)
     else:
-        out = results_root / (slug or "agent") / f"report_{fs_stamp(_iso_now())}.html"
+        short = (args.agent_short or slug or "agent").strip()
+        # Keep the filename safe without silently renaming the agent: only path-hostile characters
+        # are replaced, so what the operator passed is still recognizable in the name.
+        short = re.sub(r"[^A-Za-z0-9._-]+", "-", short).strip("-") or "agent"
+        out = results_root / (slug or "agent") / f"report_{short}_{fs_stamp(_iso_now())}.html"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(html_doc, encoding="utf-8")
     print(f"wrote {out} ({len(html_doc)} bytes)")

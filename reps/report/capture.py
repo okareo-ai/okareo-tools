@@ -211,6 +211,70 @@ def _sim_record(scenario: str, res: dict, plan_entry: dict, pillar: str = "") ->
 # --- Run-level latency block (feature 019, contracts/performance-signal.md, data-model §1) -------
 # Captured from the run's agent-side baseline metrics. Absence is meaningful and must survive:
 # absent ⇒ the latency signal is absent ⇒ not-assessed with an observed reason.
+# ---------------------------------------------------------------------------------------------
+# Feature 022 — reading a verdict back off a finished run (contracts/judge-templates.md S, T, U).
+#
+# Three observed platform behaviours make the obvious implementation silently wrong, and all three
+# produce a WRONG VERDICT rather than an error — the same shape as the defect feature 019 fixed.
+# ---------------------------------------------------------------------------------------------
+
+#: The platform's score and explanation delimiters. A stored rationale keeps the judge's whole raw
+#: response, delimiters included, while the score is extracted ADDITIONALLY — observed in 152 of
+#: 850 real results. Quoting one unstripped puts parser syntax in front of a stakeholder.
+_DELIMITER_RESIDUE = re.compile(r"\[\[\s*[01]?\s*\]\]|\(\(|\)\)")
+
+#: A leading verdict digit, which the field-proven judges emit before their checklist.
+_LEADING_VERDICT = re.compile(r"^\s*[01]\s+")
+
+
+class CheckNotAssessed(Exception):
+    """A check produced no result for this conversation. NOT the same as a failing verdict."""
+
+
+def read_check_verdict(checks: Optional[dict], check_name: str):
+    """Return ``(passed, rationale)`` for one check on one data point.
+
+    **Test key presence, never truthiness** (INV-S). A check that failed to produce a result for a
+    conversation **omits its key entirely** — it does not return null or false. Observed: one judge
+    had results on 81 of 85 rows, and on the other 4 its key was simply absent. A plain
+    ``checks.get(name)`` returns ``None``, which is falsy and therefore indistinguishable from a
+    recorded failure, so the obvious implementation silently records 4 passes as failures.
+
+    Raises :class:`CheckNotAssessed` when the key is absent, so a caller must decide explicitly
+    rather than inherit a default. The rationale is returned already stripped of delimiter residue.
+    """
+    if not isinstance(checks, dict) or check_name not in checks:
+        raise CheckNotAssessed(
+            f"check {check_name!r} produced no result for this conversation — its key is absent "
+            f"from the data point. This is NOT a failing verdict: record it as not-assessed with "
+            f"the observed reason, never as a pass and never as a fail.")
+    raw = checks[check_name]
+    passed = bool(raw) if not isinstance(raw, str) else raw.strip().lower() in ("true", "1", "pass")
+    return passed, strip_delimiter_residue(checks.get(f"{check_name}__explanation"))
+
+
+def strip_delimiter_residue(rationale: Optional[str]) -> Optional[str]:
+    """Remove the platform's raw score/explanation delimiters from a stored rationale (INV-T)."""
+    if not isinstance(rationale, str):
+        return rationale
+    out = _LEADING_VERDICT.sub("", rationale.strip())
+    out = _DELIMITER_RESIDUE.sub("", out)
+    return " ".join(out.split()).strip() or None
+
+
+def datapoint_key(data_point: dict) -> tuple:
+    """A join key that stays correct when a row is run more than once (INV-U).
+
+    Each data point already carries its own caller-facing material and criterion, so **no join to
+    the scenario bank is needed at all** — identity is read straight off the data point. Position in
+    the returned list must never be used: it is meaningless across pages, and with repeats above one
+    there are several conversations per row, so the row index is not unique either.
+    """
+    inp = data_point.get("scenario_input")
+    sub = inp.get("sub_capability") if isinstance(inp, dict) else None
+    return (data_point.get("test_id"), data_point.get("scenario_index"), sub)
+
+
 LATENCY_NUMERIC_KEYS = ("avg_turn_taking_latency_ms", "avg_turn_latency_ms")
 LATENCY_ALLOWED_KEYS = frozenset(LATENCY_NUMERIC_KEYS + ("source",))
 # Invariant E: the judge model's latency sits adjacent to the agent's in the same response and lands
@@ -411,3 +475,200 @@ def capture_results(
         reuse=reuse, aggregate_summary=aggregate_summary, trace_status=trace_status,
         trace_discrepancy=trace_discrepancy, trace_gaps=trace_gaps,
     )
+
+
+# =================================================================================================
+# Feature 022 — the pilot review record (contracts/pilot-trust-audit.md invariants A2, C, D)
+# =================================================================================================
+
+PILOT_FILENAME_PREFIX = "pilot_review_"
+
+# The five column headers, verbatim from the reference format (research D16). Fixed, because the
+# four questions FR-047 requires map onto them one-to-one and a renamed column loses a question.
+PILOT_COLUMNS = ("Call", "Probe", "Judge", "Hand review", "Harness issue")
+
+
+def validate_pilot_review(record: object) -> list[str]:
+    """Validate a pilot review record. Returns non-fatal warnings; raises on a violation.
+
+    Raising rather than warning on a missing `hand_sense` is deliberate: the sense is what the gate
+    reads, and a record whose senses are only in the prose produces a gate figure of zero on a
+    pilot that found four faults.
+    """
+    from reps.report.scoring import (HAND_SENSES, HARNESS_FAULT_GATE_DEFAULT,
+                                     NOT_EXERCISED_CAUSES)
+
+    if not isinstance(record, dict):
+        raise ValueError("pilot review: record must be an object")
+    warnings: list[str] = []
+    for key in ("pillar", "generated_at"):
+        if not str(record.get(key) or "").strip():
+            raise ValueError(f"pilot review: missing required field {key!r}")
+
+    calls = record.get("calls")
+    if not isinstance(calls, list) or not calls:
+        raise ValueError(
+            "pilot review: 'calls' must be a non-empty list — a pilot with no reviewed calls "
+            "cannot produce a gate figure, and an absent gate reads as a passing one")
+    if len(calls) > 3 * 12:
+        warnings.append(f"pilot review: {len(calls)} calls is more than a pilot; the pilot is "
+                        f"one to three rows per bank (FR-046b)")
+
+    for i, call in enumerate(calls, start=1):
+        if not isinstance(call, dict):
+            raise ValueError(f"pilot review: call {i} must be an object")
+        for key in ("call", "probe", "judge", "hand_review"):
+            if not str(call.get(key) or "").strip():
+                raise ValueError(f"pilot review: call {i} missing {key!r} — the five columns are "
+                                 f"fixed and each answers one of FR-047's four questions")
+        sense = str(call.get("hand_sense") or "")
+        if sense not in HAND_SENSES:
+            raise ValueError(
+                f"pilot review: call {i} has hand_sense {sense!r}, expected one of "
+                f"{list(HAND_SENSES)}. The sense is what the gate reads; left in the prose only, "
+                f"a pilot that found four faults reports a fault rate of zero.")
+        if sense == "not_exercised":
+            cause = str(call.get("not_exercised_cause") or "")
+            if cause not in NOT_EXERCISED_CAUSES:
+                raise ValueError(
+                    f"pilot review: call {i} is not-exercised but its cause is {cause!r}, expected "
+                    f"one of {list(NOT_EXERCISED_CAUSES)}. 'Not exercised' with no cause is "
+                    f"unactionable, and the three causes have different remedies.")
+            if call.get("changed_verdict"):
+                raise ValueError(
+                    f"pilot review: call {i} is not-exercised AND flagged as having changed a "
+                    f"verdict. There was no verdict to change — a not-exercised probe is excluded "
+                    f"from the pass rate, never counted either way.")
+        issue = str(call.get("harness_issue") or "").strip()
+        if not issue:
+            raise ValueError(f"pilot review: call {i} must state its harness issue, or 'none'")
+        if issue.lower() != "none" and not str(call.get("harness_remedy") or "").strip():
+            warnings.append(f"pilot review: call {i} names a harness issue with no remedy — the "
+                            f"reference format records the remedy as an arrow")
+
+    if not isinstance(record.get("suite_edits"), list):
+        raise ValueError(
+            "pilot review: 'suite_edits' must be a list (it may be empty). This closing section is "
+            "what makes a re-pilot auditable after the fact — without it there is no record of "
+            "what the first pilot changed.")
+
+    threshold = record.get("gate_threshold", HARNESS_FAULT_GATE_DEFAULT)
+    if not isinstance(threshold, (int, float)) or not 0 < float(threshold) <= 1:
+        raise ValueError(f"pilot review: gate_threshold must be a fraction in (0, 1], got "
+                         f"{threshold!r}")
+    return warnings
+
+
+def render_pilot_review(record: dict) -> str:
+    """Render the operator-facing pilot review document (invariant C).
+
+    Markdown, because this document is read and annotated by a person: the hand-review column is
+    free prose and load-bearing. The JSON record beside it is what the gate reads.
+    """
+    from reps.report.scoring import (harness_fault_rate,
+                                     judge_agreement_on_probes_that_ran)
+
+    calls = record["calls"]
+    gate = harness_fault_rate(calls, record.get("gate_threshold", 0.10))
+    agreement = judge_agreement_on_probes_that_ran(calls)
+
+    lines = [
+        f"# Pilot review — {record['pillar']}",
+        "",
+        f"Generated {record['generated_at']}"
+        + (f" · agent `{record['agent']}`" if record.get("agent") else ""),
+        "",
+        "One to three rows per bank, run as their own separately-named pilot scenarios. Every call "
+        "below was read by hand against its transcript. **Nothing in this document is derived from "
+        "a judge agreeing with itself.**",
+        "",
+        "| " + " | ".join(PILOT_COLUMNS) + " |",
+        "|" + "---|" * len(PILOT_COLUMNS),
+    ]
+    for call in calls:
+        sense = str(call.get("hand_sense"))
+        review = str(call["hand_review"]).strip()
+        if sense == "not_exercised":
+            review = f"**not exercised** ({call.get('not_exercised_cause')}) — {review}"
+        elif sense == "reasoning_corrected":
+            review = f"agrees, reasoning corrected — {review}"
+        issue = str(call.get("harness_issue")).strip()
+        if issue.lower() != "none":
+            sev = str(call.get("harness_severity") or "").strip()
+            remedy = str(call.get("harness_remedy") or "").strip()
+            issue = (f"[{sev}] " if sev else "") + issue + (f" → {remedy}" if remedy else "")
+        lines.append("| " + " | ".join(
+            str(x).replace("|", "\\|") for x in
+            (call["call"], call["probe"], call["judge"], review, issue)) + " |")
+
+    lines += [
+        "",
+        "## The gate",
+        "",
+        f"**Judge agreement on the probes that ran: {agreement['agreed']}/{agreement['ran']}**"
+        + (f" ({agreement['rate']:.0%})." if agreement["ran"] else ".")
+        + (f" {agreement['not_exercised']} probe(s) were not exercised and are excluded — "
+           f"never counted either way." if agreement["not_exercised"] else ""),
+        "",
+        f"**Harness faults that changed a verdict: {gate['faults']}/{gate['reviewed']}**"
+        + (f" ({gate['rate']:.0%}, gate {gate['threshold']:.0%})." if gate["reviewed"] else "."),
+        "",
+    ]
+    cal = record.get("calibration") or []
+    if cal:
+        for entry in cal:
+            lo, hi = entry.get("agreement_low"), entry.get("agreement_high")
+            span = (f"{lo:.0%}–{hi:.0%}" if isinstance(lo, (int, float))
+                    and isinstance(hi, (int, float)) else "not run")
+            lines.append(f"**Calibration — {entry.get('check', '?')}: {span}** across two scoring "
+                         f"passes, over {entry.get('labelled', 0)} labelled row(s); "
+                         f"{entry.get('excluded', 0)} unlabelled row(s) excluded.")
+        lines.append("")
+    else:
+        lines += ["**Calibration: not run.** No agreement figure may be quoted for this pillar "
+                  "until it is.", ""]
+
+    if gate["passes"]:
+        lines += [f"**Gate: PASS.** The full run may proceed.", ""]
+    else:
+        named = ", ".join(gate["failing_calls"]) or "none recorded"
+        lines += [
+            f"**Gate: REFUSED.** The harness-fault rate is at or above the "
+            f"{gate['threshold']:.0%} gate. Fix the suite, then **re-pilot** — do not run the full "
+            f"suite. Failing calls: {named}.", ""]
+
+    lines += ["## Suite edits this pilot caused", ""]
+    edits = record.get("suite_edits") or []
+    if edits:
+        lines += [f"- {e}" for e in edits]
+    else:
+        lines.append("- none")
+    lines.append("")
+    return "\n".join(lines)
+
+
+def write_pilot_review(*, record: dict, results_dir: Path) -> tuple[Path, Path]:
+    """Sole writer for the pilot review record and its rendered document.
+
+    Writes `pilot_review_<stamp>.json` (what the gate reads) and `pilot_review_<stamp>.md` (what the
+    operator reads and annotates) under `results/<agent_slug>/findings/`. Returns both paths.
+
+    Key-free and callable via `python -c` from the MCP co-pilot path, exactly like `write_record`
+    and `write_improvements`.
+    """
+    results_dir = Path(results_dir)
+    if results_dir.name != "findings":
+        raise ValueError(f"pilot review: results_dir must be a findings/ directory, got "
+                         f"{results_dir}")
+    for w in validate_pilot_review(record):
+        print(f"warning: {w}")
+    stamp = fs_stamp(record["generated_at"])
+    results_dir.mkdir(parents=True, exist_ok=True)
+    json_path = results_dir / f"{PILOT_FILENAME_PREFIX}{stamp}.json"
+    md_path = results_dir / f"{PILOT_FILENAME_PREFIX}{stamp}.md"
+    for path in (json_path, md_path):
+        if path.parent.resolve() != results_dir.resolve():
+            raise ValueError("pilot review: output path escapes the findings directory")
+    json_path.write_text(json.dumps(record, indent=2), encoding="utf-8")
+    md_path.write_text(render_pilot_review(record), encoding="utf-8")
+    return json_path, md_path

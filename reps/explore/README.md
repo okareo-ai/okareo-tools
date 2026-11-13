@@ -5,9 +5,34 @@ benign **discovery conversation** with a registered target agent and draft its p
 
 ```
 explore/
-├── drivers/curious-onboarder.md   # the one benign-discovery persona
-└── scenarios/discovery.jsonl      # predefined discovery seeds (+ discovery_meta.md)
+├── drivers/curious-onboarder.md   # the one benign-discovery persona (six caller-facing fields)
+└── scenarios/discovery.jsonl      # 5 seeds: 3 capability + 2 ground-truth (+ discovery_meta.md)
 ```
+
+## Two kinds of discovery row
+
+Rows declare their kind in `input.discovery_kind`.
+
+- **`capability`** (3 rows) — what is this agent *for*: domain, role, supported and declined
+  intents, visible tools, guardrails. Direct, task-first and limits-first angles; one per
+  conversation, max 3.
+- **`ground_truth`** (2 rows, added in 0.7.0) — the **facts a criterion will later be built from**.
+  One elicits offerings, what **one** unit costs, **whether that figure is per unit or a total**,
+  how a quote scales, add-ons and tier variation. The other elicits external fact sources with a
+  dated example, the quantity limit, the verification factor, and every out-of-scope topic paired
+  with the agent's **own** referral wording.
+
+The ground-truth pair exists because **row generation is blocked until `ground_truth.verified_on` is
+set**. The first field evaluation built criteria on two facts nobody had checked — a two-seat total
+recorded as a per-seat price, and a cancelled order recorded as active — and lost an entire round
+failing a correct agent. The per-unit question is asked twice on purpose: one question gets one
+number and no indication of which kind of number it is.
+
+Every row is **authored as structure and rendered** (`reps.rows.render_row`), carries its purchase
+stance in a **constraints list** so a discovery caller cannot be walked into a transaction, and
+carries a non-empty **observational** result naming what to record — never a pass criterion. The
+caller is forbidden from supplying the facts it is eliciting, because an assistant handed a number
+will often simply agree with it.
 
 ## What exploration is — and is not
 

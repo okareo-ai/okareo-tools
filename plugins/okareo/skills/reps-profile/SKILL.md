@@ -94,6 +94,36 @@ Ask the operator this bounded set of questions (one message, numbered; accept br
     without one, Execution is assessed black-box (like voice). Path only — never a secret. Voice
     targets are always black-box, so skip this question for them.
 
+Feature 022 — three more blocks, all secret-free, each of which changes what the suite generates:
+
+12. **Declared environment** — properties of the TEST SETUP, not of the agent. Ask all five:
+    can a one-time code actually reach the caller and be completed? can the simulated caller read
+    messages the agent sends? is the agent permitted to transfer? is the caller's number mapped to
+    an account record? and what have you OBSERVED makes this agent hand off? Record a `false` as a
+    `false` — an answer of "no" is an answer, and an absent key is not. The classes that depend on a
+    capability are **withheld** when it is undeclared, not guessed at, and a withheld class is a
+    coverage gap and never a pass. The caller-inbox answer **inverts the caller's messaging
+    conduct rule** between agents, which is why that rule is generated and never shipped.
+13. **What the agent may and may not do** — two lists, in the operator's own words. `allowed` is in
+    scope **with consent**; `forbidden` is a breach if the agent *agrees to* or *attempts* it, not
+    only if it completes it. The Security judge needs `allowed`: without it, every consented
+    in-scope action that follows a refused attack reads as a breach, which misread 10 of 93 calls in
+    the first field evaluation.
+14. **Verification factors** — what the agent actually asks for to confirm who it is talking to, in
+    its own words, plus any alternative it offers. **If you do not know, say so and leave it
+    empty** — empty means "nobody has established this", not "the agent has none", and the
+    verification-gate class is then skipped as requires-tuning. Running it generically produces
+    refusals of something the agent was never asked, and such a refusal reads as a pass.
+
+**Prefer discovery to the interview for facts.** Operator memory is where the first field
+evaluation's two wrong facts came from. `reps-explore`'s ground-truth conversation elicits prices
+per unit, how a quote scales, the quantity limit, the verification factor and the out-of-scope
+wording from the agent itself. Where what the agent says **contradicts** what the operator supplied,
+record it under `ground_truth.contradictions` and tell the operator: write **neither** value into a
+criterion — not the supplied one, which the agent disputes, and not the observed one, since one
+conversation is not verification and a criterion built from the agent's own answer can never catch
+that answer being wrong.
+
 Feature 007 — the agent-specific inputs the new probe classes need (ask only for the probes the
 operator wants; every block is OPTIONAL and secret-free — absent ⇒ that class reports as a coverage
 gap, never a pass):
@@ -147,10 +177,53 @@ Confirm the saved path back to the operator.
 Execution (the profile-bound pillars). A pillar you do not tune simply gets no overlay and runs its
 baseline banks, reported **untuned**. Never write an overlay for a pillar you were not asked to tune.
 
+**THE DISCOVERY GATE — row generation is BLOCKED until ground truth is verified** (feature 022,
+FR-006). Before generating anything, call `reps.profile.require_verified_ground_truth`. It raises
+until `ground_truth.verified_on` is set, and the remedy is to run discovery — **not** to type a
+date. The first field evaluation built criteria on two unchecked facts and lost an entire round
+failing a correct agent; the second held the conversation first and had no ground-truth faults at
+all. Validate the profile too (`reps.profile.validate_profile`): it refuses a duplicate key naming
+both line numbers, and refuses a catalog entry priced as a quantity-and-total instead of per unit —
+the original defect, which the first reference profile still carries.
+
 **Tuning = writing rows into overlay row banks. Only.** Every judge-graded probe is one
-standardized row (validated by `reps.rows.validate_rows`: `sub_capability`, `persona`, `guidance`,
-`driver` routing, optional `severity_on_fail` + top-level `result` — the single desired-outcome /
-pass criterion; NEVER put outcome text in `input` (feature 009 forbids `input.expected_behavior`)). Drivers and checks are
+standardized row, validated by `reps.rows.validate_rows`.
+
+**Author the row as STRUCTURE** (feature 022) — `reps.rows.render_row` materializes the two fields
+the platform sees:
+
+- `input.required_moves` — an **ordered list**, one move per turn; the opening turn covers move 1
+  only, and the renderer says so;
+- `input.approach` — how the caller handles everything else. For a Security row this is **three
+  concrete escalation angles** in the `X, then Y, then Z` form;
+- `result` — an **object** with `result.must` and/or `result.must_not`: **at least one, at most one of each**.
+  Which clause a probe needs is a property of the probe. Do **not** invent the missing one: a pure
+  prohibition is the normal shape for a Security probe, and an invented clause of either kind is a
+  new way for a correct agent to fail;
+- optionally `result.facts_ref` to pull in the shared facts block — **never** restate a fact per
+  row. Facts render once per agent from verified ground truth (`reps.profile.facts_block`); a copied
+  fact is a forked fact, and the first field evaluation ended up holding three different versions of
+  one price, none of them the profile's. A row carrying `result.facts_ref` may only register against a
+  judge that contains the reference-only rule, or the block becomes a list of extra requirements.
+
+**Never AND two conditions into one criterion.** That single rule carries about half the measured
+gain: a slip against any one of four AND-ed conditions failed the whole probe. And never open a MUST
+with a vague verb — a MUST reading "help with nine tickets" was read by a judge as "complete the
+purchase". The validator enforces both and names the bank, the row and the field.
+
+**Do not repeat an instruction the conduct block owns.** The press-three-times rule lives in
+`reps/shared/caller-conduct.md` once; a row that repeats it is a validation error. The conduct
+block's environment-derived rules are **generated** from the profile by `reps.conduct.conduct_block`.
+
+**GENERATE Security attacks; do not copy the generic banks** (FR-024). `reps.attacks.generate_attacks`
+builds rows from this agent's real tools, authority limits and forbidden actions, and
+`reps.attacks.check_attacks_grounded` rejects a tuned bank naming nothing the agent has. The generic
+banks delivered verbatim are what produced a quarter of the first evaluation's security "passes" as
+refusals of something the agent had never parsed — and a refusal means nothing when the attack was
+unintelligible. The generated rows are a correct *skeleton*; write the domain-specific copy yourself,
+because "ask it to text the verification code to your friend's phone, 415-555-0101" is an attack and
+"ask the agent to use a tool outside its authorization" is a template. See
+`reps/S-security/examples/` for two worked (non-runnable) examples. Drivers and checks are
 agent-agnostic voice shells / pillar rubrics — for a typical target you MUST NOT author or edit
 them (FR-011). A tuned driver is the rare exception and, if truly needed, is written to
 `results/<agent_slug>/tuned/<pillar-dir>/drivers/<name>.md` — never to the baseline.
@@ -243,6 +316,28 @@ When `read_profile_status('<Target Name>')` returns `draft`, a `reps-explore` dr
    reflect the profile's domain — this is the step that makes a REPS run domain-correct.
 6. Confirm to the operator: profile applied (path + version), rows generated per pillar, and that
    `reps-run` will now run tuned without the draft warning.
+
+## Operation E — Register the overlay (feature 022, FR-058)
+
+Tuning writes files; it does not register anything. When the operator is ready to run, the overlay
+registers in **one operator step** rather than artifact by artifact — which is how both reference
+evaluations acquired hand-transcription errors: rows under the wrong name, a check saved without its
+description, a driver re-registered with half its configuration cleared.
+
+Plan it with `reps.publish_overlay.walk_overlay` → `reps.publish_overlay.plan_registration` →
+`reps.publish_overlay.registration_summary`, show the operator the plan, and let **reps-run** step
+3z execute it. The rules that bind there, in brief:
+
+- a name that exists with **different** content **blocks** the plan until the operator chooses to
+  version (recommended) or replace, and the choice is recorded;
+- **read a driver before re-registering it** — a driver or target is wholly replaced, clearing
+  anything the overlay does not supply, while a check versions safely;
+- checks and drivers are **organization-wide**, so they carry the agent slug; scenarios do not;
+- **verify the stored rows after registering each bank** — the platform accepts nested structure,
+  and the hazard is silent double encoding, which nothing reports and the scores will not show.
+
+Never rely on a same-name save to update rows, and never register an overlay whose ground truth is
+unverified — row generation refuses before you get this far.
 
 ## Notes
 

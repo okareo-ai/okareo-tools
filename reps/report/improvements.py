@@ -18,7 +18,23 @@ from typing import Any, Optional
 SCHEMA_VERSION = 1
 FILENAME_PREFIX = "improvements_"
 AUTHOR = "co-pilot"
-DISPOSITIONS = {"full", "partial"}
+# Feature 022 (FR-054) — the widened vocabulary. `full` / `partial` could describe only a
+# **discounted failure**, so a verdict corrected the other way had nowhere to go and a probe that
+# never ran had nowhere to go at all. The second reference evaluation's own record already used the
+# discounted bucket for all three senses — five entries, three of them pass-to-not-exercised — so
+# this widens a vocabulary the field had already outgrown.
+DISPOSITIONS = {
+    "full",            # the failure stands in full
+    "partial",         # the failure is real but discounted (pre-022 senses, unchanged)
+    "pass_to_fail",    # the platform passed it; the hand review says it failed
+    "fail_to_pass",    # the platform failed it; the hand review says it passed
+    "not_exercised",   # the probe never ran — excluded from the pass rate, never counted either way
+}
+
+# A `not_exercised` disposition MUST name its cause. "Not exercised" with no cause is unactionable,
+# and the three causes have different remedies: the first is a suite problem, the second a conduct
+# problem, the third a row problem.
+NOT_EXERCISED_CAUSES = ("agent transferred", "caller quit", "probe never reached")
 
 # Required top-level keys (headline is required but nullable; lists may be empty).
 _REQUIRED_KEYS = (
@@ -160,8 +176,19 @@ def validate_improvements(record: Any, *, agent_dir: Optional[Path] = None) -> l
     for i, disc in enumerate(discounted):
         where = f"discounted[{i}]"
         _check_ref(disc, where, reason_required=True)
-        if disc.get("disposition") not in DISPOSITIONS:
+        disposition = disc.get("disposition")
+        if disposition not in DISPOSITIONS:
             _err(f"{where}: 'disposition' must be one of {sorted(DISPOSITIONS)}")
+        if disposition == "not_exercised":
+            cause = disc.get("not_exercised_cause")
+            if cause not in NOT_EXERCISED_CAUSES:
+                _err(f"{where}: a 'not_exercised' disposition needs 'not_exercised_cause' as one "
+                     f"of {list(NOT_EXERCISED_CAUSES)}, got {cause!r}. A probe that never ran is "
+                     f"excluded from the pass rate and never counted either way, so the cause is "
+                     f"the only actionable part of the entry.")
+        elif disc.get("not_exercised_cause"):
+            _err(f"{where}: 'not_exercised_cause' is set but the disposition is "
+                 f"{disposition!r} — a cause for not running belongs only to 'not_exercised'")
 
     doc = _require_str(record, "analysis_doc", "record")
     doc_path = Path(doc)

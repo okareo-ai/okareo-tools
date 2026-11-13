@@ -34,6 +34,27 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 # Probe outcome-status vocabulary (feature 008, contracts/probe-outcome-status.md). Every probe in a
 # report resolves to exactly one of these, so a modality-mismatched or unmeasurable probe is never
 # conflated with a pass/fail (INV-1..4).
+# Gap kinds (the `gap_kind` discriminator on a coverage-gap entry). Feature 022 adds two: a probe
+# the declared ENVIRONMENT cannot exercise, and a probe WITHHELD because it would trip a declared
+# escalation trigger. Both render in the coverage-gap section and NEVER in a pass rate — in the
+# first field evaluation an untestable gated-disclosure class was executed anyway and would have
+# read as a pass.
+GAP_REQUIRES_TUNING = "requires-tuning"            # needs agent-specific overlay input
+GAP_UNDECLARED_NOT_RUN = "undeclared-not-run"      # declared, exercisable, but not exercised
+GAP_REQUIRES_ENVIRONMENT = "requires-environment"  # the declared environment cannot exercise it
+GAP_HELD = "held"                                  # withheld: would trip an escalation trigger
+GAP_NOT_EXERCISED = "not-exercised"                # ran, but the probe was never reached
+GAP_NO_TRACE = "no-trace"                          # trace-dependent check with no usable trace
+GAP_KINDS = (GAP_REQUIRES_TUNING, GAP_UNDECLARED_NOT_RUN,
+             GAP_REQUIRES_ENVIRONMENT, GAP_HELD, GAP_NOT_EXERCISED, GAP_NO_TRACE)
+
+# The kinds that mean "this was never tested", as opposed to "this errored". The report renders
+# these in their own section and NEVER folds them into a pass rate (FR-070): in the first field
+# evaluation an untestable class was executed anyway and every row read as a pass, so a pillar
+# showed 100% on a dimension it had not tested.
+GAP_KINDS_UNTESTED = (GAP_REQUIRES_TUNING, GAP_REQUIRES_ENVIRONMENT, GAP_HELD,
+                      GAP_NOT_EXERCISED, GAP_NO_TRACE)
+
 STATUS_ASSESSED = "assessed"                # a verdict was produced (pass/fail/safe-refusal)
 STATUS_NOT_APPLICABLE = "not-applicable"    # probe's modality != run modality — never counted
 STATUS_NOT_ASSESSED = "not-assessed"        # applicable, but the required signal was absent
@@ -53,6 +74,42 @@ def class_modality(manifest: Optional[dict], sub_capability: Optional[str]) -> s
         if pc.get("id") == sub_capability:
             return (pc.get("modality") or "both").strip().lower()
     return "both"
+
+
+def class_requires_environment(manifest: Optional[dict],
+                               sub_capability: Optional[str]) -> list[str]:
+    """Environment capabilities a probe class declares it needs (feature 022, invariant I).
+
+    `[]` when the manifest is absent, the class is unlisted, or the class declares nothing — so a
+    class that states no requirement runs exactly as it did before this feature, and the three-way
+    in `reps.rows.select_rows_for_environment` is what decides what an undeclared *environment*
+    means. Accepts a single name or a list, because most classes need exactly one.
+    """
+    if not manifest or not sub_capability:
+        return []
+    for pc in manifest.get("probe_classes", []) or []:
+        if pc.get("id") == sub_capability:
+            needs = pc.get("requires_environment") or []
+            if isinstance(needs, str):
+                return [needs] if needs.strip() else []
+            return [str(n) for n in needs if str(n).strip()]
+    return []
+
+
+def class_requires_declared_verification(manifest: Optional[dict],
+                                         sub_capability: Optional[str]) -> bool:
+    """Does this probe class need the agent's OWN verification factors to mean anything (FR-072)?
+
+    Declared on the class because it is a property of the probe, not of a row: every row in a
+    verification-gate bank has the same dependency. False when the manifest is absent, so an
+    untuned baseline run is unchanged.
+    """
+    if not manifest or not sub_capability:
+        return False
+    for pc in manifest.get("probe_classes", []) or []:
+        if pc.get("id") == sub_capability:
+            return bool(pc.get("requires_declared_verification"))
+    return False
 
 
 def modality_applies(class_mod: Optional[str], run_modality: Optional[str]) -> bool:
@@ -130,14 +187,14 @@ def reconcile(manifest: Optional[dict], observed: set[str], modality: str) -> li
         if pc.get("requires_tuning"):
             gaps.append({
                 "scenario": "—", "sub_capability": cid, "probe_class_id": cid,
-                "gap_kind": "requires-tuning",
+                "gap_kind": GAP_REQUIRES_TUNING,
                 "reason": f"declared probe class '{cid}' requires agent tuning — no overlay input; "
                           f"pillar reads untuned for this class",
             })
         else:
             gaps.append({
                 "scenario": "—", "sub_capability": cid, "probe_class_id": cid,
-                "gap_kind": "undeclared-not-run",
+                "gap_kind": GAP_UNDECLARED_NOT_RUN,
                 "reason": f"declared probe class '{cid}' was not exercised in this run",
             })
     return gaps
@@ -185,3 +242,30 @@ def declared_ids(manifest: Optional[dict], modality: Optional[str] = None) -> se
             continue
         ids.add(cid)
     return ids
+
+
+def environment_gap(sub_capability: str, capability: str, scenario: str = "—") -> dict:
+    """A coverage gap for a probe the declared environment cannot exercise (FR-010/011).
+
+    `capability` names the missing environment capability, so the report can tell the operator what
+    to change rather than only that something was skipped. Never a pass, never a silent omission.
+    """
+    return {
+        "scenario": scenario, "sub_capability": sub_capability, "probe_class_id": sub_capability,
+        "gap_kind": GAP_REQUIRES_ENVIRONMENT,
+        "reason": (f"probe class '{sub_capability}' needs '{capability}', which the declared test "
+                   f"environment does not provide — not exercised, and not counted either way"),
+    }
+
+
+def held_gap(sub_capability: str, trigger: str, scenario: str = "—") -> dict:
+    """A coverage gap for a row withheld because it would trip an escalation trigger (FR-013).
+
+    The trigger is named: "held" with no reason is a silent coverage cut.
+    """
+    return {
+        "scenario": scenario, "sub_capability": sub_capability, "probe_class_id": sub_capability,
+        "gap_kind": GAP_HELD,
+        "reason": (f"probe class '{sub_capability}' withheld — it would trip the declared "
+                   f"escalation trigger: {trigger}. It would test the handoff, not the boundary."),
+    }
