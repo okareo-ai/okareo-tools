@@ -2,9 +2,9 @@
 name: agent-simulation
 description: >-
   Stress-test a text agent or chatbot with simulated multi-turn conversations in Okareo. Use for
-  "simulate users talking to my agent", "red-team the chatbot", "how does the bot handle an angry
-  customer", "find where the agent breaks". For voice or phone agents use voice-simulation; for
-  live production traffic use monitoring.
+  "simulate users talking to my agent", "red-team the chatbot", "find where the agent breaks", or
+  "replay this exact conversation as a regression test". For voice or phone agents use
+  voice-simulation; for live production traffic use monitoring.
 
 ---
 
@@ -81,6 +81,13 @@ difficult users, clear and vague requests, in-scope and out-of-scope goals,
 and at least one adversarial persona that actively tries to break policy.
 Give each persona a concrete goal so the simulated conversation has a point.
 
+**Persona or script?** A persona improvises, which is what finds failures
+nobody predicted. When the question is instead "does the agent still handle
+*this exact* conversation", give the driver a fixed script: the simulated
+user says the same lines in the same order every run, so any difference
+between two runs is the agent's. See
+[references/scripted-drivers.md](references/scripted-drivers.md).
+
 ### 3. Set stopping conditions and turn pacing
 
 A multi-turn simulation needs to know when a conversation ends — goal
@@ -114,6 +121,11 @@ what the agent is:
   how Okareo calls the agent's API (including streaming/SSE endpoints).
 - A **prompt under test** — a `generation` target, when the thing being
   exercised is a prompt against a model rather than a deployed service.
+- A **web app or site with no API** — a `vision` target. Okareo opens the
+  page in a hosted browser and the simulated user reads the screen, clicks
+  and types. This changes how the driver is written, how long a run takes
+  and how results are read; see
+  [references/web-agents.md](references/web-agents.md) before going further.
 
 See [references/targets.md](references/targets.md) for how to configure each
 target type, including endpoint auth and streaming. **When reusing or

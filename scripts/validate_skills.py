@@ -54,11 +54,15 @@ KNOWN_TOOLS = {
     "create_or_update_target", "get_target", "list_targets", "delete_target",
     "create_or_update_driver", "get_driver", "list_drivers", "list_driver_voices",
     "run_simulation", "list_simulations",
+    # verification-code inbox (a testing aid for live voice conversations)
+    "send_inbox_message",
     # voice monitoring
     "ingest_conversations", "connect_voice_integration", "list_voice_integrations",
     "get_voice_integration", "update_voice_integration",
     "rotate_voice_integration_secret", "delete_voice_integration",
-    "get_voice_webhook_url",
+    "get_voice_webhook_url", "test_voice_integration",
+    # live traffic (datapoints and the trace spans behind them)
+    "find_datapoints", "get_datapoint", "get_trace",
     # analytics & dashboards
     "query_analytics", "list_dashboards", "get_dashboard", "save_dashboard",
     "reorder_dashboards", "delete_dashboard",
@@ -66,6 +70,9 @@ KNOWN_TOOLS = {
     "list_tenants", "switch_tenant",
     # documentation
     "get_docs", "get_templates",
+    # outbound simulations (the agent under test calls an Okareo number)
+    "start_outbound_simulation", "stop_outbound_simulation",
+    "get_outbound_simulation", "list_outbound_simulations",
     # REPS baseline serving — discovery + fetch of the released reps/ tree;
     # contract: contracts/get_reps_baseline.md
     "get_reps_baseline",
@@ -93,7 +100,7 @@ NON_TOOL_TOKENS = {
     "noise_profile", "noise_snr_db",
     # Template names registered in src/tools/docs.py — referenced via
     # get_templates([...]); they are not MCP tools themselves.
-    "voice_augmentations",
+    "voice_augmentations", "scripted_driver",
     # REPS workbench metadata/profile field names (reps-run, reps-profile,
     # reps-explore SKILL.md prose and the reps/ artifact headers). YAML/JSON
     # field identifiers, not MCP tools.

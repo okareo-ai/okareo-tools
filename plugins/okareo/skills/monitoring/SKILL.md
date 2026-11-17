@@ -43,6 +43,7 @@ metrics — if a needed tool is unavailable, say so and stop.
 | Query metrics        | `query_analytics`              | Read metric values and trends over the traffic   |
 | Build a watch view   | `save_dashboard`               | A persistent dashboard of the signals watched    |
 | Read a conversation  | `get_conversation_transcript`  | Inspect an individual flagged conversation       |
+| Check a pull source  | `test_voice_integration`       | Confirm Okareo can reach an Agentforce org before and after connecting |
 
 Okareo has no single "monitor" object. Monitoring is **checks evaluated on
 ingested production traffic, surfaced through a dashboard and read with
@@ -90,6 +91,27 @@ thresholds that catch real regressions without drowning the team in false
 positives — the thresholds are judgement you apply when reading
 `query_analytics` results, not a field on a tool call.
 
+**Send context with the traffic, and let checks read it.** Each ingested
+conversation can carry key/value metadata (a customer tier, a campaign, a
+queue) and the name of the provider or dialer that handled the call. The
+metadata is shown on the datapoint, can be filtered on, and can be named in
+a check's prompt — the whole set, or one key — so a check can judge the
+agent against what was true for that caller ("was a gold-tier customer
+offered the callback they are entitled to?"). The exact placeholder for
+the set and for one key is given in the description of
+`create_or_update_check`; copy it from there. Decide the keys before
+ingesting: a check can only read what was sent, and a call that arrives
+without the key gives the check nothing to judge, so say in the check what
+a missing value means. A check prompt that names a variable the platform
+does not know is refused when it is saved, with the list of names it does
+accept.
+
+Two limits to state rather than hide: saving a check does not attach it to
+incoming traffic (that is set up on a monitor in the Okareo app), and a
+filter on a metadata key that no datapoint in the project carries is
+ignored, returning every row. Confirm one real call shows the key before
+relying on either.
+
 ### 4. Interpret results, do not just watch the number
 
 - Lead with **status**: are all signals within their normal range?
@@ -124,17 +146,39 @@ A voice agent is monitored with the same loop — baseline, checks,
 thresholds, interpret — but its live stream reaches Okareo through a
 **voice integration** rather than `ingest_conversations`.
 
-1. Connect the provider with `connect_voice_integration`. The provider is
-   one of `retell`, `twilio`, `vapi`, or `elevenlabs` — this set is
-   distinct from the voice *simulation* edge types. The integration returns
-   an id and a public id.
+Which steps apply depends on the provider. There are three shapes — this
+set is distinct from the voice *simulation* target kinds:
+
+| Provider                     | Stored integration? | How its traffic arrives                         |
+| ---------------------------- | ------------------- | ----------------------------------------------- |
+| `twilio`, `retell`, `livekit` | yes                 | The provider posts to a webhook that carries the integration's public id |
+| `vapi`, `elevenlabs`          | no                  | The provider posts to a webhook whose address names the project (`?project_id=`), authenticated with an Okareo API key |
+| `agentforce`                  | yes                 | Okareo pulls: it signs in to the Salesforce org and reads session traces itself. No webhook |
+
+1. **Twilio, Retell, LiveKit** — connect with `connect_voice_integration`
+   (provider plus that provider's secrets; leave the auth type out and
+   Okareo picks it). The reply carries an id and a public id.
 2. Get the inbound endpoint with `get_voice_webhook_url` and have the user
    paste it into the provider's console. From then on the provider posts
-   completed calls to Okareo.
-3. Manage integrations with `list_voice_integrations`, `get_voice_integration`,
-   `update_voice_integration`, `rotate_voice_integration_secret`, and
+   completed calls to Okareo. **Vapi and ElevenLabs start here**: they need
+   no integration, and `connect_voice_integration` refuses them with this
+   pointer. The rest of their setup happens in the provider's own console
+   (a credential holding an Okareo API key, and which call events to send);
+   fetch those steps with `get_docs` rather than reciting them from memory,
+   and tell the user which Okareo environment the returned URL belongs to.
+   **Their URL is per project.** It ends in `?project_id=...`, and that is
+   what files the calls under the right project. Give the user the URL
+   exactly as returned, query string included, and get a fresh one for each
+   project. Without the project an ElevenLabs post is refused, and Vapi
+   calls land in the Global project instead of the one the user meant.
+3. **Agentforce** has no webhook and its own flow — test first, then
+   connect. See [references/agentforce.md](references/agentforce.md).
+4. Manage integrations with `list_voice_integrations`, `get_voice_integration`,
+   `update_voice_integration` (settings, or turn one off and on without
+   deleting it), `rotate_voice_integration_secret`, and
    `delete_voice_integration`. Treat integration secrets as secrets — never
-   echo them into a report.
+   echo them into a report, and never put one in an integration's metadata,
+   which is readable.
 
 Once calls are flowing, the loop is unchanged: define checks, baseline,
 threshold, interpret. What differs is *which signals matter on a spoken

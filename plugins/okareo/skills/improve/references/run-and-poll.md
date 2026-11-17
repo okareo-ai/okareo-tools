@@ -40,11 +40,17 @@ and keeps executing on the backend after the client disconnects.
 
 Poll `get_test_run_results` with the run id. Read:
 
-- **status** — a terminal `FINISHED` (uppercase) means done. Non-terminal
-  values include `RUNNING`, `PENDING`, `STARTED`, `IN_PROGRESS`, `QUEUED`.
+- **status** — two terminal values, both uppercase: `FINISHED` means done,
+  `FAILED` means the run itself failed. Non-terminal values include
+  `RUNNING`, `PENDING`, `STARTED`, `IN_PROGRESS`, `QUEUED`.
 - **progress** — a number reaching `100.0` at completion. Poll on status and
   progress together, not on data-point count alone.
 - **failure_message** — non-null means the run failed; report it and stop.
+  It is the reason in the platform's own words. Quote it. A failed run may
+  also have rows, each with its own error; read those too, since they can
+  say more than the run-level message. If neither says *which* side failed
+  (the simulated user's model, the agent under test, a check's judge), say
+  that plainly and list what you would check, rather than naming a cause.
 
 The status poll needs no transcripts — keep it on the default response.
 

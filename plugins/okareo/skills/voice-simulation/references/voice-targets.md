@@ -1,115 +1,115 @@
 # Configuring a voice target
 
 This file is loaded when the voice simulation reaches target registration.
-It covers the three voice edge types and how to configure each.
+It covers the kinds of voice target and how to configure each.
 
-A voice target is Okareo's handle on the voice agent under test. The *edge
-type* says how Okareo reaches the agent and speaks with it. Pick the edge
-type that matches how the agent actually runs.
+A voice target is Okareo's handle on the voice agent under test. Its *kind*
+says how Okareo reaches the agent. Pick the kind that matches how the agent
+is actually reached.
 
-## Which edge type
+## Which kind
 
-- **`twilio`** — the agent answers a **phone number**. Okareo places a real
-  outbound PSTN call to that number. Use this for any agent reachable by
-  phone, regardless of who hosts it (VAPI, LiveKit, Telnyx, Twilio, …) —
-  Okareo only needs the number.
-- **`openai`** — the agent is built on the **OpenAI Realtime** voice
-  backend. Okareo speaks to it through that backend rather than over a
-  phone line.
-- **`deepgram`** — the agent is built on the **Deepgram** voice backend.
+| Kind | Use it when | What it needs |
+| --- | --- | --- |
+| `phone` | The agent answers a phone number and the user has no reason to dial from their own carrier account. **Start here.** | The number to call. Okareo supplies the caller number and bears the telephony cost |
+| `twilio` | Calls must come from the user's own Twilio account | The number to call and the number to call from; the account's credentials |
+| `telnyx` | Calls must come from the user's own Telnyx account | The same pair of numbers; the account's credentials |
+| `vonage` | Calls must come from the user's own Vonage account | The same pair of numbers; the application's credentials |
+| `sip` | The agent is reached at a SIP address rather than a phone number | The SIP address; a username and password if the endpoint requires them |
+| `livekit` | The agent joins a LiveKit room | The LiveKit URL, the room name, and the API key and secret. All four, always |
 
-There is no "custom" voice edge type. If the agent is a custom HTTP service
-with no voice backend and no phone number, it is a text `custom_endpoint`
-target, not a voice target — that belongs to `agent-simulation`.
+The kind is what the user chooses. Which carrier actually serves a `phone`
+call is Okareo's business and can change; do not reason about it.
 
-## Twilio targets (a dialed phone number)
+There is no "custom" voice kind. If the agent is a custom HTTP service with
+no phone number, SIP address or room, it is a text `custom_endpoint`
+target — that belongs to `agent-simulation`.
 
-Configure:
+## What every kind accepts
 
-- **Destination phone number** — the number the agent answers on. Required.
-  Use only a number the user has given you.
-- **Max parallel requests** — how many calls Okareo may place at once
-  (an integer of at least 1). Required. Keep it low for a first run; raise
-  it once the simulation is trusted, mindful that each parallel call is a
-  billed line.
+- **Max parallel requests** — how many calls may run at once. Optional;
+  start at 1 for a first run and raise it once the simulation is trusted.
+  Each parallel call on a dialed kind is a billed line.
 
-A Twilio target places **real phone calls that cost money**. Confirm with
-the user before any run. For a Twilio account the user controls directly,
-the account SID, auth token, and caller (from) number can also be supplied;
-treat all three as secrets and keep them out of transcripts and reports.
+## Credentials
 
-## OpenAI Realtime and Deepgram targets
+- `phone` takes none.
+- On the user's-own-account kinds the **caller number is required** but the
+  keys and secrets are optional when the target is created. Two ways to
+  supply them: pass them in the call, or create the target with the numbers
+  only and have the user add the secret in the Okareo web app. Prefer the
+  second: the secret never enters this conversation. The reply to a save
+  says whether credentials are stored, but "stored" can mean only part of
+  the set (an account id without its token). The pre-flight check is what
+  says whether a target can actually dial; trust that, and tell the user
+  exactly which value it names as missing.
+- A target that has some but not all of what its carrier needs cannot dial.
+  `run_simulation` reports that before a run starts, naming what is
+  missing.
+- `livekit` is the exception: it needs all four values up front.
 
-For an `openai` or `deepgram` voice target, configure:
+Every credential is masked when a target is read back. Numbers, addresses
+and identifiers stay readable.
 
-- **Model** — the voice model identifier the agent runs on.
-- **Output voice** — the voice identifier the agent speaks with.
-- **Instructions** — optional voice-interaction instructions that shape how
-  the agent's side of the call behaves.
+## Changing or copying a voice target
 
-These targets do not place a phone call, but they still run real,
-billed voice sessions against the provider — set a max-turn cap and confirm
-before large runs just as you would for Twilio.
+Saving a target that already exists is an **update**: every setting left
+out keeps its value, and so do the target's tags and stored credentials.
+Change one thing by sending that one thing: the target's name, that it is
+a voice target, and the one setting. The kind does not need restating; it
+is read from what is stored.
 
-## Reusing or cloning a voice target
+The reply to an update can look like a creation — it may say created and
+carry a new id. That is a new *version* of the same target, not a second
+target. Confirm with `get_target`, which shows the version number and the
+changed setting.
 
-There is no clone-target tool. Duplicating a voice target — for a variant,
-or to tweak one setting — means reading the original with `get_target` and
-calling `create_or_update_target` again. The shape now round-trips cleanly
-(the response keys mirror the create kwargs), but the *values* of any
-sensitive fields are masked and must be re-supplied:
-
-- **`create_or_update_target` is a full replace.** Any field you do not
-  restate is dropped, whether you reuse the name or pick a new one. Same
-  semantics as the text targets.
-- **Sensitive values come back redacted.** Fields the backend treats as
-  secret — Twilio `account_sid` / `auth_token`, anything else listed under
-  the target's `sensitive_fields` — appear in `get_target` output as the
-  literal string `"***REDACTED***"`. The *paths* are visible (so you can
-  see which fields need values), the *values* are not. `create_or_update_target`
-  rejects any payload still containing the sentinel before reaching the
-  backend, so you cannot accidentally ship a redacted-as-string credential.
-- **`max_parallel_requests` is a top-level field.** It is required for
-  Twilio targets (an integer ≥ 1) and `get_target` now returns it at the
-  top level, so a field-by-field copy picks it up. Still restate it
-  explicitly — don't assume the original value is the right one for the
-  clone.
+- **A masked value means "keep what is stored".** A target read with
+  `get_target` can be saved back as read; the masks restore the stored
+  secrets. You never need to hold a secret to change something else.
+- **Two things cannot change:** whether the target is a voice target, and
+  its kind. A save asking for a different kind is refused, naming both. To
+  move an agent from `phone` to the user's own carrier, make a new target.
+- **A setting that belongs to another kind is refused**, not dropped, and
+  the refusal names the kind it belongs to.
+- **A copy is a new target**, so it starts with no stored credentials. Read
+  the original for its shape, give the copy a new name, and have the user
+  supply any secret again (or add it in the web app).
 - **The destination number must come from the user.** Never carry a phone
-  number across by inference — even if it is visible on the original
-  target, confirm it explicitly before saving the new one.
+  number across by inference — even if it is visible on the original,
+  confirm it before saving a copy.
 
-Walk this checklist before calling `create_or_update_target` on a clone:
+## Checking a target without dialing
 
-For **Twilio**:
+`run_simulation` has a report-only mode (its pre-flight option): it checks
+that the scenario has every field the target and driver refer to, and that
+a carrier target has what it needs to dial, then stops without starting
+anything. Use it to answer "is this ready?" before a billed call.
 
-- [ ] `to_phone_number` — confirm with the user.
-- [ ] `max_parallel_requests` — restate explicitly (start at 1 for a first run).
-- [ ] `account_sid`, `auth_token`, `from_phone_number` (if the original used
-      a user-owned Twilio account) — these come back as `"***REDACTED***"`;
-      **re-supply real values from the user**. Submitting the sentinel
-      verbatim is rejected by the MCP before any backend call.
+"Compatible" from that check means the pieces fit. It does not mean the
+run is well designed: it does not look for a completion check, a turn cap,
+a caller persona or a voice, and it cannot tell whether the agent answers.
+Say what it did and did not cover.
 
-For **OpenAI Realtime** or **Deepgram**:
+## Keypad tones
 
-- [ ] `edge_type` — `openai` or `deepgram`.
-- [ ] `model`, `output_voice`, `instructions` — restate from the original.
-
-Treat reuse as a *deliberate build*, not a copy: read the original to see
-its shape (now mirroring create kwargs), ask the user for anything that came
-back as `"***REDACTED***"`, then call `create_or_update_target` with the
-substituted envelope.
+On `phone` and `telnyx` targets, how keypad presses reach the agent can be
+chosen: sent beside the audio (the default) or as tones in the audio.
+Leave the default unless the agent's phone menu does not register key
+presses; then try the other.
 
 ## Common mistakes
 
-- Treating a custom HTTP agent as a voice target. With no phone number and
-  no voice backend, it is a text `custom_endpoint` target.
+- Treating a custom HTTP agent as a voice target. With no phone number, SIP
+  address or room, it is a text `custom_endpoint` target.
+- Reaching for the user's-own-account kinds when `phone` would do. They
+  need a caller number and credentials; `phone` needs only the number to
+  call.
 - Calling a phone number the user did not explicitly provide.
-- Omitting max parallel requests on a Twilio target, or setting it high on
-  a first run — start at 1.
+- Setting max parallel requests high on a first run — start at 1.
+- Asking the user to paste a carrier secret into the conversation when it
+  could be added in the web app.
+- Re-entering every setting to change one. Send only what changes.
 - Picking a caller voice whose language does not match the agent's. Match
-  the language when picking voices, or the call is unrealistic from turn one.
-- Cloning a Twilio target by passing the `get_target` output back to
-  `create_or_update_target` without substituting the `"***REDACTED***"`
-  values. The MCP rejects the call before the backend sees it, naming each
-  field that still carries the sentinel — fix those paths, don't try to
-  bypass the check.
+  the language when picking voices, or the call is unrealistic from turn
+  one.

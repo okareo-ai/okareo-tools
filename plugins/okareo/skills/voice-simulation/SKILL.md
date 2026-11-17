@@ -49,6 +49,9 @@ a call outcome — if a needed tool is unavailable, say so and stop.
 | Run                  | `run_simulation`               | Place the simulated calls and score them           |
 | Read outcomes        | `get_test_run_results`         | Pull success rates and check results               |
 | Read a call          | `get_conversation_transcript`  | Inspect an individual call transcript              |
+| Deliver a code       | `send_inbox_message`           | Testing aid: hand a live call the message the agent "sent" |
+| Agent dials: start   | `start_outbound_simulation`    | Get an Okareo number for the agent to call         |
+| Agent dials: stop    | `stop_outbound_simulation`     | Give the number back and score the calls           |
 
 A voice simulation, like a text one, has no single "create" tool — it is a
 *target* (the voice agent), a *driver* (the simulated caller, with a voice),
@@ -73,6 +76,13 @@ Establish three things first:
   behaviors the agent must not produce (going off-policy, looping, leaving
   the caller's goal unmet). Vague failure criteria produce unscored calls.
 
+Then settle **who places the call**. Most voice agents answer: Okareo
+dials them, and the rest of this loop applies. Some agents *place* calls —
+a collections agent, an appointment reminder, a sales dialer. Okareo
+cannot dial an agent like that; the agent has to call Okareo. That is an
+**outbound simulation**, with its own start and stop steps: see
+[references/outbound-simulations.md](references/outbound-simulations.md).
+
 ### 2. Pick caller voices and design personas
 
 Call `list_driver_voices` and pick voices whose language matches the agent.
@@ -82,6 +92,11 @@ personas and objectives specific to voice. In short: vary the *caller*, not
 just the words — cooperative and difficult callers, clear and vague goals,
 in-scope and out-of-scope requests — and give every caller one concrete
 objective so the call has a point.
+
+For a call that must go the same way every time — walking a phone menu,
+reading back a fixed set of details, reproducing a reported call — script
+the caller instead of describing a persona. See
+[references/scripted-callers.md](references/scripted-callers.md).
 
 ### 3. Set stopping conditions and turn pacing
 
@@ -108,14 +123,21 @@ when you leave them out:
 ### 4. Register the voice agent as a target
 
 Register the agent with `create_or_update_target` as a voice target. The
-*edge type* depends on how the agent is reached — a dialable phone number,
-or a realtime voice backend. See
-[references/voice-targets.md](references/voice-targets.md) for configuring
-`twilio`, `openai`, and `deepgram` voice targets. **When reusing or cloning
-an existing voice target**, follow the *Reusing or cloning a voice target*
-section there — `create_or_update_target` is a full replace and Twilio
-credentials cannot be read back, so a casual "copy and tweak" silently
-drops `account_sid`/`auth_token` and `max_parallel_requests`.
+*kind* depends on how the agent is reached: a phone number Okareo dials for
+you, a number dialed through the user's own carrier account, a SIP address,
+or a LiveKit room. See
+[references/voice-targets.md](references/voice-targets.md) for choosing a
+kind and what each one needs. **To change an existing voice target**, save
+it again with only the setting that changes: everything left out, stored
+credentials included, is kept. See *Changing or copying a voice target*
+there.
+
+Two things about the call path are also set on the target. If the agent
+**texts or emails the caller a verification code** partway through, the
+simulated caller needs an inbox to receive it — see
+[references/verification-codes.md](references/verification-codes.md). If
+the agent sits **behind a main line and an extension**, the target can dial
+the extension once the line answers; the same reference covers it.
 
 ### 5. Decide whether to augment the call audio
 
@@ -142,16 +164,25 @@ user wants production-condition coverage.
 - Write the per-call goals as scenario rows with `save_scenario`: each row's
   `input` is the caller's situation and goal, and its `result` is the
   outcome a successful call reaches.
-- Decide who speaks first. **Inbound** — the agent greets first, as it would
-  answering a call. **Outbound** — the caller opens. Match production.
+- Decide who speaks first: the agent greets first, as it would answering a
+  call, or the caller opens. Match production. This is only about the
+  first words. **Who places the call** is a separate question, settled in
+  step 1: if the agent is the one that dials, this step does not apply —
+  follow [references/outbound-simulations.md](references/outbound-simulations.md)
+  instead.
 - Choose checks at run time. Always include a check that judges whether the
   call reached the scenario's expected result — a call with no completion
   check produces a transcript nobody can score. Add one or two checks for
   the business case.
 - If step 5 said yes, pass `augmentation={...}` to `run_simulation` along
   with any of the pacing kwargs from step 3.
-- **Confirm with the user before running.** A `twilio` voice target places
-  real outbound phone calls that incur telephony cost. Then call
+- **Check the pieces fit before dialing.** `run_simulation` compares the
+  scenario fields the target and driver refer to against the scenario
+  itself, and refuses a run that could never dial (a target that dials a
+  field the scenario does not have). It can also report without running.
+  Fix what it names rather than overriding it.
+- **Confirm with the user before running.** A target that dials a phone
+  number places real phone calls that incur telephony cost. Then call
   `run_simulation`; it returns immediately with a test-run id and app link.
   Poll `get_test_run_results` rather than assuming failure.
 
@@ -198,8 +229,9 @@ on a clean line" — never collapse them.
 - Never fabricate a transcript, a check result, or a call outcome — every
   figure comes from a `get_test_run_results` or `get_conversation_transcript`
   call.
-- A `twilio` voice target places real phone calls to real numbers. Confirm
-  with the user before running, and never call a number they did not give.
+- A voice target that dials a number places real phone calls to real
+  numbers. Confirm with the user before running, and never call a number
+  they did not give.
 - Always set a max-turn cap — a stuck agent on a phone target runs up a
   billed call with no end.
 - Always include a completion check. A voice simulation with nothing scoring
