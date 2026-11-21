@@ -2,7 +2,10 @@
   "mcpServers": {
     "okareo": {
       "type": "http",
-      "url": "https://tools.okareo.com/mcp"
+      "url": "https://tools.okareo.com/mcp",
+      "headers": {
+        "X-Okareo-Plugin": "0.7.0"
+      }
     }
   }
 }

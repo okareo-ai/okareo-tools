@@ -1,6 +1,6 @@
 {
-  "content_hash": "sha256:403b50631f05c6151ded903c12567ce283dba86ac4f55195f263f40bf6fd3346",
-  "dev_revision": "2e88472",
+  "content_hash": "sha256:73ff15670a6f7f9ef3b61db8529484007feeb358133bd7c02062182adb748395",
+  "dev_revision": "20b19ad",
   "file_hashes": {
     ".claude-plugin/marketplace.json": "sha256:4410ad844fd19888c1f85f38321d9c9c40b75c899a4d97bb4e11782ce1d3a5c2",
     ".github/workflows/release.yml": "sha256:b5559eacfcfd953e927346d798f0636ae204f09c5cbf8ecfdfe1c2a7b2ba80d5",
@@ -12,7 +12,7 @@
     "ROADMAP.md": "sha256:76cc42331b35171ba6c7c1bb69d675f88f44d26d6bb951d5af90cebe116d1057",
     "contracts/get_reps_baseline.md": "sha256:15f339a3a72db62732e035dce05d5b5d1dfcc331e49bf03f4b3c80a447873610",
     "plugins/okareo/.claude-plugin/plugin.json": "sha256:799385252afb4c32a993f9b999fe27a7039b04452e3b6d59459578c044d84567",
-    "plugins/okareo/.mcp.json": "sha256:04589eb4da16fab369aebe561eb2a4b22bd9a765e3b0a549445a896b8ae285ae",
+    "plugins/okareo/.mcp.json": "sha256:25f131843d8d220d33122d4b2f512ee799dafa3a956525e29bea5abb66f54c54",
     "plugins/okareo/skills/agent-simulation/SKILL.md": "sha256:ce89508aa856627844a834c53687d962d53e57c028ae0e9b6222f5d4380201fe",
     "plugins/okareo/skills/agent-simulation/references/persona-design.md": "sha256:1262564ec01f4f39cfce0c836e89839932c6d3067fc73a5e940e77b2690f820e",
     "plugins/okareo/skills/agent-simulation/references/scripted-drivers.md": "sha256:881a1ad3a115105b2d0052126698d592d81ea847b825b7779787b6927719d9ba",
@@ -165,7 +165,7 @@
     "reps/targets/http_target.py": "sha256:025dda6b23537e90d262053cd5b94476a0427dd7680eef40094d610a66ccf275",
     "reps/targets/voice_target.py": "sha256:57bc00f1f8234b4cba479925018750f3cd668161e812ab3c9c50fe7df87d5ce9",
     "reps/trace.py": "sha256:a8c2846f0cc8c655fc6a26a826f40461be2ae2a64f255af4a7eb00d4d744dded",
-    "scripts/build.sh": "sha256:e364b4041dd399aaa1e8a989cb326090b46da65620c67f1f1b6088ffac29f168:x",
+    "scripts/build.sh": "sha256:2b7a6d6713e0c6a686a3d4ae7817efc92320111f7578bde73adc46614cd8c549:x",
     "scripts/install.sh": "sha256:118b812fe868032b48b60fbe65abeddd0fc835727438a1e268639d7a4fc7de87:x",
     "scripts/release.sh": "sha256:ddf5b2d95da8e2c18d24e4f90aefec551c9546178e0cbfdc8f85b83cb99b8ac6:x",
     "scripts/validate_skills.py": "sha256:7510bc02f3fe6c08ae799738b4ff3a5f5d00294fa3aca1c69f3326f980585ab4:x",
@@ -173,5 +173,5 @@
     "skill-template/references/example-reference.md": "sha256:4542b912bd674664a44d6751fb9a058467b3580f6fbbb194a86778e6be43b8e3"
   },
   "pipeline": "ci",
-  "synced_at": "2026-11-17T02:39:17Z"
+  "synced_at": "2026-11-21T02:13:08Z"
 }

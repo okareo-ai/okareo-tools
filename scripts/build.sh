@@ -23,6 +23,14 @@ DIST="$ROOT/dist"
 
 VERSION="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["version"])' "$PLUGIN_JSON")"
 
+# The plugin's MCP config tells the server the plugin is present (X-Okareo-Plugin).
+# Bump it with plugin.json, or the server reports a stale version.
+MCP_HEADER="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["mcpServers"]["okareo"].get("headers",{}).get("X-Okareo-Plugin",""))' "$ROOT/plugins/okareo/.mcp.json")"
+if [[ "$MCP_HEADER" != "$VERSION" ]]; then
+  echo "plugins/okareo/.mcp.json sends X-Okareo-Plugin '$MCP_HEADER' but plugin.json is $VERSION" >&2
+  exit 1
+fi
+
 # Refuse to package a skill that fails validation (frontmatter, references,
 # and — the contract that matters — only real Okareo MCP tool names).
 echo "Validating skills"
