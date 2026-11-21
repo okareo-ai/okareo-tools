@@ -4,7 +4,7 @@
       "type": "http",
       "url": "https://tools.okareo.com/mcp",
       "headers": {
-        "X-Okareo-Plugin": "0.7.0"
+        "X-Okareo-Plugin": "0.7.1"
       }
     }
   }

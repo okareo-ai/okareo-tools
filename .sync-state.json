@@ -1,8 +1,8 @@
 {
-  "content_hash": "sha256:73ff15670a6f7f9ef3b61db8529484007feeb358133bd7c02062182adb748395",
-  "dev_revision": "20b19ad",
+  "content_hash": "sha256:e40ca762ec23d1ec74368a8984e725ad34f665eb8f7ab0e3907cc8b4753a5f67",
+  "dev_revision": "74f64fb",
   "file_hashes": {
-    ".claude-plugin/marketplace.json": "sha256:4410ad844fd19888c1f85f38321d9c9c40b75c899a4d97bb4e11782ce1d3a5c2",
+    ".claude-plugin/marketplace.json": "sha256:0b8afe4ecd7aea12da769a8e0923a23fd64cbb39b50c4d6e7ffd0f38eddd814e",
     ".github/workflows/release.yml": "sha256:b5559eacfcfd953e927346d798f0636ae204f09c5cbf8ecfdfe1c2a7b2ba80d5",
     ".gitignore": "sha256:1cf2e848bd76aeb8c662c1219439553870697b5d48c267c7db014b84c2c8a0c1",
     "CLAUDE.md.snippet": "sha256:78d16844c62f2596aa19a8973e8507aecc4c5acc60535eff8d8abda01621be92",
@@ -11,8 +11,8 @@
     "README.md": "sha256:0b27942be7f15fc08348e05274e05b0c368f4fdcc44b52229ab80c220ca7ac3c",
     "ROADMAP.md": "sha256:76cc42331b35171ba6c7c1bb69d675f88f44d26d6bb951d5af90cebe116d1057",
     "contracts/get_reps_baseline.md": "sha256:15f339a3a72db62732e035dce05d5b5d1dfcc331e49bf03f4b3c80a447873610",
-    "plugins/okareo/.claude-plugin/plugin.json": "sha256:799385252afb4c32a993f9b999fe27a7039b04452e3b6d59459578c044d84567",
-    "plugins/okareo/.mcp.json": "sha256:25f131843d8d220d33122d4b2f512ee799dafa3a956525e29bea5abb66f54c54",
+    "plugins/okareo/.claude-plugin/plugin.json": "sha256:ae1e4348be11c14725a1599707683b2e5b78362018e36788df6544503ff44bc5",
+    "plugins/okareo/.mcp.json": "sha256:1b4bd3697b76a43833dfefda2fb2df7a543ec517f28dbe846c4c4b18a4229b5a",
     "plugins/okareo/skills/agent-simulation/SKILL.md": "sha256:ce89508aa856627844a834c53687d962d53e57c028ae0e9b6222f5d4380201fe",
     "plugins/okareo/skills/agent-simulation/references/persona-design.md": "sha256:1262564ec01f4f39cfce0c836e89839932c6d3067fc73a5e940e77b2690f820e",
     "plugins/okareo/skills/agent-simulation/references/scripted-drivers.md": "sha256:881a1ad3a115105b2d0052126698d592d81ea847b825b7779787b6927719d9ba",
@@ -173,5 +173,5 @@
     "skill-template/references/example-reference.md": "sha256:4542b912bd674664a44d6751fb9a058467b3580f6fbbb194a86778e6be43b8e3"
   },
   "pipeline": "ci",
-  "synced_at": "2026-11-21T02:13:08Z"
+  "synced_at": "2026-11-21T02:17:13Z"
 }
